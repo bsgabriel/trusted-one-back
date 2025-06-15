@@ -1,0 +1,57 @@
+databaseChangeLog:
+  - changeSet:
+      id: iteration_1-create_table-users
+      author: Gabriel Silveira
+      description: "Create table users"
+      changes:
+        - sqlFile:
+            path: sql/001-create_table-users.sql
+            relativeToChangelogFile: true
+  - changeSet:
+      id: iteration_1-create_table-companies
+      author: Gabriel Silveira
+      description: "Create table companies"
+      changes:
+        - sqlFile:
+            path: sql/002-create_table-companies.sql
+            relativeToChangelogFile: true
+  - changeSet:
+      id: iteration_1-create_table-groups
+      author: Gabriel Silveira
+      description: "Create table groups"
+      changes:
+        - sqlFile:
+            path: sql/003-create_table-groups.sql
+            relativeToChangelogFile: true
+  - changeSet:
+      id: iteration_1-create_table-professions
+      author: Gabriel Silveira
+      description: "Create table professions"
+      changes:
+        - sqlFile:
+            path: sql/004-create_table-professions.sql
+            relativeToChangelogFile: true
+  - changeSet:
+      id: iteration_1-create_table-professionals
+      author: Gabriel Silveira
+      description: "Create table professionals"
+      changes:
+        - sqlFile:
+            path: sql/005-create_table-professionals.sql
+            relativeToChangelogFile: true
+  - changeSet:
+      id: iteration_1-create_table-contact_methods
+      author: Gabriel Silveira
+      description: "Create table contact_methods"
+      changes:
+        - sqlFile:
+            path: sql/006-create_table-contact_methods.sql
+            relativeToChangelogFile: true
+  - changeSet:
+      id: iteration_1-create_table-professional_professions
+      author: Gabriel Silveira
+      description: "Create table professional_professions"
+      changes:
+        - sqlFile:
+            path: sql/007-create_table-professional_professions.sql
+            relativeToChangelogFile: true
