@@ -46,13 +46,13 @@ public class UserController {
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
         SecurityContextHolder.clearContext();
-        return ResponseEntity.ok("Logout realizado com sucesso");
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/me")
