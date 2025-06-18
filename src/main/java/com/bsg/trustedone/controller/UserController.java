@@ -34,22 +34,15 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto request, HttpServletRequest httpRequest) {
-        try {
-            var authToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
-            var authentication = authenticationManager.authenticate(authToken);
+    public ResponseEntity<Void> login(@RequestBody LoginRequestDto request, HttpServletRequest httpRequest) {
+        var authToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
+        SecurityContextHolder.getContext().setAuthentication(authenticationManager.authenticate(authToken));
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        HttpSession session = httpRequest.getSession(true);
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
 
-            HttpSession session = httpRequest.getSession(true);
-            SecurityContext securityContext = SecurityContextHolder.getContext();
-            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
-
-            return ResponseEntity.ok(userService.getLoggedUser());
-
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Credenciais inválidas");
-        }
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/logout")

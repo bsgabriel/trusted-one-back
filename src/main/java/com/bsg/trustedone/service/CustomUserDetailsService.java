@@ -19,7 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var user = this.userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("aaaaa"));
+        var user = this.userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("Invalid email or password"));
 
         return new UserDetails() {
             @Override
