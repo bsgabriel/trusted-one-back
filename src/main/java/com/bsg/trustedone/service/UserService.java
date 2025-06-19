@@ -19,6 +19,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.stereotype.Service;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Service
 @RequiredArgsConstructor
@@ -68,5 +69,13 @@ public class UserService {
         HttpSession session = httpRequest.getSession(true);
         SecurityContext securityContext = SecurityContextHolder.getContext();
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
+    }
+
+    public void logout(HttpServletRequest request) {
+        var session = request.getSession(false);
+        if (nonNull(session)) {
+            session.invalidate();
+        }
+        SecurityContextHolder.clearContext();
     }
 }
