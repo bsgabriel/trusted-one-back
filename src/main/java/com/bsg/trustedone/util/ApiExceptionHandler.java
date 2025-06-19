@@ -20,7 +20,8 @@ public class ApiExceptionHandler {
         var detail = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
         detail.setTitle("An error ocurred on login");
         detail.setDetail("Invalid email or password");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(detail);
+
+        return createResponseEntity(detail);
     }
 
     @ExceptionHandler(AccountCreationException.class)
@@ -33,7 +34,7 @@ public class ApiExceptionHandler {
             detail.setProperty("errors", ex.getErrors());
         }
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(detail);
+        return createResponseEntity(detail);
     }
 
     @ExceptionHandler(UserAlreadyRegisteredException.class)
@@ -42,7 +43,7 @@ public class ApiExceptionHandler {
         detail.setTitle("An error ocurred while creating account");
         detail.setDetail(ex.getMessage());
 
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(detail);
+        return createResponseEntity(detail);
     }
 
     @ExceptionHandler(UserLoginException.class)
@@ -55,7 +56,12 @@ public class ApiExceptionHandler {
             detail.setProperty("errors", ex.getErrors());
         }
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(detail);
+        return createResponseEntity(detail);
     }
+
+    private ResponseEntity<ProblemDetail> createResponseEntity(ProblemDetail problemDetail) {
+        return ResponseEntity.status(problemDetail.getStatus()).body(problemDetail);
+    }
+
 
 }
