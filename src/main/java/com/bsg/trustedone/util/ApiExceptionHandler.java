@@ -16,8 +16,11 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 public class ApiExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> invalidCredential() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+    public ResponseEntity<ProblemDetail> invalidCredential() {
+        var detail = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+        detail.setTitle("An error ocurred on login");
+        detail.setDetail("Invalid email or password");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(detail);
     }
 
     @ExceptionHandler(AccountCreationException.class)
