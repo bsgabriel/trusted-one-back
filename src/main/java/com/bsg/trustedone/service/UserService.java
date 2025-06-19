@@ -5,7 +5,7 @@ import com.bsg.trustedone.dto.AccountCreationDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.exceptions.UserAlreadyRegisteredException;
-import com.bsg.trustedone.repositories.UserRepository;
+import com.bsg.trustedone.repository.UserRepository;
 import com.bsg.trustedone.validator.UserValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;

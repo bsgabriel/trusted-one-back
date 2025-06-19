@@ -1,4 +1,4 @@
-package com.bsg.trustedone.repositories;
+package com.bsg.trustedone.repository;
 
 import com.bsg.trustedone.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

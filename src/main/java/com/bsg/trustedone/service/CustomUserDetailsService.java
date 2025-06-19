@@ -1,6 +1,6 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.repositories.UserRepository;
+import com.bsg.trustedone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
