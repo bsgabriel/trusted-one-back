@@ -1,14 +1,21 @@
 package com.bsg.trustedone.service;
 
+import com.bsg.trustedone.dto.LoginRequestDto;
 import com.bsg.trustedone.dto.RegisterRequestDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.exceptions.UserAlreadyRegisteredException;
 import com.bsg.trustedone.repositories.UserRepository;
 import com.bsg.trustedone.validator.UserValidator;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
 
 import static java.util.Objects.isNull;
@@ -17,9 +24,10 @@ import static java.util.Objects.isNull;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final UserValidator userValidator;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserValidator userValidator;
+    private final AuthenticationManager authenticationManager;
 
     public UserDto createUser(RegisterRequestDto registerData) {
         userValidator.validateRegistrationData(registerData);
@@ -52,4 +60,12 @@ public class UserService {
         return userRepository.findByEmail(email).orElse(null);
     }
 
+    public void login(LoginRequestDto request, HttpServletRequest httpRequest) {
+        var authToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
+        SecurityContextHolder.getContext().setAuthentication(authenticationManager.authenticate(authToken));
+
+        HttpSession session = httpRequest.getSession(true);
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
+    }
 }
