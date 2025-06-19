@@ -2,6 +2,7 @@ package com.bsg.trustedone.controller;
 
 import com.bsg.trustedone.dto.LoginRequestDto;
 import com.bsg.trustedone.dto.RegisterRequestDto;
+import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,13 +25,8 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequestDto request) {
-        try {
-            User user = userService.createUser(request.getEmail(), request.getPassword(), request.getName());
-            return ResponseEntity.ok(user);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Erro ao criar usuário: " + e.getMessage());
-        }
+    public ResponseEntity<UserDto> register(@RequestBody RegisterRequestDto request) {
+        return ResponseEntity.ok(userService.createUser(request));
     }
 
     @PostMapping("/login")

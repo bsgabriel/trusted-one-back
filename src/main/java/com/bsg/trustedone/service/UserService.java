@@ -1,13 +1,15 @@
 package com.bsg.trustedone.service;
 
+import com.bsg.trustedone.dto.RegisterRequestDto;
+import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.User;
+import com.bsg.trustedone.exceptions.UserAlreadyRegisteredException;
 import com.bsg.trustedone.repositories.UserRepository;
+import com.bsg.trustedone.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 import static java.util.Objects.isNull;
 
@@ -17,17 +19,26 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserValidator userValidator;
 
-    public User createUser(String email, String password, String name) {
-        if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("User already exists"); // TODO create message
+    public UserDto createUser(RegisterRequestDto registerData) {
+        userValidator.validateRegistrationData(registerData);
+
+        if (userRepository.existsByEmail(registerData.getEmail())) {
+            throw new UserAlreadyRegisteredException("Email already registered");
         }
 
-        return userRepository.save(User.builder()
-                .email(email)
-                .name(name)
-                .password(passwordEncoder.encode(password))
+        var user = userRepository.save(User.builder()
+                .email(registerData.getEmail())
+                .name(registerData.getName())
+                .password(passwordEncoder.encode(registerData.getPassword()))
                 .build());
+
+        return UserDto.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .build();
     }
 
     public User getLoggedUser() {
