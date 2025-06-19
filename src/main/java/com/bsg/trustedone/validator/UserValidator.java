@@ -1,7 +1,7 @@
 package com.bsg.trustedone.validator;
 
-import com.bsg.trustedone.dto.LoginRequestDto;
-import com.bsg.trustedone.dto.RegisterRequestDto;
+import com.bsg.trustedone.dto.AccountCreationDto;
+import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.exceptions.AccountCreationException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -16,8 +16,8 @@ public class UserValidator {
 
     private final Validator validator;
 
-    public void validateRegistrationData(RegisterRequestDto registerData) {
-        var violations = validator.validate(registerData);
+    public void validateRegistrationData(AccountCreationDto accountCreationDto) {
+        var violations = validator.validate(accountCreationDto);
         if (violations.isEmpty()) {
             return;
         }
@@ -29,8 +29,8 @@ public class UserValidator {
         throw new AccountCreationException("Invalid data for account creation", errors);
     }
 
-    public void validateLoginData(LoginRequestDto loginRequestDto) {
-        var violations = validator.validate(loginRequestDto);
+    public void validateLoginData(UserLoginDto userLoginDto) {
+        var violations = validator.validate(userLoginDto);
         if (violations.isEmpty()) {
             return;
         }

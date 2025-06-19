@@ -1,7 +1,7 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.LoginRequestDto;
-import com.bsg.trustedone.dto.RegisterRequestDto;
+import com.bsg.trustedone.dto.UserLoginDto;
+import com.bsg.trustedone.dto.AccountCreationDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.exceptions.UserAlreadyRegisteredException;
@@ -30,7 +30,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
-    public UserDto createUser(RegisterRequestDto registerData) {
+    public UserDto createUser(AccountCreationDto registerData) {
         userValidator.validateRegistrationData(registerData);
 
         if (userRepository.existsByEmail(registerData.getEmail())) {
@@ -61,7 +61,7 @@ public class UserService {
         return userRepository.findByEmail(email).orElse(null);
     }
 
-    public void login(LoginRequestDto request, HttpServletRequest httpRequest) {
+    public void login(UserLoginDto request, HttpServletRequest httpRequest) {
         userValidator.validateLoginData(request);
         var authToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authenticationManager.authenticate(authToken));

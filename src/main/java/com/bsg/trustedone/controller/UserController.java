@@ -1,7 +1,7 @@
 package com.bsg.trustedone.controller;
 
-import com.bsg.trustedone.dto.LoginRequestDto;
-import com.bsg.trustedone.dto.RegisterRequestDto;
+import com.bsg.trustedone.dto.UserLoginDto;
+import com.bsg.trustedone.dto.AccountCreationDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.service.UserService;
@@ -18,12 +18,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> register(@RequestBody RegisterRequestDto request) {
+    public ResponseEntity<UserDto> register(@RequestBody AccountCreationDto request) {
         return ResponseEntity.ok(userService.createUser(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody LoginRequestDto request, HttpServletRequest httpRequest) {
+    public ResponseEntity<Void> login(@RequestBody UserLoginDto request, HttpServletRequest httpRequest) {
         userService.login(request, httpRequest);
         return ResponseEntity.noContent().build();
     }
