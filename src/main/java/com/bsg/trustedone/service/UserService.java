@@ -61,6 +61,7 @@ public class UserService {
     }
 
     public void login(LoginRequestDto request, HttpServletRequest httpRequest) {
+        userValidator.validateLoginData(request);
         var authToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authenticationManager.authenticate(authToken));
 

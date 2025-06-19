@@ -2,6 +2,7 @@ package com.bsg.trustedone.util;
 
 import com.bsg.trustedone.exceptions.AccountCreationException;
 import com.bsg.trustedone.exceptions.UserAlreadyRegisteredException;
+import com.bsg.trustedone.exceptions.UserLoginException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,19 @@ public class ApiExceptionHandler {
         detail.setDetail(ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(detail);
+    }
+
+    @ExceptionHandler(UserLoginException.class)
+    public ResponseEntity<ProblemDetail> handleUserLoginException(UserLoginException ex) {
+        var detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        detail.setTitle("An error ocurred on login");
+        detail.setDetail(ex.getMessage());
+
+        if (!isEmpty(ex.getErrors())) {
+            detail.setProperty("errors", ex.getErrors());
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(detail);
     }
 
 }
