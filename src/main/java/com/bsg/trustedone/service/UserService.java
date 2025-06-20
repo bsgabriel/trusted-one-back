@@ -1,11 +1,12 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.dto.AccountCreationDto;
 import com.bsg.trustedone.dto.UserDetailDto;
 import com.bsg.trustedone.dto.UserDto;
+import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.exceptions.UserAlreadyRegisteredException;
+import com.bsg.trustedone.mapper.UserMapper;
 import com.bsg.trustedone.repository.UserRepository;
 import com.bsg.trustedone.validator.UserValidator;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,11 +46,7 @@ public class UserService {
                 .password(passwordEncoder.encode(registerData.getPassword()))
                 .build());
 
-        return UserDto.builder()
-                .userId(user.getUserId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .build();
+        return userMapper.toUserDto(user);
     }
 
     public UserDto getLoggedUser() {
