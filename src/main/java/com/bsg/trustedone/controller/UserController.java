@@ -1,9 +1,8 @@
 package com.bsg.trustedone.controller;
 
-import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.dto.AccountCreationDto;
 import com.bsg.trustedone.dto.UserDto;
-import com.bsg.trustedone.entity.User;
+import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +36,7 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser() {
         // TODO: remover later
-        User user = userService.getLoggedUser();
+        UserDto user = userService.getLoggedUser();
         if (user != null) {
             return ResponseEntity.ok(user);
         }

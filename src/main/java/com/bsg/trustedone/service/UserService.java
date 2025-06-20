@@ -2,6 +2,7 @@ package com.bsg.trustedone.service;
 
 import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.dto.AccountCreationDto;
+import com.bsg.trustedone.dto.UserDetailDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.exceptions.UserAlreadyRegisteredException;
@@ -25,6 +26,7 @@ import static java.util.Objects.nonNull;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final UserMapper userMapper;
     private final UserValidator userValidator;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -50,15 +52,23 @@ public class UserService {
                 .build();
     }
 
-    public User getLoggedUser() {
+    public UserDto getLoggedUser() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (isNull(authentication) || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+        if (isNull(authentication) || !authentication.isAuthenticated()) {
             return null;
         }
 
-        String email = authentication.getName();
-        return userRepository.findByEmail(email).orElse(null);
+        var principal = authentication.getPrincipal();
+        if (isNull(principal) || "anonymousUser".equals(authentication.getPrincipal())) {
+            return null;
+        }
+
+        if (!(principal instanceof UserDetailDto)) {
+            return null;
+        }
+
+        return userMapper.toUserDto((UserDetailDto) principal);
     }
 
     public void login(UserLoginDto request, HttpServletRequest httpRequest) {
