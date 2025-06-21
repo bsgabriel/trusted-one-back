@@ -2,7 +2,7 @@ package com.bsg.trustedone.validator;
 
 import com.bsg.trustedone.dto.AccountCreationDto;
 import com.bsg.trustedone.dto.UserLoginDto;
-import com.bsg.trustedone.exceptions.AccountCreationException;
+import com.bsg.trustedone.exception.AccountCreationException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;

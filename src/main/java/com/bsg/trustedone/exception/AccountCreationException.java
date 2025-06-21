@@ -1,4 +1,4 @@
-package com.bsg.trustedone.exceptions;
+package com.bsg.trustedone.exception;
 
 import lombok.Getter;
 

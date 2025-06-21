@@ -1,8 +1,8 @@
 package com.bsg.trustedone.util;
 
-import com.bsg.trustedone.exceptions.AccountCreationException;
-import com.bsg.trustedone.exceptions.UserAlreadyRegisteredException;
-import com.bsg.trustedone.exceptions.UserLoginException;
+import com.bsg.trustedone.exception.AccountCreationException;
+import com.bsg.trustedone.exception.UserAlreadyRegisteredException;
+import com.bsg.trustedone.exception.UserLoginException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;

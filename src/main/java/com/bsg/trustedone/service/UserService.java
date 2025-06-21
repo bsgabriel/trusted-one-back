@@ -5,7 +5,7 @@ import com.bsg.trustedone.dto.UserDetailDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.entity.User;
-import com.bsg.trustedone.exceptions.UserAlreadyRegisteredException;
+import com.bsg.trustedone.exception.UserAlreadyRegisteredException;
 import com.bsg.trustedone.mapper.UserMapper;
 import com.bsg.trustedone.repository.UserRepository;
 import com.bsg.trustedone.validator.UserValidator;
