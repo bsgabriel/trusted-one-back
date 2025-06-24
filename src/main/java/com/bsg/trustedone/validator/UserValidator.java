@@ -3,6 +3,7 @@ package com.bsg.trustedone.validator;
 import com.bsg.trustedone.dto.AccountCreationDto;
 import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.exception.AccountCreationException;
+import com.bsg.trustedone.exception.UserLoginException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class UserValidator {
                 .map(ConstraintViolation::getMessage)
                 .collect(Collectors.toList());
 
-        throw new AccountCreationException("Invalid data", errors);
+        throw new UserLoginException("Invalid data", errors);
     }
 
 }

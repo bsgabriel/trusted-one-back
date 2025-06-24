@@ -9,7 +9,7 @@ public class UserLoginException extends RuntimeException {
 
     private final List<String> errors;
 
-    protected UserLoginException(String message, List<String> errors) {
+    public UserLoginException(String message, List<String> errors) {
         super(message);
         this.errors = errors;
     }
