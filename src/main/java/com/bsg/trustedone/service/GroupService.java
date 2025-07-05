@@ -44,6 +44,19 @@ public class GroupService {
     }
 
     public void deleteGroup(Long groupId) {
+        var opt = groupRepository.findById(groupId);
+
+        if (opt.isEmpty()) {
+            return;
+        }
+
+        var loggedUser = userService.getLoggedUser();
+        var group = opt.get();
+
+        if (!group.getUserId().equals(loggedUser.getUserId())) {
+            return;
+        }
+
         groupRepository.deleteById(groupId);
     }
 
