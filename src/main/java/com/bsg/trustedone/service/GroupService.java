@@ -9,6 +9,9 @@ import com.bsg.trustedone.repository.GroupRepository;
 import com.bsg.trustedone.validator.GroupValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,14 @@ public class GroupService {
     private final GroupFactory groupFactory;
     private final GroupValidator groupValidator;
     private final GroupRepository groupRepository;
+
+    public List<GroupDto> getAllGroups() {
+        var loggedUser = userService.getLoggedUser();
+        return groupRepository.findByUserId(loggedUser.getUserId())
+                .stream()
+                .map(groupMapper::toDto)
+                .toList();
+    }
 
     public GroupDto createGroup(GroupCreationDto group) {
         group.setName(group.getName().trim());

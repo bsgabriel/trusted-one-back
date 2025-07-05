@@ -5,12 +5,9 @@ import com.bsg.trustedone.dto.GroupDto;
 import com.bsg.trustedone.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
+import java.net.URI;import java.util.List;
 
 @RestController
 @RequestMapping("/group")
@@ -18,6 +15,11 @@ import java.net.URI;
 public class GroupController {
 
     private final GroupService groupService;
+
+    @GetMapping
+    public ResponseEntity<List<GroupDto>> findAllGroups() {
+        return ResponseEntity.ok(groupService.getAllGroups());
+    }
 
     @PostMapping
     public ResponseEntity<GroupDto> createGroup(@RequestBody GroupCreationDto request) {
