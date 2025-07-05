@@ -24,7 +24,7 @@ public class GroupService {
 
     public List<GroupDto> getAllGroups() {
         var loggedUser = userService.getLoggedUser();
-        return groupRepository.findByUserId(loggedUser.getUserId())
+        return groupRepository.findAllByUserId(loggedUser.getUserId())
                 .stream()
                 .map(groupMapper::toDto)
                 .toList();
