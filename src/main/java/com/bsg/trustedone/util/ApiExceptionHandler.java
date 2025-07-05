@@ -1,8 +1,6 @@
 package com.bsg.trustedone.util;
 
-import com.bsg.trustedone.exception.AccountCreationException;
-import com.bsg.trustedone.exception.UserAlreadyRegisteredException;
-import com.bsg.trustedone.exception.UserLoginException;
+import com.bsg.trustedone.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -58,6 +56,29 @@ public class ApiExceptionHandler {
 
         return createResponseEntity(detail);
     }
+
+    @ExceptionHandler(GroupAlreadyExistsException.class)
+    public ResponseEntity<ProblemDetail> handleGroupAlreadyExistsException(GroupAlreadyExistsException ex) {
+        var detail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        detail.setTitle("Error creating group");
+        detail.setDetail(ex.getMessage());
+
+        return createResponseEntity(detail);
+    }
+
+    @ExceptionHandler(GroupCreationException.class)
+    public ResponseEntity<ProblemDetail> handleGroupCreationException(GroupCreationException ex) {
+        var detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        detail.setTitle("Error creating group");
+        detail.setDetail(ex.getMessage());
+
+        if (!isEmpty(ex.getErrors())) {
+            detail.setProperty("errors", ex.getErrors());
+        }
+
+        return createResponseEntity(detail);
+    }
+
 
     private ResponseEntity<ProblemDetail> createResponseEntity(ProblemDetail problemDetail) {
         return ResponseEntity.status(problemDetail.getStatus()).body(problemDetail);
