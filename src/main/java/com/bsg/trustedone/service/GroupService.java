@@ -9,7 +9,6 @@ import com.bsg.trustedone.repository.GroupRepository;
 import com.bsg.trustedone.validator.GroupValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -43,5 +42,10 @@ public class GroupService {
         var entity = groupFactory.createEntity(group, loggedUser);
         return groupMapper.toDto(groupRepository.save(entity));
     }
+
+    public void deleteGroup(Long groupId) {
+        groupRepository.deleteById(groupId);
+    }
+
 
 }

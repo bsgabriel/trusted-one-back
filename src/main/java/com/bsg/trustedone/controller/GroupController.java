@@ -7,7 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;import java.util.List;
+import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/group")
@@ -27,5 +28,12 @@ public class GroupController {
         var uri = URI.create(String.format("/group/%d", createdGroup.getGroupId()));
         return ResponseEntity.created(uri).body(createdGroup);
     }
+
+    @DeleteMapping("/{groupId}")
+    public ResponseEntity<Void> deleteGroup(@PathVariable("groupId") Long groupdId) {
+        groupService.deleteGroup(groupdId);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }
