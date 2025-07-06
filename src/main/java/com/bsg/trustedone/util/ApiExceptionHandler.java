@@ -60,7 +60,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(GroupAlreadyExistsException.class)
     public ResponseEntity<ProblemDetail> handleGroupAlreadyExistsException(GroupAlreadyExistsException ex) {
         var detail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
-        detail.setTitle("Error creating group");
+        detail.setTitle("An error occurred while creating group");
         detail.setDetail(ex.getMessage());
 
         return createResponseEntity(detail);
@@ -69,7 +69,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(GroupCreationException.class)
     public ResponseEntity<ProblemDetail> handleGroupCreationException(GroupCreationException ex) {
         var detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        detail.setTitle("Error creating group");
+        detail.setTitle("An error occurred while creating group");
         detail.setDetail(ex.getMessage());
 
         if (!isEmpty(ex.getErrors())) {
@@ -82,7 +82,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(GroupUpdateException.class)
     public ResponseEntity<ProblemDetail> handleGroupUpdateException(GroupUpdateException ex) {
         var detail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
-        detail.setTitle("Error updating group");
+        detail.setTitle("An error occurred while updating group");
 
         if (!isEmpty(ex.getErrors())) {
             detail.setProperty("errors", ex.getErrors());
