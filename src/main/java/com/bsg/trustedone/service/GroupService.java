@@ -3,6 +3,7 @@ package com.bsg.trustedone.service;
 import com.bsg.trustedone.dto.GroupCreationDto;
 import com.bsg.trustedone.dto.GroupDto;
 import com.bsg.trustedone.exception.GroupAlreadyExistsException;
+import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.GroupFactory;
 import com.bsg.trustedone.mapper.GroupMapper;
 import com.bsg.trustedone.repository.GroupRepository;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -54,11 +56,27 @@ public class GroupService {
         var group = opt.get();
 
         if (!group.getUserId().equals(loggedUser.getUserId())) {
-            return;
+            throw new UnauthorizedAccessException("An error occurred while deleting group");
         }
 
         groupRepository.deleteById(groupId);
     }
 
+    public Optional<GroupDto> updateGroup(GroupCreationDto request, Long groupId) {
+        groupValidator.validateGroupUpdate(request);
+
+        return groupRepository.findById(groupId)
+                .map(group -> {
+                    var loggedUserId = userService.getLoggedUser().getUserId();
+
+                    if (!group.getUserId().equals(loggedUserId)) {
+                        throw new UnauthorizedAccessException("An error occurred while updating group");
+                    }
+
+                    group.setName(request.getName());
+                    group.setDescription(request.getDescription());
+                    return groupMapper.toDto(groupRepository.save(group));
+                });
+    }
 
 }

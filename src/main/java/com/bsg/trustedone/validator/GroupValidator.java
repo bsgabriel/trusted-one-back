@@ -3,6 +3,7 @@ package com.bsg.trustedone.validator;
 import com.bsg.trustedone.dto.GroupCreationDto;
 import com.bsg.trustedone.exception.BaseValidationException;
 import com.bsg.trustedone.exception.GroupCreationException;
+import com.bsg.trustedone.exception.GroupUpdateException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,10 @@ public class GroupValidator {
 
     public void validateGroupCreate(GroupCreationDto groupCreationDto) {
         doValidation(groupCreationDto, errors -> new GroupCreationException("Invalid data for group creation", errors));
+    }
+
+    public void validateGroupUpdate(GroupCreationDto groupCreationDto) {
+        doValidation(groupCreationDto, errors -> new GroupUpdateException("Invalid data for group update", errors));
     }
 
     private void doValidation(Object obj, Function<List<String>, BaseValidationException> exceptionFactory) {

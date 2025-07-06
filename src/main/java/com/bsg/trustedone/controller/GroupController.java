@@ -35,5 +35,12 @@ public class GroupController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{groupId}")
+    public ResponseEntity<GroupDto> update(@PathVariable("groupId") Long groupId, @RequestBody GroupCreationDto groupCreationDto) {
+        return groupService.updateGroup(groupCreationDto, groupId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 
 }

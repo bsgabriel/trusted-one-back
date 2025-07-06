@@ -79,6 +79,25 @@ public class ApiExceptionHandler {
         return createResponseEntity(detail);
     }
 
+    @ExceptionHandler(GroupUpdateException.class)
+    public ResponseEntity<ProblemDetail> handleGroupUpdateException(GroupUpdateException ex) {
+        var detail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        detail.setTitle("Error updating group");
+
+        if (!isEmpty(ex.getErrors())) {
+            detail.setProperty("errors", ex.getErrors());
+        }
+
+        return createResponseEntity(detail);
+    }
+
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<ProblemDetail> handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
+        var detail = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "User not authorized");
+        detail.setTitle(ex.getMessage());
+        return createResponseEntity(detail);
+    }
+
 
     private ResponseEntity<ProblemDetail> createResponseEntity(ProblemDetail problemDetail) {
         return ResponseEntity.status(problemDetail.getStatus()).body(problemDetail);
