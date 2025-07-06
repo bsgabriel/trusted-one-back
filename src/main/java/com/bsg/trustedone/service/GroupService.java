@@ -32,7 +32,7 @@ public class GroupService {
 
     public GroupDto createGroup(GroupCreationDto group) {
         group.setName(group.getName().trim());
-        groupValidator.validateGroup(group);
+        groupValidator.validateGroupCreate(group);
         var loggedUser = userService.getLoggedUser();
 
         if (groupRepository.existsByNameAndUserId(group.getName(), loggedUser.getUserId())) {
