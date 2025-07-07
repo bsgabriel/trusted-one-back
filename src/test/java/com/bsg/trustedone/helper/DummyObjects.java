@@ -69,7 +69,7 @@ public class DummyObjects {
 
             if (Long.TYPE.isAssignableFrom(field.getType()) || Long.class.isAssignableFrom(field.getType())) {
                 if (!field.isAnnotationPresent(GeneratedValue.class)) {
-                    field.set(instance, RandomUtils.nextInt(1, 32767));
+                    field.set(instance, RandomUtils.nextLong(1, 32767));
                     continue;
                 }
             }
