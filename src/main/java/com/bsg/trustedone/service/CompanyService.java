@@ -3,6 +3,7 @@ package com.bsg.trustedone.service;
 import com.bsg.trustedone.dto.CompanyCreationDto;
 import com.bsg.trustedone.dto.CompanyDto;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
+import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.CompanyFactory;
 import com.bsg.trustedone.mapper.CompanyMapper;
 import com.bsg.trustedone.repository.CompanyRepository;
@@ -42,6 +43,23 @@ public class CompanyService {
                 .stream()
                 .map(companyMapper::toDto)
                 .toList();
+    }
+
+    public void deleteCompany(Long companyId) {
+        var opt = companyRepository.findById(companyId);
+
+        if (opt.isEmpty()) {
+            return;
+        }
+
+        var loggedUser = userService.getLoggedUser();
+        var company = opt.get();
+
+        if (!company.getUserId().equals(loggedUser.getUserId())) {
+            throw new UnauthorizedAccessException("An error ocurred while deleting company");
+        }
+
+        companyRepository.delete(company);
     }
 
 
