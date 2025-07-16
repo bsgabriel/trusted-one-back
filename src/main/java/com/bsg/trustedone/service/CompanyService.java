@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +61,23 @@ public class CompanyService {
         }
 
         companyRepository.delete(company);
+    }
+
+    public Optional<CompanyDto> updateCopmany(CompanyCreationDto request, Long companyId) {
+        companyValidator.validateCompanyUpdate(request);
+
+        return companyRepository.findById(companyId)
+                .map(company -> {
+                    var loggedUserId = userService.getLoggedUser().getUserId();
+
+                    if (!company.getUserId().equals(loggedUserId)) {
+                        throw new UnauthorizedAccessException("An error ocurred while updating company");
+                    }
+
+                    company.setName(request.getName());
+                    company.setImage(request.getImage());
+                    return companyMapper.toDto(companyRepository.save(company));
+                });
     }
 
 
