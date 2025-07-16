@@ -37,9 +37,7 @@ public class GroupController {
 
     @PutMapping("/{groupId}")
     public ResponseEntity<GroupDto> update(@PathVariable("groupId") Long groupId, @RequestBody GroupCreationDto groupCreationDto) {
-        return groupService.updateGroup(groupCreationDto, groupId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(groupService.updateGroup(groupCreationDto, groupId));
     }
 
 
