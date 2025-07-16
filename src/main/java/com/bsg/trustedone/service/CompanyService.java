@@ -10,6 +10,8 @@ import com.bsg.trustedone.validator.CompanyValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CompanyService {
@@ -32,6 +34,14 @@ public class CompanyService {
 
         var entity = companyFactory.createEntity(company, loggedUser.getUserId());
         return companyMapper.toDto(companyRepository.save(entity));
+    }
+
+    public List<CompanyDto> getAllCompanies() {
+        var loggedUser = userService.getLoggedUser();
+        return companyRepository.findAllByUserId(loggedUser.getUserId())
+                .stream()
+                .map(companyMapper::toDto)
+                .toList();
     }
 
 
