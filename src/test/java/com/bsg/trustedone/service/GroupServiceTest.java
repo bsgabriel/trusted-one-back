@@ -186,9 +186,8 @@ class GroupServiceTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result).isNotEmpty();
-        assertThat(result.get().getName()).isEqualTo(updateData.getName());
-        assertThat(result.get().getDescription()).isEqualTo(updateData.getDescription());
+        assertThat(result.getName()).isEqualTo(updateData.getName());
+        assertThat(result.getDescription()).isEqualTo(updateData.getDescription());
     }
 
 }
