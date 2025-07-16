@@ -5,7 +5,7 @@ import com.bsg.trustedone.dto.UserDetailDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.entity.User;
-import com.bsg.trustedone.exception.UserAlreadyRegisteredException;
+import com.bsg.trustedone.exception.ResourceCreationException;
 import com.bsg.trustedone.mapper.UserMapper;
 import com.bsg.trustedone.repository.UserRepository;
 import com.bsg.trustedone.validator.UserValidator;
@@ -37,7 +37,7 @@ public class UserService {
         userValidator.validateRegistrationData(registerData);
 
         if (userRepository.existsByEmail(registerData.getEmail())) {
-            throw new UserAlreadyRegisteredException("Email already registered");
+            throw new ResourceCreationException("Email already registered");
         }
 
         var user = userRepository.save(User.builder()

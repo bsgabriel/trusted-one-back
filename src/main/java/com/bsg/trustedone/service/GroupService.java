@@ -2,7 +2,7 @@ package com.bsg.trustedone.service;
 
 import com.bsg.trustedone.dto.GroupCreationDto;
 import com.bsg.trustedone.dto.GroupDto;
-import com.bsg.trustedone.exception.GroupAlreadyExistsException;
+import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.GroupFactory;
 import com.bsg.trustedone.mapper.GroupMapper;
@@ -38,7 +38,7 @@ public class GroupService {
         var loggedUser = userService.getLoggedUser();
 
         if (groupRepository.existsByNameAndUserId(group.getName(), loggedUser.getUserId())) {
-            throw new GroupAlreadyExistsException("A group with this name already exists. Please choose a different name.");
+            throw new ResourceAlreadyExistsException("A group with this name already exists. Please choose a different name.");
         }
 
         var entity = groupFactory.createEntity(group, loggedUser);

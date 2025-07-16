@@ -2,7 +2,7 @@ package com.bsg.trustedone.validator;
 
 import com.bsg.trustedone.dto.AccountCreationDto;
 import com.bsg.trustedone.dto.UserLoginDto;
-import com.bsg.trustedone.exception.AccountCreationException;
+import com.bsg.trustedone.exception.ResourceCreationException;
 import com.bsg.trustedone.exception.UserLoginException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -27,7 +27,7 @@ public class UserValidator {
                 .map(ConstraintViolation::getMessage)
                 .collect(Collectors.toList());
 
-        throw new AccountCreationException("Invalid data for account creation", errors);
+        throw new ResourceCreationException("Invalid data for account creation", errors);
     }
 
     public void validateLoginData(UserLoginDto userLoginDto) {

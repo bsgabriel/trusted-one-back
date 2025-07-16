@@ -4,8 +4,8 @@ import com.bsg.trustedone.dto.AccountCreationDto;
 import com.bsg.trustedone.dto.UserDetailDto;
 import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.entity.User;
-import com.bsg.trustedone.exception.AccountCreationException;
-import com.bsg.trustedone.exception.UserAlreadyRegisteredException;
+import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
+import com.bsg.trustedone.exception.ResourceCreationException;
 import com.bsg.trustedone.exception.UserLoginException;
 import com.bsg.trustedone.helper.DummyObjects;
 import com.bsg.trustedone.mapper.UserMapper;
@@ -89,7 +89,7 @@ class UserServiceTest {
 
         // When & Then
         assertThatThrownBy(() -> userService.createUser(accountCreationDto))
-                .isInstanceOf(UserAlreadyRegisteredException.class)
+                .isInstanceOf(ResourceAlreadyExistsException.class)
                 .hasMessage("Email already registered");
 
         verify(userValidator).validateRegistrationData(accountCreationDto);
@@ -103,10 +103,10 @@ class UserServiceTest {
     void createUser_WithInvalidData_ShouldPropagateAccountCreationException() {
         // Given
         var accountCreationDto = mock(AccountCreationDto.class);
-        doThrow(new AccountCreationException("Error", List.of())).when(userValidator).validateRegistrationData(accountCreationDto);
+        doThrow(new ResourceCreationException("Error", List.of())).when(userValidator).validateRegistrationData(accountCreationDto);
 
         // When & Then
-        assertThatThrownBy(() -> userService.createUser(accountCreationDto)).isInstanceOf(AccountCreationException.class);
+        assertThatThrownBy(() -> userService.createUser(accountCreationDto)).isInstanceOf(ResourceCreationException.class);
         verify(userValidator).validateRegistrationData(accountCreationDto);
         verify(userRepository, never()).existsByEmail(anyString());
         verify(userRepository, never()).save(any(User.class));
