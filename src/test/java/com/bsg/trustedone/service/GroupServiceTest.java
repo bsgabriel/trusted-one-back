@@ -3,9 +3,8 @@ package com.bsg.trustedone.service;
 import com.bsg.trustedone.dto.GroupCreationDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.Group;
-import com.bsg.trustedone.exception.GroupAlreadyExistsException;
-import com.bsg.trustedone.exception.GroupCreationException;
-import com.bsg.trustedone.exception.GroupUpdateException;
+import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
+import com.bsg.trustedone.exception.ResourceUpdateException;
 import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.GroupFactory;
 import com.bsg.trustedone.helper.DummyObjects;
@@ -62,12 +61,12 @@ class GroupServiceTest {
         // Given
         var groupCreationDto = DummyObjects.newInstance(GroupCreationDto.class);
 
-        doThrow(new GroupCreationException("Error", List.of()))
+        doThrow(new ResourceAlreadyExistsException("Error", List.of()))
                 .when(groupValidator).validateGroupCreate(groupCreationDto);
 
         // When & Then
         assertThatThrownBy(() -> groupService.createGroup(groupCreationDto))
-                .isInstanceOf(GroupCreationException.class)
+                .isInstanceOf(ResourceAlreadyExistsException.class)
                 .hasMessage("Error");
 
         verify(groupValidator).validateGroupCreate(groupCreationDto);
@@ -85,7 +84,7 @@ class GroupServiceTest {
 
         // When & Then
         assertThatThrownBy(() -> groupService.createGroup(groupCreationDto))
-                .isInstanceOf(GroupAlreadyExistsException.class);
+                .isInstanceOf(ResourceAlreadyExistsException.class);
     }
 
     @Test
@@ -133,12 +132,12 @@ class GroupServiceTest {
         // Given
         var updateData = DummyObjects.newInstance(GroupCreationDto.class);
 
-        doThrow(new GroupUpdateException("Error", List.of()))
+        doThrow(new ResourceUpdateException("Error", List.of()))
                 .when(groupValidator).validateGroupUpdate(updateData);
 
         // When & Then
         assertThatThrownBy(() -> groupService.updateGroup(updateData, anyLong()))
-                .isInstanceOf(GroupUpdateException.class)
+                .isInstanceOf(ResourceUpdateException.class)
                 .hasMessage("Error");
 
         verify(groupValidator).validateGroupUpdate(updateData);

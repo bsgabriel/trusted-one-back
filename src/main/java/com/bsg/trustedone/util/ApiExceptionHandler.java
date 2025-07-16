@@ -22,28 +22,6 @@ public class ApiExceptionHandler {
         return createResponseEntity(detail);
     }
 
-    @ExceptionHandler(AccountCreationException.class)
-    public ResponseEntity<ProblemDetail> handleAccountCreationException(AccountCreationException ex) {
-        var detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        detail.setTitle("An error ocurred while creating account");
-        detail.setDetail(ex.getMessage());
-
-        if (!isEmpty(ex.getErrors())) {
-            detail.setProperty("errors", ex.getErrors());
-        }
-
-        return createResponseEntity(detail);
-    }
-
-    @ExceptionHandler(UserAlreadyRegisteredException.class)
-    public ResponseEntity<ProblemDetail> handleUserAlreadyRegisteredException(UserAlreadyRegisteredException ex) {
-        var detail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
-        detail.setTitle("An error ocurred while creating account");
-        detail.setDetail(ex.getMessage());
-
-        return createResponseEntity(detail);
-    }
-
     @ExceptionHandler(UserLoginException.class)
     public ResponseEntity<ProblemDetail> handleUserLoginException(UserLoginException ex) {
         var detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
@@ -57,37 +35,21 @@ public class ApiExceptionHandler {
         return createResponseEntity(detail);
     }
 
-    @ExceptionHandler(GroupAlreadyExistsException.class)
-    public ResponseEntity<ProblemDetail> handleGroupAlreadyExistsException(GroupAlreadyExistsException ex) {
-        var detail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
-        detail.setTitle("An error occurred while creating group");
-        detail.setDetail(ex.getMessage());
-
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<ProblemDetail> handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex) {
+        var detail = createProblemDetail(HttpStatus.CONFLICT, "Resource already exists", ex);
         return createResponseEntity(detail);
     }
 
-    @ExceptionHandler(GroupCreationException.class)
-    public ResponseEntity<ProblemDetail> handleGroupCreationException(GroupCreationException ex) {
-        var detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        detail.setTitle("An error occurred while creating group");
-        detail.setDetail(ex.getMessage());
-
-        if (!isEmpty(ex.getErrors())) {
-            detail.setProperty("errors", ex.getErrors());
-        }
-
+    @ExceptionHandler(ResourceCreationException.class)
+    public ResponseEntity<ProblemDetail> handleResourceCreationException(ResourceCreationException ex) {
+        var detail = createProblemDetail(HttpStatus.BAD_REQUEST, "An error ocurred while creating resource", ex);
         return createResponseEntity(detail);
     }
 
-    @ExceptionHandler(GroupUpdateException.class)
-    public ResponseEntity<ProblemDetail> handleGroupUpdateException(GroupUpdateException ex) {
-        var detail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
-        detail.setTitle("An error occurred while updating group");
-
-        if (!isEmpty(ex.getErrors())) {
-            detail.setProperty("errors", ex.getErrors());
-        }
-
+    @ExceptionHandler(ResourceUpdateException.class)
+    public ResponseEntity<ProblemDetail> handleResourceUpdateException(ResourceUpdateException ex) {
+        var detail = createProblemDetail(HttpStatus.BAD_REQUEST, "An error occurred while updating group", ex);
         return createResponseEntity(detail);
     }
 
@@ -98,6 +60,16 @@ public class ApiExceptionHandler {
         return createResponseEntity(detail);
     }
 
+    private ProblemDetail createProblemDetail(HttpStatus status, String title, BaseException ex) {
+        var detail = ProblemDetail.forStatusAndDetail(status, ex.getMessage());
+        detail.setTitle(title);
+
+        if (!isEmpty(ex.getErrors())) {
+            detail.setProperty("errors", ex.getErrors());
+        }
+
+        return detail;
+    }
 
     private ResponseEntity<ProblemDetail> createResponseEntity(ProblemDetail problemDetail) {
         return ResponseEntity.status(problemDetail.getStatus()).body(problemDetail);
