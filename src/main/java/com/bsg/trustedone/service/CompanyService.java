@@ -63,7 +63,7 @@ public class CompanyService {
         companyRepository.delete(company);
     }
 
-    public CompanyDto updateCopmany(CompanyCreationDto request, Long companyId) {
+    public CompanyDto updateCompany(CompanyCreationDto request, Long companyId) {
         companyValidator.validateCompanyUpdate(request);
 
         var company = companyRepository.findById(companyId).orElseThrow(() -> new ResourceNotFoundException("Company not found"));
