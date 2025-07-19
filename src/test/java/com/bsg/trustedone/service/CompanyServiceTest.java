@@ -1,0 +1,193 @@
+package com.bsg.trustedone.service;
+
+import com.bsg.trustedone.dto.CompanyCreationDto;
+import com.bsg.trustedone.dto.UserDto;
+import com.bsg.trustedone.entity.Company;
+import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
+import com.bsg.trustedone.exception.ResourceUpdateException;
+import com.bsg.trustedone.exception.UnauthorizedAccessException;
+import com.bsg.trustedone.factory.CompanyFactory;
+import com.bsg.trustedone.helper.DummyObjects;
+import com.bsg.trustedone.mapper.CompanyMapper;
+import com.bsg.trustedone.repository.CompanyRepository;
+import com.bsg.trustedone.validator.CompanyValidator;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class CompanyServiceTest {
+
+    @InjectMocks
+    private CompanyService companyService;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private CompanyRepository companyRepository;
+
+    @Mock
+    private CompanyValidator companypValidator;
+
+    @Mock
+    private CompanyMapper companyMapper;
+
+    @Mock
+    private CompanyFactory companyFactory;
+
+    @BeforeEach
+    public void beforeAll() {
+        lenient().when(companyMapper.toDto(any(Company.class))).thenCallRealMethod();
+        lenient().when(companyFactory.createEntity(any(CompanyCreationDto.class), any(Long.class))).thenCallRealMethod();
+        lenient().when(companyRepository.save(any(Company.class))).then(invocation -> invocation.getArguments()[0]);
+    }
+
+    @Test
+    @DisplayName("Should propagate exception when company creation validate fails")
+    void companyCreation_WithInvalidCompanyData_ShouldPropagateValidationException() {
+        // Given
+        var companyCreationDto = DummyObjects.newInstance(CompanyCreationDto.class);
+
+        doThrow(new ResourceAlreadyExistsException("Error", List.of()))
+                .when(companypValidator).validateCompanyCreate(companyCreationDto);
+
+        // When & Then
+        assertThatThrownBy(() -> companyService.createCompany(companyCreationDto))
+                .isInstanceOf(ResourceAlreadyExistsException.class)
+                .hasMessage("Error");
+
+        verify(companypValidator).validateCompanyCreate(companyCreationDto);
+    }
+
+    @Test
+    @DisplayName("Should throw error if company already exist")
+    void companyCreation_WithAlreadyRegisteredName_ShouldThrowException() {
+        // Given
+        var company = DummyObjects.newInstance(CompanyCreationDto.class);
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+        when(companyRepository.existsByNameAndUserId(company.getName(), loggedUser.getUserId())).thenReturn(true);
+
+        // When & Then
+        assertThatThrownBy(() -> companyService.createCompany(company))
+                .isInstanceOf(ResourceAlreadyExistsException.class);
+    }
+
+    @Test
+    @DisplayName("Should create company successfully when data is valid")
+    void createCompany_WithValidData_ShouldCreateCompanySuccessfully() {
+        // Given
+        var companyCreationDto = DummyObjects.newInstance(CompanyCreationDto.class);
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+
+        when(companyRepository.existsByNameAndUserId(companyCreationDto.getName(), loggedUser.getUserId())).thenReturn(false);
+        when(companyRepository.save(any(Company.class))).then(invocation -> invocation.getArguments()[0]);
+
+        // When
+        var result = companyService.createCompany(companyCreationDto);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getName()).isEqualTo(companyCreationDto.getName());
+        assertThat(result.getImage()).isEqualTo(companyCreationDto.getImage());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when deleting company from another user")
+    void deleteCompany_WithUserIdDifferentThanLogged_ShouldThrowException() {
+        // Given
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+        var companyOwner = DummyObjects.newInstance(UserDto.class);
+
+        var company = DummyObjects.newInstance(Company.class);
+        company.setUserId(companyOwner.getUserId());
+        when(companyRepository.findById(company.getCompanyId())).thenReturn(Optional.of(company));
+
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+
+        // When & Then
+        assertThatThrownBy(() -> companyService.deleteCompany(company.getCompanyId()))
+                .isInstanceOf(UnauthorizedAccessException.class);
+    }
+
+    @Test
+    @DisplayName("Should propagate exception when company update validate fails")
+    void companyUpdate_WithInvalidCompanyData_ShouldPropagateValidationException() {
+        // Given
+        var updateData = DummyObjects.newInstance(CompanyCreationDto.class);
+
+        doThrow(new ResourceUpdateException("Error", List.of()))
+                .when(companypValidator).validateCompanyUpdate(updateData);
+
+        // When & Then
+        assertThatThrownBy(() -> companyService.updateCompany(updateData, anyLong()))
+                .isInstanceOf(ResourceUpdateException.class)
+                .hasMessage("Error");
+
+        verify(companypValidator).validateCompanyUpdate(updateData);
+    }
+
+    @Test
+    @DisplayName("Should throw exception when updating company from another user")
+    void updateCompany_WithUserIdDifferentThanLogged_ShouldThrowException() {
+        // Given
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+        var companyOwner = DummyObjects.newInstance(UserDto.class);
+
+        var companyId = 999L;
+        var updateData = DummyObjects.newInstance(CompanyCreationDto.class);
+        var company = DummyObjects.newInstance(Company.class);
+
+        company.setCompanyId(companyId);
+        company.setUserId(companyOwner.getUserId());
+
+        when(companyRepository.findById(company.getCompanyId())).thenReturn(Optional.of(company));
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+
+        // When & Then
+        assertThatThrownBy(() -> companyService.updateCompany(updateData, companyId))
+                .isInstanceOf(UnauthorizedAccessException.class);
+    }
+
+    @Test
+    @DisplayName("Should successfully update company data")
+    void updateCompany_ShouldSuccessfullyUpdate() {
+        // Given
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+
+        var companyId = 999L;
+        var updateData = DummyObjects.newInstance(CompanyCreationDto.class);
+        var existingCompany = DummyObjects.newInstance(Company.class);
+
+        existingCompany.setCompanyId(companyId);
+        existingCompany.setUserId(loggedUser.getUserId());
+
+        when(companyRepository.findById(existingCompany.getCompanyId())).thenReturn(Optional.of(existingCompany));
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+
+        // When
+        var result = companyService.updateCompany(updateData, companyId);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getName()).isEqualTo(updateData.getName());
+        assertThat(result.getImage()).isEqualTo(updateData.getImage());
+    }
+}
