@@ -28,4 +28,11 @@ public class ProfessionController {
         return ok(professionService.createProfession(request));
     }
 
+
+    @DeleteMapping("/{professionId}")
+    public ResponseEntity<Void> deleteProfession(@PathVariable("professionId") Long professionId) {
+        professionService.deleteProfession(professionId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

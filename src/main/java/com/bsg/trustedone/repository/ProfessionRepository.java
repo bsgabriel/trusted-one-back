@@ -14,4 +14,6 @@ public interface ProfessionRepository extends JpaRepository<Profession, Long> {
     List<Profession> findAllByUserId(Long userId);
 
     boolean existsByNameAndParentProfessionId(String name, Long parentProfessionId);
+
+    List<Profession> findByParentProfessionId(Long parentProfessionId);
 }

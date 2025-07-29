@@ -65,4 +65,14 @@ public class ProfessionService {
         return professionMapper.toDto(professionRepository.save(profession));
     }
 
+    public void deleteProfession(Long professionId) {
+        List<Profession> specializations = professionRepository.findByParentProfessionId(professionId);
+        for (Profession specialization : specializations) {
+            deleteProfession(specialization.getProfessionId());
+        }
+
+        // TODO: quando tiver relação profissional_profession, chamar remoção aqui
+        professionRepository.deleteById(professionId);
+    }
+
 }
