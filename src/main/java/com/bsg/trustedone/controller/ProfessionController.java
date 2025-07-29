@@ -35,4 +35,9 @@ public class ProfessionController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{professionId}")
+    public ResponseEntity<ProfessionDto> update(@PathVariable("professionId") Long groupId, @RequestBody ProfessionCreationDto professionCreationDto) {
+        return ResponseEntity.ok(professionService.updateProfession(professionCreationDto, groupId));
+    }
+
 }

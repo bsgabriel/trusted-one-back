@@ -5,6 +5,7 @@ import com.bsg.trustedone.dto.ProfessionDto;
 import com.bsg.trustedone.entity.Profession;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.exception.ResourceCreationException;
+import com.bsg.trustedone.exception.ResourceNotFoundException;
 import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.ProfessionFactory;
 import com.bsg.trustedone.mapper.ProfessionMapper;
@@ -75,4 +76,17 @@ public class ProfessionService {
         professionRepository.deleteById(professionId);
     }
 
+    public ProfessionDto updateProfession(ProfessionCreationDto request, Long groupId) {
+        // TODO: adicionar validador
+
+        var profession = professionRepository.findById(groupId).orElseThrow(() -> new ResourceNotFoundException("Profession not found"));
+
+        if (!profession.getUserId().equals(userService.getLoggedUser().getUserId())) {
+            throw new UnauthorizedAccessException("An error occurred while updating profession");
+        }
+
+        profession.setName(request.getName());
+        profession.setParentProfessionId(request.getParentProfessionId());
+        return professionMapper.toDto(professionRepository.save(profession));
+    }
 }
