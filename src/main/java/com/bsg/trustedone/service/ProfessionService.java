@@ -10,6 +10,7 @@ import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.ProfessionFactory;
 import com.bsg.trustedone.mapper.ProfessionMapper;
 import com.bsg.trustedone.repository.ProfessionRepository;
+import com.bsg.trustedone.validator.ProfessionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ public class ProfessionService {
     private final UserService userService;
     private final ProfessionMapper professionMapper;
     private final ProfessionFactory professionFactory;
+    private final ProfessionValidator professionValidator;
     private final ProfessionRepository professionRepository;
 
     public List<ProfessionDto> findAllProfessions() {
@@ -35,7 +37,7 @@ public class ProfessionService {
     }
 
     public ProfessionDto createProfession(ProfessionCreationDto profession) {
-        // TODO: criar validador
+        professionValidator.validateProfessionCreate(profession);
         var entity = professionFactory.createEntity(profession, userService.getLoggedUser());
 
         return isNull(profession.getParentProfessionId())
