@@ -1,6 +1,7 @@
 package com.bsg.trustedone.service;
 
 import com.bsg.trustedone.dto.GroupCreationDto;
+import com.bsg.trustedone.dto.GroupDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.Group;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
@@ -8,6 +9,7 @@ import com.bsg.trustedone.exception.ResourceUpdateException;
 import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.GroupFactory;
 import com.bsg.trustedone.helper.DummyObjects;
+import com.bsg.trustedone.helper.RandomUtils;
 import com.bsg.trustedone.mapper.GroupMapper;
 import com.bsg.trustedone.repository.GroupRepository;
 import com.bsg.trustedone.validator.GroupValidator;
@@ -51,8 +53,13 @@ class GroupServiceTest {
     @BeforeEach
     public void beforeAll() {
         lenient().when(groupMapper.toDto(any(Group.class))).thenCallRealMethod();
+        lenient().when(groupMapper.toCreationDto(any(GroupDto.class))).thenCallRealMethod();
         lenient().when(groupFactory.createEntity(any(GroupCreationDto.class), any(UserDto.class))).thenCallRealMethod();
-        lenient().when(groupRepository.save(any(Group.class))).then(invocation -> invocation.getArguments()[0]);
+        lenient().when(groupRepository.save(any(Group.class))).then(invocation -> {
+            var created = (Group) invocation.getArguments()[0];
+            created.setGroupId(RandomUtils.nextLong(1, 999));
+            return created;
+        });
     }
 
     @Test
@@ -188,6 +195,113 @@ class GroupServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getName()).isEqualTo(updateData.getName());
         assertThat(result.getDescription()).isEqualTo(updateData.getDescription());
+    }
+
+    @Test
+    @DisplayName("Should return empty GroupDto when group is null")
+    void shouldReturnEmptyGroupDtoWhenGroupIsNull() {
+        // Given
+        GroupDto nullGroup = null;
+        var expectedGroup = GroupDto.builder().build();
+
+        // When
+        var result = groupService.findOrCreateGroup(nullGroup);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result).isEqualTo(expectedGroup);
+        verifyNoInteractions(groupRepository, groupMapper);
+    }
+
+    @Test
+    @DisplayName("Should create new group when groupId is null")
+    void shouldCreateNewGroupWhenGroupIdIsNull() {
+        // Given
+        var inputGroup = DummyObjects.newInstance(GroupDto.class);
+        inputGroup.setGroupId(null);
+
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+
+        // When
+        var result = groupService.findOrCreateGroup(inputGroup);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getGroupId()).isNotNull();
+        assertThat(result.getName()).isEqualTo(inputGroup.getName());
+        assertThat(result.getDescription()).isEqualTo(inputGroup.getDescription());
+
+        verify(groupMapper).toCreationDto(inputGroup);
+    }
+
+    @Test
+    @DisplayName("Should return existing group when found by ID")
+    void shouldReturnExistingGroupWhenFoundById() {
+        // Given
+        var inputGroup = DummyObjects.newInstance(GroupDto.class);
+        var existingGroupEntity = DummyObjects.newInstance(Group.class);
+        existingGroupEntity.setGroupId(inputGroup.getGroupId());
+
+        when(groupRepository.findById(inputGroup.getGroupId())).thenReturn(Optional.of(existingGroupEntity));
+
+        // When
+        var result = groupService.findOrCreateGroup(inputGroup);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getGroupId()).isEqualTo(inputGroup.getGroupId());
+        assertThat(result.getName()).isEqualTo(existingGroupEntity.getName());
+        assertThat(result.getDescription()).isEqualTo(existingGroupEntity.getDescription());
+
+        verify(groupRepository).findById(inputGroup.getGroupId());
+        verify(groupMapper).toDto(existingGroupEntity);
+        verify(groupMapper, never()).toCreationDto(any());
+    }
+
+    @Test
+    @DisplayName("Should create new group when not found by ID")
+    void findOrCreateGroup_shouldCreateNewGroup_whenNotFoundById() {
+        // Given
+        var inputGroup = DummyObjects.newInstance(GroupDto.class);
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+
+        // When
+        var result = groupService.findOrCreateGroup(inputGroup);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getGroupId()).isNotNull();
+        assertThat(result.getName()).isEqualTo(inputGroup.getName());
+        assertThat(result.getDescription()).isEqualTo(inputGroup.getDescription());
+
+        verify(groupRepository).findById(inputGroup.getGroupId());
+        verify(groupMapper).toCreationDto(inputGroup);
+    }
+
+    @Test
+    @DisplayName("Should return GroupDto with only non-null fields when group has only groupId")
+    void shouldHandleGroupWithOnlyGroupId() {
+        // Given
+        var inputGroup = GroupDto.builder().groupId(999L).build();
+        var existingGroupEntity = DummyObjects.newInstance(Group.class);
+        existingGroupEntity.setGroupId(inputGroup.getGroupId());
+
+        when(groupRepository.findById(inputGroup.getGroupId())).thenReturn(Optional.of(existingGroupEntity));
+
+        // When
+        var result = groupService.findOrCreateGroup(inputGroup);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getGroupId()).isEqualTo(inputGroup.getGroupId());
+        assertThat(result.getName()).isEqualTo(existingGroupEntity.getName());
+        assertThat(result.getDescription()).isEqualTo(existingGroupEntity.getDescription());
+
+        verify(groupRepository).findById(inputGroup.getGroupId());
+        verify(groupMapper).toDto(existingGroupEntity);
     }
 
 }
