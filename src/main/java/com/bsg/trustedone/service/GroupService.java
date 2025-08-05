@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static java.util.Objects.isNull;
+
 @Service
 @RequiredArgsConstructor
 public class GroupService {
@@ -76,4 +78,17 @@ public class GroupService {
         return groupMapper.toDto(groupRepository.save(group));
     }
 
+    public GroupDto findOrCreateGroup(GroupDto group) {
+        if (isNull(group)) {
+            return GroupDto.builder().build();
+        }
+
+        if (isNull(group.getGroupId())) {
+            return this.createGroup(groupMapper.toCreationDto(group));
+        }
+
+        return this.groupRepository.findById(group.getGroupId())
+                .map(groupMapper::toDto)
+                .orElseGet(() -> this.createGroup(groupMapper.toCreationDto(group)));
+    };
 }
