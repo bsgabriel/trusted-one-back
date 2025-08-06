@@ -63,7 +63,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Should create user successfully when data is valid")
-    void createUser_WithValidData_ShouldCreateUserSuccessfully() {
+    void createUser_withValidData_shouldCreateUserSuccessfully() {
         // Given
         var accountCreationDto = DummyObjects.newInstance(AccountCreationDto.class);
         when(userRepository.existsByEmail(accountCreationDto.getEmail())).thenReturn(false);
@@ -82,7 +82,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Should throw exception when email already exists")
-    void createUser_WithExistingEmail_ShouldThrowUserAlreadyRegisteredException() {
+    void createUser_withExistingEmail_shouldThrowUserAlreadyRegisteredException() {
         // Given
         var accountCreationDto = DummyObjects.newInstance(AccountCreationDto.class);
         when(userRepository.existsByEmail(accountCreationDto.getEmail())).thenReturn(true);
@@ -100,7 +100,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Should propagate exception when validation fails")
-    void createUser_WithInvalidData_ShouldPropagateAccountCreationException() {
+    void createUser_withInvalidData_shouldPropagateAccountCreationException() {
         // Given
         var accountCreationDto = mock(AccountCreationDto.class);
         doThrow(new ResourceCreationException("Error", List.of())).when(userValidator).validateRegistrationData(accountCreationDto);
@@ -114,7 +114,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Should return logged user when authentication is valid")
-    void getLoggedUser_WithValidAuthentication_ShouldReturnUserDto() {
+    void getLoggedUser_withValidAuthentication_shouldReturnUserDto() {
         // Given
         try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
             var userDetailDto = UserDetailDto.builder()
@@ -143,7 +143,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Should return null when there is no authentication")
-    void getLoggedUser_WithNoAuthentication_ShouldReturnNull() {
+    void getLoggedUser_withNoAuthentication_shouldReturnNull() {
         // Given
         try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
 
@@ -161,7 +161,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Should return null when user is not authenticated")
-    void getLoggedUser_WithUnauthenticatedUser_ShouldReturnNull() {
+    void getLoggedUser_withUnauthenticatedUser_shouldReturnNull() {
         // Given
         try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
 
@@ -180,7 +180,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Should return null when principal is anonymousUser")
-    void getLoggedUser_WithAnonymousUser_ShouldReturnNull() {
+    void getLoggedUser_withAnonymousUser_shouldReturnNull() {
         // Given
         try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
 
@@ -200,7 +200,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Should return null when principal is not UserDetailDto")
-    void getLoggedUser_WithInvalidPrincipalType_ShouldReturnNull() {
+    void getLoggedUser_withInvalidPrincipalType_shouldReturnNull() {
         // Given
         try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
 
@@ -220,7 +220,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Should login successfully when data is valid")
-    void login_WithValidCredentials_ShouldAuthenticateSuccessfully() {
+    void login_withValidCredentials_shouldAuthenticateSuccessfully() {
         try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
             // Given
             var loginDto = UserLoginDto.builder()
@@ -250,7 +250,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Should propagate exception when login validation fails")
-    void login_WithInvalidLoginData_ShouldPropagateValidationException() {
+    void login_withInvalidLoginData_shouldPropagateValidationException() {
         // Given
         var userLoginDto = mock(UserLoginDto.class);
         var httpRequest = mock(HttpServletRequest.class);
@@ -270,7 +270,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Should logout successfully when there is an active session")
-    void logout_WithActiveSession_ShouldLogoutSuccessfully() {
+    void logout_withActiveSession_shouldLogoutSuccessfully() {
         // Given
         try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
             var httpRequest = mock(HttpServletRequest.class);
@@ -290,7 +290,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Should logout successfully when there is no active session")
-    void logout_WithNoActiveSession_ShouldClearContextOnly() {
+    void logout_withNoActiveSession_shouldClearContextOnly() {
         // Given
         try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
             var httpRequest = mock(HttpServletRequest.class);
