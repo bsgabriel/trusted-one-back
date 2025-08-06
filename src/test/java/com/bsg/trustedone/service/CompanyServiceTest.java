@@ -51,6 +51,8 @@ class CompanyServiceTest {
     @Mock
     private CompanyFactory companyFactory;
 
+    private UserDto loggedUser;
+
     @BeforeEach
     public void beforeAll() {
         lenient().when(companyMapper.toDto(any(Company.class))).thenCallRealMethod();
@@ -61,11 +63,14 @@ class CompanyServiceTest {
             created.setCompanyId(RandomUtils.nextLong(1, 999));
             return created;
         });
+
+        this.loggedUser = DummyObjects.newInstance(UserDto.class);
+        lenient().when(userService.getLoggedUser()).thenReturn(this.loggedUser);
     }
 
     @Test
     @DisplayName("Should propagate exception when company creation validate fails")
-    void companyCreation_WithInvalidCompanyData_ShouldPropagateValidationException() {
+    void companyCreation_withInvalidCompanyData_shouldPropagateValidationException() {
         // Given
         var companyCreationDto = DummyObjects.newInstance(CompanyCreationDto.class);
 
@@ -82,12 +87,10 @@ class CompanyServiceTest {
 
     @Test
     @DisplayName("Should throw error if company already exist")
-    void companyCreation_WithAlreadyRegisteredName_ShouldThrowException() {
+    void companyCreation_withAlreadyRegisteredName_shouldThrowException() {
         // Given
         var company = DummyObjects.newInstance(CompanyCreationDto.class);
-        var loggedUser = DummyObjects.newInstance(UserDto.class);
 
-        when(userService.getLoggedUser()).thenReturn(loggedUser);
         when(companyRepository.existsByNameAndUserId(company.getName(), loggedUser.getUserId())).thenReturn(true);
 
         // When & Then
@@ -97,12 +100,9 @@ class CompanyServiceTest {
 
     @Test
     @DisplayName("Should create company successfully when data is valid")
-    void createCompany_WithValidData_ShouldCreateCompanySuccessfully() {
+    void createCompany_withValidData_shouldCreateCompanySuccessfully() {
         // Given
         var companyCreationDto = DummyObjects.newInstance(CompanyCreationDto.class);
-        var loggedUser = DummyObjects.newInstance(UserDto.class);
-
-        when(userService.getLoggedUser()).thenReturn(loggedUser);
 
         when(companyRepository.existsByNameAndUserId(companyCreationDto.getName(), loggedUser.getUserId())).thenReturn(false);
         when(companyRepository.save(any(Company.class))).then(invocation -> invocation.getArguments()[0]);
@@ -118,16 +118,13 @@ class CompanyServiceTest {
 
     @Test
     @DisplayName("Should throw exception when deleting company from another user")
-    void deleteCompany_WithUserIdDifferentThanLogged_ShouldThrowException() {
+    void deleteCompany_withUserIdDifferentThanLogged_shouldThrowException() {
         // Given
-        var loggedUser = DummyObjects.newInstance(UserDto.class);
         var companyOwner = DummyObjects.newInstance(UserDto.class);
 
         var company = DummyObjects.newInstance(Company.class);
         company.setUserId(companyOwner.getUserId());
         when(companyRepository.findById(company.getCompanyId())).thenReturn(Optional.of(company));
-
-        when(userService.getLoggedUser()).thenReturn(loggedUser);
 
         // When & Then
         assertThatThrownBy(() -> companyService.deleteCompany(company.getCompanyId()))
@@ -136,7 +133,7 @@ class CompanyServiceTest {
 
     @Test
     @DisplayName("Should propagate exception when company update validate fails")
-    void companyUpdate_WithInvalidCompanyData_ShouldPropagateValidationException() {
+    void companyUpdate_withInvalidCompanyData_shouldPropagateValidationException() {
         // Given
         var updateData = DummyObjects.newInstance(CompanyCreationDto.class);
 
@@ -153,9 +150,8 @@ class CompanyServiceTest {
 
     @Test
     @DisplayName("Should throw exception when updating company from another user")
-    void updateCompany_WithUserIdDifferentThanLogged_ShouldThrowException() {
+    void updateCompany_withUserIdDifferentThanLogged_shouldThrowException() {
         // Given
-        var loggedUser = DummyObjects.newInstance(UserDto.class);
         var companyOwner = DummyObjects.newInstance(UserDto.class);
 
         var companyId = 999L;
@@ -166,7 +162,6 @@ class CompanyServiceTest {
         company.setUserId(companyOwner.getUserId());
 
         when(companyRepository.findById(company.getCompanyId())).thenReturn(Optional.of(company));
-        when(userService.getLoggedUser()).thenReturn(loggedUser);
 
         // When & Then
         assertThatThrownBy(() -> companyService.updateCompany(updateData, companyId))
@@ -175,10 +170,8 @@ class CompanyServiceTest {
 
     @Test
     @DisplayName("Should successfully update company data")
-    void updateCompany_ShouldSuccessfullyUpdate() {
+    void updateCompany_shouldSuccessfullyUpdate() {
         // Given
-        var loggedUser = DummyObjects.newInstance(UserDto.class);
-
         var companyId = 999L;
         var updateData = DummyObjects.newInstance(CompanyCreationDto.class);
         var existingCompany = DummyObjects.newInstance(Company.class);
@@ -187,7 +180,6 @@ class CompanyServiceTest {
         existingCompany.setUserId(loggedUser.getUserId());
 
         when(companyRepository.findById(existingCompany.getCompanyId())).thenReturn(Optional.of(existingCompany));
-        when(userService.getLoggedUser()).thenReturn(loggedUser);
 
         // When
         var result = companyService.updateCompany(updateData, companyId);
@@ -219,9 +211,6 @@ class CompanyServiceTest {
         // Given
         var inputCompany = DummyObjects.newInstance(CompanyDto.class);
         inputCompany.setCompanyId(null);
-
-        var loggedUser = DummyObjects.newInstance(UserDto.class);
-        when(userService.getLoggedUser()).thenReturn(loggedUser);
 
         // When
         var result = companyService.findOrCreateCompany(inputCompany);
@@ -264,9 +253,6 @@ class CompanyServiceTest {
     void findOrCreateCompany_shouldCreateNewCompany_whenNotFoundById() {
         // Given
         var inputCompany = DummyObjects.newInstance(CompanyDto.class);
-        var loggedUser = DummyObjects.newInstance(UserDto.class);
-
-        when(userService.getLoggedUser()).thenReturn(loggedUser);
 
         // When
         var result = companyService.findOrCreateCompany(inputCompany);
