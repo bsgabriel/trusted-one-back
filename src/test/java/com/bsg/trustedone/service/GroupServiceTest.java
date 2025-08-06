@@ -34,7 +34,6 @@ class GroupServiceTest {
     @InjectMocks
     private GroupService groupService;
 
-
     @Mock
     private UserService userService;
 
@@ -50,6 +49,8 @@ class GroupServiceTest {
     @Mock
     private GroupFactory groupFactory;
 
+    private UserDto loggedUser;
+
     @BeforeEach
     public void beforeAll() {
         lenient().when(groupMapper.toDto(any(Group.class))).thenCallRealMethod();
@@ -60,11 +61,14 @@ class GroupServiceTest {
             created.setGroupId(RandomUtils.nextLong(1, 999));
             return created;
         });
+
+        this.loggedUser = DummyObjects.newInstance(UserDto.class);
+        lenient().when(userService.getLoggedUser()).thenReturn(loggedUser);
     }
 
     @Test
     @DisplayName("Should propagate exception when group creation validate fails")
-    void groupCreation_WithInvalidGroupData_ShouldPropagateValidationException() {
+    void groupCreation_withInvalidGroupData_shouldPropagateValidationException() {
         // Given
         var groupCreationDto = DummyObjects.newInstance(GroupCreationDto.class);
 
@@ -81,12 +85,10 @@ class GroupServiceTest {
 
     @Test
     @DisplayName("Should throw error if group already exist")
-    void groupCreation_WithAlreadyRegisteredName_ShouldThrowException() {
+    void groupCreation_withAlreadyRegisteredName_shouldThrowException() {
         // Given
         var groupCreationDto = DummyObjects.newInstance(GroupCreationDto.class);
-        var loggedUser = DummyObjects.newInstance(UserDto.class);
 
-        when(userService.getLoggedUser()).thenReturn(loggedUser);
         when(groupRepository.existsByNameAndUserId(groupCreationDto.getName(), loggedUser.getUserId())).thenReturn(true);
 
         // When & Then
@@ -96,12 +98,9 @@ class GroupServiceTest {
 
     @Test
     @DisplayName("Should create group successfully when data is valid")
-    void createGroup_WithValidData_ShouldCreateGroupSuccessfully() {
+    void createGroup_withValidData_shouldCreateGroupSuccessfully() {
         // Given
         var groupCreationDto = DummyObjects.newInstance(GroupCreationDto.class);
-        var loggedUser = DummyObjects.newInstance(UserDto.class);
-
-        when(userService.getLoggedUser()).thenReturn(loggedUser);
 
         when(groupRepository.existsByNameAndUserId(groupCreationDto.getName(), loggedUser.getUserId())).thenReturn(false);
         when(groupRepository.save(any(Group.class))).then(invocation -> invocation.getArguments()[0]);
@@ -117,16 +116,14 @@ class GroupServiceTest {
 
     @Test
     @DisplayName("Should throw exception when deleting group from another user")
-    void deleteGroup_WithUserIdDifferentThanLogged_ShouldThrowException() {
+    void deleteGroup_withUserIdDifferentThanLogged_shouldThrowException() {
         // Given
-        var loggedUser = DummyObjects.newInstance(UserDto.class);
         var groupOwner = DummyObjects.newInstance(UserDto.class);
 
         var group = DummyObjects.newInstance(Group.class);
         group.setUserId(groupOwner.getUserId());
-        when(groupRepository.findById(group.getGroupId())).thenReturn(Optional.of(group));
 
-        when(userService.getLoggedUser()).thenReturn(loggedUser);
+        when(groupRepository.findById(group.getGroupId())).thenReturn(Optional.of(group));
 
         // When & Then
         assertThatThrownBy(() -> groupService.deleteGroup(group.getGroupId()))
@@ -135,7 +132,7 @@ class GroupServiceTest {
 
     @Test
     @DisplayName("Should propagate exception when group update validate fails")
-    void groupUpdate_WithInvalidGroupData_ShouldPropagateValidationException() {
+    void groupUpdate_withInvalidGroupData_shouldPropagateValidationException() {
         // Given
         var updateData = DummyObjects.newInstance(GroupCreationDto.class);
 
@@ -152,9 +149,8 @@ class GroupServiceTest {
 
     @Test
     @DisplayName("Should throw exception when updating group from another user")
-    void updateGroup_WithUserIdDifferentThanLogged_ShouldThrowException() {
+    void updateGroup_withUserIdDifferentThanLogged_shouldThrowException() {
         // Given
-        var loggedUser = DummyObjects.newInstance(UserDto.class);
         var groupOwner = DummyObjects.newInstance(UserDto.class);
 
         var groupId = 999L;
@@ -165,7 +161,6 @@ class GroupServiceTest {
         group.setUserId(groupOwner.getUserId());
 
         when(groupRepository.findById(group.getGroupId())).thenReturn(Optional.of(group));
-        when(userService.getLoggedUser()).thenReturn(loggedUser);
 
         // When & Then
         assertThatThrownBy(() -> groupService.updateGroup(updateData, groupId))
@@ -174,10 +169,8 @@ class GroupServiceTest {
 
     @Test
     @DisplayName("Should successfully update group data")
-    void updateGroup_ShouldSuccessfullyUpdate() {
+    void updateGroup_shouldSuccessfullyUpdate() {
         // Given
-        var loggedUser = DummyObjects.newInstance(UserDto.class);
-
         var groupId = 999L;
         var updateData = DummyObjects.newInstance(GroupCreationDto.class);
         var existingGroup = DummyObjects.newInstance(Group.class);
@@ -186,7 +179,6 @@ class GroupServiceTest {
         existingGroup.setUserId(loggedUser.getUserId());
 
         when(groupRepository.findById(existingGroup.getGroupId())).thenReturn(Optional.of(existingGroup));
-        when(userService.getLoggedUser()).thenReturn(loggedUser);
 
         // When
         var result = groupService.updateGroup(updateData, groupId);
@@ -199,13 +191,12 @@ class GroupServiceTest {
 
     @Test
     @DisplayName("Should return empty GroupDto when group is null")
-    void shouldReturnEmptyGroupDtoWhenGroupIsNull() {
+    void findOrCreateGroup_shouldReturnEmptyGroupDto_whenGroupIsNull() {
         // Given
-        GroupDto nullGroup = null;
         var expectedGroup = GroupDto.builder().build();
 
         // When
-        var result = groupService.findOrCreateGroup(nullGroup);
+        var result = groupService.findOrCreateGroup(null);
 
         // Then
         assertThat(result).isNotNull();
@@ -215,13 +206,10 @@ class GroupServiceTest {
 
     @Test
     @DisplayName("Should create new group when groupId is null")
-    void shouldCreateNewGroupWhenGroupIdIsNull() {
+    void findOrCreateGroup_shouldCreateNewGroup_whenGroupIdIsNull() {
         // Given
         var inputGroup = DummyObjects.newInstance(GroupDto.class);
         inputGroup.setGroupId(null);
-
-        var loggedUser = DummyObjects.newInstance(UserDto.class);
-        when(userService.getLoggedUser()).thenReturn(loggedUser);
 
         // When
         var result = groupService.findOrCreateGroup(inputGroup);
@@ -237,7 +225,7 @@ class GroupServiceTest {
 
     @Test
     @DisplayName("Should return existing group when found by ID")
-    void shouldReturnExistingGroupWhenFoundById() {
+    void findOrCreateGroup_shouldReturnExistingGroup_whenFoundById() {
         // Given
         var inputGroup = DummyObjects.newInstance(GroupDto.class);
         var existingGroupEntity = DummyObjects.newInstance(Group.class);
@@ -264,9 +252,6 @@ class GroupServiceTest {
     void findOrCreateGroup_shouldCreateNewGroup_whenNotFoundById() {
         // Given
         var inputGroup = DummyObjects.newInstance(GroupDto.class);
-        var loggedUser = DummyObjects.newInstance(UserDto.class);
-
-        when(userService.getLoggedUser()).thenReturn(loggedUser);
 
         // When
         var result = groupService.findOrCreateGroup(inputGroup);
@@ -283,7 +268,7 @@ class GroupServiceTest {
 
     @Test
     @DisplayName("Should return GroupDto with only non-null fields when group has only groupId")
-    void shouldHandleGroupWithOnlyGroupId() {
+    void findOrCreateGroup_shouldHandleGroup_withOnlyGroupId() {
         // Given
         var inputGroup = GroupDto.builder().groupId(999L).build();
         var existingGroupEntity = DummyObjects.newInstance(Group.class);
