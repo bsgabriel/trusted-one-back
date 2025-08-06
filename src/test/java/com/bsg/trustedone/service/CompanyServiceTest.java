@@ -1,6 +1,7 @@
 package com.bsg.trustedone.service;
 
 import com.bsg.trustedone.dto.CompanyCreationDto;
+import com.bsg.trustedone.dto.CompanyDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.Company;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
@@ -8,6 +9,7 @@ import com.bsg.trustedone.exception.ResourceUpdateException;
 import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.CompanyFactory;
 import com.bsg.trustedone.helper.DummyObjects;
+import com.bsg.trustedone.helper.RandomUtils;
 import com.bsg.trustedone.mapper.CompanyMapper;
 import com.bsg.trustedone.repository.CompanyRepository;
 import com.bsg.trustedone.validator.CompanyValidator;
@@ -53,7 +55,12 @@ class CompanyServiceTest {
     public void beforeAll() {
         lenient().when(companyMapper.toDto(any(Company.class))).thenCallRealMethod();
         lenient().when(companyFactory.createEntity(any(CompanyCreationDto.class), any(Long.class))).thenCallRealMethod();
-        lenient().when(companyRepository.save(any(Company.class))).then(invocation -> invocation.getArguments()[0]);
+        lenient().when(companyMapper.toCreationDto(any(CompanyDto.class))).thenCallRealMethod();
+        lenient().when(companyRepository.save(any(Company.class))).then(invocation -> {
+            var created = (Company) invocation.getArguments()[0];
+            created.setCompanyId(RandomUtils.nextLong(1, 999));
+            return created;
+        });
     }
 
     @Test
@@ -189,5 +196,111 @@ class CompanyServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getName()).isEqualTo(updateData.getName());
         assertThat(result.getImage()).isEqualTo(updateData.getImage());
+    }
+
+    @Test
+    @DisplayName("Should return empty CompanyDto when company is null")
+    void findOrCreateCompany_shouldReturnEmptyCompanyDto_whenCompanyIsNull() {
+        // Given
+        var expectedCompany = CompanyDto.builder().build();
+
+        // When
+        var result = companyService.findOrCreateCompany(null);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result).isEqualTo(expectedCompany);
+        verifyNoInteractions(companyRepository, companyMapper);
+    }
+
+    @Test
+    @DisplayName("Should create new company when companyId is null")
+    void findOrCreateCompany_shouldCreateNewCompany_whenCompanyIdIsNull() {
+        // Given
+        var inputCompany = DummyObjects.newInstance(CompanyDto.class);
+        inputCompany.setCompanyId(null);
+
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+
+        // When
+        var result = companyService.findOrCreateCompany(inputCompany);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getCompanyId()).isNotNull();
+        assertThat(result.getName()).isEqualTo(inputCompany.getName());
+        assertThat(result.getImage()).isEqualTo(inputCompany.getImage());
+
+        verify(companyMapper).toCreationDto(inputCompany);
+    }
+
+    @Test
+    @DisplayName("Should return existing company when found by ID")
+    void findOrCreateCompany_shouldReturnExistingCompany_whenFoundById() {
+        // Given
+        var inputCompany = DummyObjects.newInstance(CompanyDto.class);
+        var existingCompanyEntity = DummyObjects.newInstance(Company.class);
+        existingCompanyEntity.setCompanyId(inputCompany.getCompanyId());
+
+        when(companyRepository.findById(inputCompany.getCompanyId())).thenReturn(Optional.of(existingCompanyEntity));
+
+        // When
+        var result = companyService.findOrCreateCompany(inputCompany);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getCompanyId()).isEqualTo(inputCompany.getCompanyId());
+        assertThat(result.getName()).isEqualTo(existingCompanyEntity.getName());
+        assertThat(result.getImage()).isEqualTo(existingCompanyEntity.getImage());
+
+        verify(companyRepository).findById(inputCompany.getCompanyId());
+        verify(companyMapper).toDto(existingCompanyEntity);
+        verify(companyMapper, never()).toCreationDto(any());
+    }
+
+    @Test
+    @DisplayName("Should create new company when not found by ID")
+    void findOrCreateCompany_shouldCreateNewCompany_whenNotFoundById() {
+        // Given
+        var inputCompany = DummyObjects.newInstance(CompanyDto.class);
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+
+        // When
+        var result = companyService.findOrCreateCompany(inputCompany);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getCompanyId()).isNotNull();
+        assertThat(result.getName()).isEqualTo(inputCompany.getName());
+        assertThat(result.getImage()).isEqualTo(inputCompany.getImage());
+
+        verify(companyRepository).findById(inputCompany.getCompanyId());
+        verify(companyMapper).toCreationDto(inputCompany);
+    }
+
+    @Test
+    @DisplayName("Should return CompanyDto with only non-null fields when company has only companyId")
+    void findOrCreateCompany_shouldHandleCompany_withOnlyCompanyId() {
+        // Given
+        var inputCompany = CompanyDto.builder().companyId(999L).build();
+        var existingCompanyEntity = DummyObjects.newInstance(Company.class);
+        existingCompanyEntity.setCompanyId(inputCompany.getCompanyId());
+
+        when(companyRepository.findById(inputCompany.getCompanyId())).thenReturn(Optional.of(existingCompanyEntity));
+
+        // When
+        var result = companyService.findOrCreateCompany(inputCompany);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getCompanyId()).isEqualTo(inputCompany.getCompanyId());
+        assertThat(result.getName()).isEqualTo(existingCompanyEntity.getName());
+        assertThat(result.getImage()).isEqualTo(existingCompanyEntity.getImage());
+
+        verify(companyRepository).findById(inputCompany.getCompanyId());
+        verify(companyMapper).toDto(existingCompanyEntity);
     }
 }
