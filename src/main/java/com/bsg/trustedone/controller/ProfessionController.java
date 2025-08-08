@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 import static org.springframework.http.ResponseEntity.ok;
@@ -25,7 +26,9 @@ public class ProfessionController {
 
     @PostMapping
     public ResponseEntity<ProfessionDto> createProfession(@RequestBody ProfessionCreationDto request) {
-        return ok(professionService.createProfession(request));
+        var createdProfession = professionService.createProfession(request);
+        var uri = URI.create(String.format("/profession/%d", createdProfession.getProfessionId()));
+        return ResponseEntity.created(uri).body(createdProfession);
     }
 
 
@@ -36,8 +39,8 @@ public class ProfessionController {
     }
 
     @PutMapping("/{professionId}")
-    public ResponseEntity<ProfessionDto> update(@PathVariable("professionId") Long groupId, @RequestBody ProfessionCreationDto professionCreationDto) {
-        return ResponseEntity.ok(professionService.updateProfession(professionCreationDto, groupId));
+    public ResponseEntity<ProfessionDto> update(@PathVariable("professionId") Long professionId, @RequestBody ProfessionCreationDto professionCreationDto) {
+        return ResponseEntity.ok(professionService.updateProfession(professionCreationDto, professionId));
     }
 
 }
