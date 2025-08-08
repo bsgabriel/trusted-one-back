@@ -18,6 +18,7 @@ public class CompanyFactory {
 
     public Company createEntity(CompanyDto company, Long userId) {
         return Company.builder()
+                .companyId(company.getCompanyId())
                 .userId(userId)
                 .name(company.getName())
                 .image(company.getImage())

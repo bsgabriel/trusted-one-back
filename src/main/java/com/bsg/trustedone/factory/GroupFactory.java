@@ -17,11 +17,12 @@ public class GroupFactory {
                 .build();
     }
 
-    public Group createEntity(GroupDto groupCreationDto, UserDto userDto) {
+    public Group createEntity(GroupDto company, UserDto userDto) {
         return Group.builder()
+                .groupId(company.getGroupId())
                 .userId(userDto.getUserId())
-                .name(groupCreationDto.getName())
-                .description(groupCreationDto.getDescription())
+                .name(company.getName())
+                .description(company.getDescription())
                 .build();
     }
 
