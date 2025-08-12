@@ -6,6 +6,7 @@ import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.ProfessionalFactory;
 import com.bsg.trustedone.mapper.ProfessionalMapper;
 import com.bsg.trustedone.repository.ProfessionalRepository;
+import com.bsg.trustedone.validator.ContactMethodValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ public class ProfessionalService {
     private final ProfessionalMapper professionalMapper;
     private final ProfessionalFactory professionalFactory;
     private final ProfessionalRepository professionalRepository;
+    private final ContactMethodValidator contactMethodValidator;
 
     public List<ProfessionalDto> findAllProfessionals() {
         var loggedUser = userService.getLoggedUser();
@@ -37,9 +39,8 @@ public class ProfessionalService {
         var group = groupService.findOrCreateGroup(professionalCreationDto.getGroup());
         var company = companyService.findOrCreateCompany(professionalCreationDto.getCompany());
 
-        var professional = professionalRepository.save(professionalFactory.createEntity(professionalCreationDto, group, company, loggedUser));
+        var professional = professionalRepository.save(professionalFactory.createEntity(professionalCreationDto, group, company, loggedUser, professionalCreationDto.getContactMethods()));
 
-        // TODO: criar métodos de contato
         // TODO: criar relação ProfessionalProfession e salvar
         return professionalMapper.toDto(professional);
     }

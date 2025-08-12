@@ -13,6 +13,7 @@ public class ProfessionalMapper {
 
     private final GroupMapper groupMapper;
     private final CompanyMapper companyMapper;
+    private final ContactMethodMapper contactMethodMapper;
 
     public ProfessionalDto toDto(Professional entity) {
         return ProfessionalDto.builder()
@@ -20,6 +21,10 @@ public class ProfessionalMapper {
                 .name(entity.getName())
                 .company(companyMapper.toDto(entity.getCompany()))
                 .group(groupMapper.toDto(entity.getGroup()))
+                .contactMethods(entity.getContactMethods()
+                        .stream()
+                        .map(contactMethodMapper::toDto)
+                        .toList())
                 .professions(List.of())// TODO: mapear quando tiver esse dado
                 .build();
     }

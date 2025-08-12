@@ -18,5 +18,6 @@ public class ProfessionalDto {
     private CompanyDto company;
     private GroupDto group;
     private List<ProfessionDto> professions;
+    private List<ContactMethodDto> contactMethods;
 
 }
