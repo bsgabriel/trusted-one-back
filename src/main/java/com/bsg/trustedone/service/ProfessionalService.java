@@ -7,6 +7,7 @@ import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.ProfessionalFactory;
 import com.bsg.trustedone.mapper.ProfessionalMapper;
 import com.bsg.trustedone.repository.ProfessionalRepository;
+import com.bsg.trustedone.validator.ProfessionalValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ public class ProfessionalService {
     private final ProfessionService professionService;
     private final ProfessionalMapper professionalMapper;
     private final ProfessionalFactory professionalFactory;
+    private final ProfessionalValidator professionalValidator;
     private final ProfessionalRepository professionalRepository;
 
     public List<ProfessionalDto> findAllProfessionals() {
@@ -36,7 +38,8 @@ public class ProfessionalService {
 
     @Transactional
     public ProfessionalDto createProfessional(ProfessionalCreationDto professionalCreationDto) {
-        // TODO: criar validador
+        professionalValidator.validateProfessionalCreation(professionalCreationDto);
+
         var loggedUser = userService.getLoggedUser();
 
         var group = groupService.findOrCreateGroup(professionalCreationDto.getGroup());
