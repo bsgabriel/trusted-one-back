@@ -1,6 +1,7 @@
 package com.bsg.trustedone.factory;
 
 import com.bsg.trustedone.dto.ProfessionCreationDto;
+import com.bsg.trustedone.dto.ProfessionDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.Profession;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,15 @@ public class ProfessionFactory {
                 .name(creationDto.getName())
                 .parentProfessionId(creationDto.getParentProfessionId())
                 .userId(user.getUserId())
+                .build();
+    }
+
+    public Profession createEntity(ProfessionDto professionDto, UserDto user) {
+        return Profession.builder()
+                .name(professionDto.getName())
+                .parentProfessionId(professionDto.getParentProfessionId())
+                .userId(user.getUserId())
+                .professionId(professionDto.getProfessionId())
                 .build();
     }
 

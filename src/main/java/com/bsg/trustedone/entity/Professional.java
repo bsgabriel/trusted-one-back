@@ -34,4 +34,8 @@ public class Professional {
 
     @OneToMany(mappedBy = "professional", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ContactMethod> contactMethods;
+
+
+    @OneToMany(mappedBy = "professional", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProfessionalProfession> professionalProfessions;
 }

@@ -5,14 +5,13 @@ import com.bsg.trustedone.entity.Professional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 public class ProfessionalMapper {
 
     private final GroupMapper groupMapper;
     private final CompanyMapper companyMapper;
+    private final ProfessionMapper professionMapper;
     private final ContactMethodMapper contactMethodMapper;
 
     public ProfessionalDto toDto(Professional entity) {
@@ -25,7 +24,10 @@ public class ProfessionalMapper {
                         .stream()
                         .map(contactMethodMapper::toDto)
                         .toList())
-                .professions(List.of())// TODO: mapear quando tiver esse dado
+                .professions(entity.getProfessionalProfessions()
+                        .stream()
+                        .map(professionMapper::toDto)
+                        .toList())
                 .build();
     }
 
