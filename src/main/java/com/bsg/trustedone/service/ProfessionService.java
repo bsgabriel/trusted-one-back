@@ -91,4 +91,14 @@ public class ProfessionService {
         profession.setParentProfessionId(request.getParentProfessionId());
         return professionMapper.toDto(professionRepository.save(profession));
     }
+
+    public ProfessionDto findOrCreateProfession(ProfessionDto profession) {
+        if (isNull(profession.getProfessionId())) {
+            return this.createProfession(professionMapper.toCreationDto(profession));
+        }
+
+        return this.professionRepository.findById(profession.getProfessionId())
+                .map(professionMapper::toDto)
+                .orElseGet(() -> this.createProfession(professionMapper.toCreationDto(profession)));
+    }
 }

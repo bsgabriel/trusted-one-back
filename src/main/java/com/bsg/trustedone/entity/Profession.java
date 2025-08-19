@@ -26,4 +26,8 @@ public class Profession {
 
     @OneToMany(mappedBy = "parentProfessionId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Profession> specializations;
+
+    @OneToMany(mappedBy = "profession", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProfessionalProfession> professionalProfessions;
+
 }

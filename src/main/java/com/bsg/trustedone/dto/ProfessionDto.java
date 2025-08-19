@@ -14,5 +14,6 @@ public class ProfessionDto {
     private Long parentProfessionId;
     private Long professionId;
     private String name;
+    private boolean availableForReferrals;
 
 }

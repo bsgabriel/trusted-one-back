@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static java.util.Objects.isNull;
+
 @Service
 @RequiredArgsConstructor
 public class CompanyService {
@@ -75,6 +77,20 @@ public class CompanyService {
         company.setName(request.getName());
         company.setImage(request.getImage());
         return companyMapper.toDto(companyRepository.save(company));
+    }
+
+    public CompanyDto findOrCreateCompany(CompanyDto company) {
+        if (isNull(company)) {
+            return CompanyDto.builder().build();
+        }
+
+        if (isNull(company.getCompanyId())) {
+            return this.createCompany(companyMapper.toCreationDto(company));
+        }
+
+        return this.companyRepository.findById(company.getCompanyId())
+                .map(companyMapper::toDto)
+                .orElseGet(() -> this.createCompany(companyMapper.toCreationDto(company)));
     }
 
 }

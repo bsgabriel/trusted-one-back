@@ -25,7 +25,7 @@ public class CompanyController {
     @PostMapping
     public ResponseEntity<CompanyDto> createCompany(@RequestBody CompanyCreationDto request) {
         var createdCompany = companyService.createCompany(request);
-        var uri = URI.create(String.format("/group/%d", createdCompany.getCompanyId()));
+        var uri = URI.create(String.format("/company/%d", createdCompany.getCompanyId()));
         return ResponseEntity.created(uri).body(createdCompany);
     }
 
@@ -36,8 +36,8 @@ public class CompanyController {
     }
 
     @PutMapping("/{companyId}")
-    public ResponseEntity<CompanyDto> update(@PathVariable("companyId") Long groupId, @RequestBody CompanyCreationDto companyCreationDto) {
-        return ResponseEntity.ok(companyService.updateCompany(companyCreationDto, groupId));
+    public ResponseEntity<CompanyDto> update(@PathVariable("companyId") Long companyId, @RequestBody CompanyCreationDto companyCreationDto) {
+        return ResponseEntity.ok(companyService.updateCompany(companyCreationDto, companyId));
     }
 
 }
