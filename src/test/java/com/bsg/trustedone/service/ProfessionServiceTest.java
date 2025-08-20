@@ -214,22 +214,4 @@ class ProfessionServiceTest {
         assertThat(result.getParentProfessionId()).isEqualTo(updateData.getParentProfessionId());
     }
 
-    @Test
-    void testeQueVaiFalhar() {
-        // Given
-        var groupId = 999L;
-        var updateData = DummyObjects.newInstance(ProfessionCreationDto.class);
-        var existingProfession = DummyObjects.newInstance(Profession.class);
-
-        existingProfession.setProfessionId(groupId);
-        existingProfession.setUserId(loggedUser.getUserId());
-
-        when(professionRepository.findById(existingProfession.getProfessionId())).thenReturn(Optional.of(existingProfession));
-
-        // When
-        var result = professionService.updateProfession(updateData, groupId);
-
-        // Then
-        assertThat(result).isNull();
-    }
 }
