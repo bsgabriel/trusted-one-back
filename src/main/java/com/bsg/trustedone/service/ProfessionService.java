@@ -77,10 +77,10 @@ public class ProfessionService {
         professionRepository.deleteById(professionId);
     }
 
-    public ProfessionDto updateProfession(ProfessionCreationDto request, Long groupId) {
+    public ProfessionDto updateProfession(ProfessionCreationDto request, Long professionId) {
         professionValidator.validateProfessionUpdate(request);
 
-        var profession = professionRepository.findById(groupId).orElseThrow(() -> new ResourceNotFoundException("Profession not found"));
+        var profession = professionRepository.findById(professionId).orElseThrow(() -> new ResourceNotFoundException("Profession not found"));
 
         if (!profession.getUserId().equals(userService.getLoggedUser().getUserId())) {
             throw new UnauthorizedAccessException("An error occurred while updating profession");

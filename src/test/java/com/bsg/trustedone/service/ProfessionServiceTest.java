@@ -156,8 +156,8 @@ class ProfessionServiceTest {
     }
 
     @Test
-    @DisplayName("Should propagate exception when group update validate fails")
-    void groupUpdate_withInvalidGroupData_shouldPropagateValidationException() {
+    @DisplayName("Should propagate exception when profession update validate fails")
+    void updateProfession_withInvalidProfessionData_shouldPropagateValidationException() {
         // Given
         var updateData = DummyObjects.newInstance(ProfessionCreationDto.class);
 
@@ -196,17 +196,17 @@ class ProfessionServiceTest {
     @DisplayName("Should successfully update profession data")
     void updateProfession_shouldSuccessfullyUpdate() {
         // Given
-        var groupId = 999L;
+        var professionId = 999L;
         var updateData = DummyObjects.newInstance(ProfessionCreationDto.class);
         var existingProfession = DummyObjects.newInstance(Profession.class);
 
-        existingProfession.setProfessionId(groupId);
+        existingProfession.setProfessionId(professionId);
         existingProfession.setUserId(loggedUser.getUserId());
 
         when(professionRepository.findById(existingProfession.getProfessionId())).thenReturn(Optional.of(existingProfession));
 
         // When
-        var result = professionService.updateProfession(updateData, groupId);
+        var result = professionService.updateProfession(updateData, professionId);
 
         // Then
         assertThat(result).isNotNull();
