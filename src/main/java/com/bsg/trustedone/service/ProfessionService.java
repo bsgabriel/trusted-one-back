@@ -74,12 +74,11 @@ public class ProfessionService {
             deleteProfession(specialization.getProfessionId());
         }
 
-        // TODO: quando tiver relação profissional_profession, chamar remoção aqui
         professionRepository.deleteById(professionId);
     }
 
     public ProfessionDto updateProfession(ProfessionCreationDto request, Long groupId) {
-        // TODO: adicionar validador
+        professionValidator.validateProfessionUpdate(request);
 
         var profession = professionRepository.findById(groupId).orElseThrow(() -> new ResourceNotFoundException("Profession not found"));
 

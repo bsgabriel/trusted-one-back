@@ -20,6 +20,10 @@ public class ProfessionValidator {
         doValidation(professionCreationDto, errors -> new ResourceCreationException("Invalid data for profession creation", errors));
     }
 
+    public void validateProfessionUpdate(ProfessionCreationDto professionCreationDto) {
+        doValidation(professionCreationDto, errors -> new ResourceCreationException("Invalid data for profession update", errors));
+    }
+
     private void doValidation(Object obj, Function<List<String>, BaseException> exceptionFactory) {
         var errors = validator.validate(obj)
                 .stream()
