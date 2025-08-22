@@ -13,12 +13,12 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "professionals")
-public class Professional {
+@Table(name = "partners")
+public class Partner {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long professionalId;
+    private Long partnerId;
 
     private String name;
 
@@ -32,10 +32,10 @@ public class Professional {
 
     private Long userId;
 
-    @OneToMany(mappedBy = "professional", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ContactMethod> contactMethods;
 
 
-    @OneToMany(mappedBy = "professional", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProfessionalProfession> professionalProfessions;
+    @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PartnerExpertise> partnerExpertises;
 }

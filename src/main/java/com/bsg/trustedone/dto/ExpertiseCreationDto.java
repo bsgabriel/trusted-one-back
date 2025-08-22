@@ -10,10 +10,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProfessionCreationDto {
+public class ExpertiseCreationDto {
 
-    @NotBlank(message = "Profession/Especialization name is required")
+    @NotBlank(message = "Expertise name is required")
     private String name;
 
-    private Long parentProfessionId;
+    private Long parentExpertiseId;
 }

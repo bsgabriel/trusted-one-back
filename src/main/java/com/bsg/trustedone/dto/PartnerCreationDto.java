@@ -1,5 +1,6 @@
 package com.bsg.trustedone.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,13 +12,14 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProfessionalDto {
+public class PartnerCreationDto {
 
-    private Long professionalId;
+    @NotBlank(message = "Partner name is required")
     private String name;
+
     private CompanyDto company;
     private GroupDto group;
-    private List<ProfessionDto> professions;
-    private List<ContactMethodDto> contactMethods;
+    private List<ExpertiseDto> expertises;
+    private List<ContactMethodCreationDto> contactMethods;
 
 }

@@ -1,14 +1,13 @@
 package com.bsg.trustedone.repository;
 
-
-import com.bsg.trustedone.entity.Professional;
+import com.bsg.trustedone.entity.Partner;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface ProfessionalRepository extends JpaRepository<Professional, Long> {
+public interface PartnerRepository extends JpaRepository<Partner, Long> {
 
-    List<Professional> findAllByUserId(Long userId);
+    List<Partner> findAllByUserId(Long userId);
 }

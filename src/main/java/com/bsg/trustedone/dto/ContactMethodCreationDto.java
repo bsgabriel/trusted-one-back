@@ -22,5 +22,5 @@ public class ContactMethodCreationDto {
     @NotBlank(message = "Contact information not provided")
     private String info;
 
-    private Long professionalId;
+    private Long partnerId;
 }

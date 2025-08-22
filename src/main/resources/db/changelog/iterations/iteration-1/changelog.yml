@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: iteration_1-create_table-users
-      author: Gabriel Silveira
+      author: bsgabriel
       description: "Create table users"
       changes:
         - sqlFile:
@@ -9,7 +9,7 @@ databaseChangeLog:
             relativeToChangelogFile: true
   - changeSet:
       id: iteration_1-create_table-companies
-      author: Gabriel Silveira
+      author: bsgabriel
       description: "Create table companies"
       changes:
         - sqlFile:
@@ -17,41 +17,41 @@ databaseChangeLog:
             relativeToChangelogFile: true
   - changeSet:
       id: iteration_1-create_table-groups
-      author: Gabriel Silveira
+      author: bsgabriel
       description: "Create table groups"
       changes:
         - sqlFile:
             path: sql/003-create_table-groups.sql
             relativeToChangelogFile: true
   - changeSet:
-      id: iteration_1-create_table-professions
-      author: Gabriel Silveira
-      description: "Create table professions"
+      id: iteration_1-create_table-expertises
+      author: bsgabriel
+      description: "Create table expertises"
       changes:
         - sqlFile:
-            path: sql/004-create_table-professions.sql
+            path: sql/004-create_table-expertises.sql
             relativeToChangelogFile: true
   - changeSet:
-      id: iteration_1-create_table-professionals
-      author: Gabriel Silveira
-      description: "Create table professionals"
+      id: iteration_1-create_table-partners
+      author: bsgabriel
+      description: "Create table partners"
       changes:
         - sqlFile:
-            path: sql/005-create_table-professionals.sql
+            path: sql/005-create_table-partners.sql
             relativeToChangelogFile: true
   - changeSet:
       id: iteration_1-create_table-contact_methods
-      author: Gabriel Silveira
+      author: bsgabriel
       description: "Create table contact_methods"
       changes:
         - sqlFile:
             path: sql/006-create_table-contact_methods.sql
             relativeToChangelogFile: true
   - changeSet:
-      id: iteration_1-create_table-professional_professions
-      author: Gabriel Silveira
-      description: "Create table professional_professions"
+      id: iteration_1-create_table-partner_expertises
+      author: bsgabriel
+      description: "Create table partner_expertises"
       changes:
         - sqlFile:
-            path: sql/007-create_table-professional_professions.sql
+            path: sql/007-create_table-partner_expertises.sql
             relativeToChangelogFile: true

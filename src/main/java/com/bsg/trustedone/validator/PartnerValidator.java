@@ -1,6 +1,6 @@
 package com.bsg.trustedone.validator;
 
-import com.bsg.trustedone.dto.ProfessionalCreationDto;
+import com.bsg.trustedone.dto.PartnerCreationDto;
 import com.bsg.trustedone.exception.BaseException;
 import com.bsg.trustedone.exception.ResourceCreationException;
 import jakarta.validation.ConstraintViolation;
@@ -14,16 +14,16 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class ProfessionalValidator {
+public class PartnerValidator {
 
     private final Validator validator;
     private final ContactMethodValidator contactMethodValidator;
 
-    public void validateProfessionalCreation(ProfessionalCreationDto professionalCreationDto) {
-        doValidation(professionalCreationDto, errors -> new ResourceCreationException("Invalid data for professional creation", errors));
+    public void validatePartnerCreation(PartnerCreationDto partnerCreationDto) {
+        doValidation(partnerCreationDto, errors -> new ResourceCreationException("Invalid data", errors));
     }
 
-    private void doValidation(ProfessionalCreationDto obj, Function<List<String>, BaseException> exceptionFactory) {
+    private void doValidation(PartnerCreationDto obj, Function<List<String>, BaseException> exceptionFactory) {
         var errors = validator.validate(obj)
                 .stream()
                 .map(ConstraintViolation::getMessage)

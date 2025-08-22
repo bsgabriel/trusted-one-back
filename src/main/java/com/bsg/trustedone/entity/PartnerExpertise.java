@@ -11,20 +11,20 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "professional_professions")
-public class ProfessionalProfession {
+@Table(name = "partner_expertises")
+public class PartnerExpertise {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long professionalProfessionId;
+    private Long partnerExpertiseId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "professional_id", nullable = false)
-    private Professional professional;
+    @JoinColumn(name = "partner_id", nullable = false)
+    private Partner partner;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "profession_id", nullable = false)
-    private Profession profession;
+    @JoinColumn(name = "expertise_id", nullable = false)
+    private Expertise expertise;
 
     private boolean availableForReferrals = false;
 }

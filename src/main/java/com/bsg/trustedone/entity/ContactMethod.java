@@ -29,7 +29,7 @@ public class ContactMethod {
     private String info;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "professional_id", nullable = false)
-    private Professional professional;
+    @JoinColumn(name = "partner_id", nullable = false)
+    private Partner partner;
 
 }
