@@ -2,6 +2,7 @@ package com.bsg.trustedone.service;
 
 import com.bsg.trustedone.dto.ExpertiseCreationDto;
 import com.bsg.trustedone.dto.ExpertiseDto;
+import com.bsg.trustedone.dto.ExpertiseListingDto;
 import com.bsg.trustedone.entity.Expertise;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.exception.ResourceCreationException;
@@ -43,6 +44,22 @@ public class ExpertiseService {
         return isNull(expertise.getParentExpertiseId())
                 ? saveNewExpertise(entity)
                 : saveEspecialization(entity);
+    }
+
+    public List<ExpertiseListingDto> findParents() {
+        var userId = userService.getLoggedUser().getUserId();
+        return expertiseRepository.findByUserIdAndParentExpertiseIdOrderByName(userId, null)
+                .stream()
+                .map(expertiseMapper::toListingDto)
+                .toList();
+    }
+
+    public List<ExpertiseListingDto> findChildren(Long parentId) {
+        var userId = userService.getLoggedUser().getUserId();
+        return expertiseRepository.findByUserIdAndParentExpertiseIdOrderByName(userId, parentId)
+                .stream()
+                .map(expertiseMapper::toListingDto)
+                .toList();
     }
 
     private ExpertiseDto saveNewExpertise(Expertise expertise) {
