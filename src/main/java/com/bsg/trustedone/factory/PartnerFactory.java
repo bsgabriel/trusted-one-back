@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -21,8 +22,12 @@ public class PartnerFactory {
         var entity = Partner.builder()
                 .name(partner.getName())
                 .userId(loggedUser.getUserId())
-                .group(groupFactory.createEntity(group, loggedUser))
-                .company(companyFactory.createEntity(company, loggedUser.getUserId()))
+                .group(Optional.ofNullable(group)
+                        .map(g -> groupFactory.createEntity(g, loggedUser))
+                        .orElse(null))
+                .company(Optional.ofNullable(company)
+                        .map(c -> companyFactory.createEntity(company, loggedUser.getUserId()))
+                        .orElse(null))
                 .build();
 
         entity.setContactMethods(contactMethods.stream()

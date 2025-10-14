@@ -80,7 +80,7 @@ public class GroupService {
 
     public GroupDto findOrCreateGroup(GroupDto group) {
         if (isNull(group)) {
-            return GroupDto.builder().build();
+            return null;
         }
 
         if (isNull(group.getGroupId())) {

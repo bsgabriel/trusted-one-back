@@ -81,7 +81,7 @@ public class CompanyService {
 
     public CompanyDto findOrCreateCompany(CompanyDto company) {
         if (isNull(company)) {
-            return CompanyDto.builder().build();
+            return null;
         }
 
         if (isNull(company.getCompanyId())) {
