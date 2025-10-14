@@ -5,5 +5,5 @@ public enum GainsCategory {
     ACCOMPLISHMENT,
     INTEREST,
     NETWORK,
-    SKILLl
+    SKILL
 }
