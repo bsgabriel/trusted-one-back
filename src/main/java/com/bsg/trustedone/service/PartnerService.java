@@ -57,7 +57,7 @@ public class PartnerService {
 
     private boolean isAvailableForReferrals(ExpertiseDto expertise, List<ExpertiseDto> expertises) {
         return expertises.stream()
-                .filter(p -> p.getExpertiseId().equals(expertise.getExpertiseId()))
+                .filter(p -> p.getName().equals(expertise.getName()))
                 .findFirst()
                 .map(ExpertiseDto::isAvailableForReferrals)
                 .orElse(false);
