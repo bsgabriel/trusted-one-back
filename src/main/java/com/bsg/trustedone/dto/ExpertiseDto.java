@@ -14,6 +14,7 @@ public class ExpertiseDto {
     private Long parentExpertiseId;
     private Long expertiseId;
     private String name;
+    private String parentExpertiseName;
     private boolean availableForReferrals;
 
 }
