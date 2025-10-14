@@ -21,15 +21,11 @@ public class BusinessProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long businessProfileId;
 
-    @ManyToOne
-    @JoinColumn(name = "partner_id", nullable = false)
-    private Partner partner;
-
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private BusinessProfileCategory category;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    private Long partnerId;
     private String description;
 
 }
