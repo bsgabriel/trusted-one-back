@@ -50,7 +50,7 @@ public class PartnerService {
                 .peek(p -> p.setAvailableForReferrals(isAvailableForReferrals(p, partnerCreationDto.getExpertises())))
                 .collect(Collectors.toList());
 
-        var partner = partnerRepository.save(partnerFactory.createEntity(partnerCreationDto, group, company, loggedUser, partnerCreationDto.getContactMethods(), expertises));
+        var partner = partnerRepository.save(partnerFactory.createEntity(partnerCreationDto, group, company, loggedUser, partnerCreationDto.getContactMethods(), expertises, partnerCreationDto.getGainsProfile(), partnerCreationDto.getBusinessProfile()));
 
         return partnerMapper.toDto(partner);
     }
