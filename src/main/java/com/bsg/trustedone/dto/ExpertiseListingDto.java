@@ -9,12 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExpertiseDto {
+public class ExpertiseListingDto {
 
-    private Long parentExpertiseId;
     private Long expertiseId;
+    private Long parentExpertiseId;
     private String name;
-    private String parentExpertiseName;
-    private boolean availableForReferrals;
-
 }

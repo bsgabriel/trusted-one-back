@@ -35,7 +35,12 @@ public class Partner {
     @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ContactMethod> contactMethods;
 
-
     @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PartnerExpertise> partnerExpertises;
+
+    @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GainsProfile> gainsProfile;
+
+    @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BusinessProfile> businessProfile;
 }

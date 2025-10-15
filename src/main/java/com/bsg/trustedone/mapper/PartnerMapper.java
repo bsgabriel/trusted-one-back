@@ -5,6 +5,8 @@ import com.bsg.trustedone.entity.Partner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class PartnerMapper {
@@ -18,8 +20,12 @@ public class PartnerMapper {
         return PartnerDto.builder()
                 .partnerId(entity.getPartnerId())
                 .name(entity.getName())
-                .company(companyMapper.toDto(entity.getCompany()))
-                .group(groupMapper.toDto(entity.getGroup()))
+                .company(Optional.ofNullable(entity.getCompany())
+                        .map(companyMapper::toDto)
+                        .orElse(null))
+                .group(Optional.ofNullable(entity.getGroup())
+                        .map(groupMapper::toDto)
+                        .orElse(null))
                 .contactMethods(entity.getContactMethods()
                         .stream()
                         .map(contactMethodMapper::toDto)

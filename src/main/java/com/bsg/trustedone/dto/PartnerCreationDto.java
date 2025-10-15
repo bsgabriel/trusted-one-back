@@ -21,5 +21,7 @@ public class PartnerCreationDto {
     private GroupDto group;
     private List<ExpertiseDto> expertises;
     private List<ContactMethodCreationDto> contactMethods;
+    private List<GainsProfileDto> gainsProfile;
+    private List<BusinessProfileDto> businessProfile;
 
 }

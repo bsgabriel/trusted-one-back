@@ -190,17 +190,13 @@ class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("Should return empty GroupDto when group is null")
-    void findOrCreateGroup_shouldReturnEmptyGroupDto_whenGroupIsNull() {
-        // Given
-        var expectedGroup = GroupDto.builder().build();
-
+    @DisplayName("Should return null GroupDto when group is null")
+    void findOrCreateGroup_shouldReturnNullGroupDto_whenGroupIsNull() {
         // When
         var result = groupService.findOrCreateGroup(null);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(expectedGroup);
+        assertThat(result).isNull();
         verifyNoInteractions(groupRepository, groupMapper);
     }
 

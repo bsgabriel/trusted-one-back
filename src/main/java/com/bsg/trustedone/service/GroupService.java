@@ -28,7 +28,7 @@ public class GroupService {
 
     public List<GroupDto> getAllGroups() {
         var loggedUser = userService.getLoggedUser();
-        return groupRepository.findAllByUserId(loggedUser.getUserId())
+        return groupRepository.findAllByUserIdOrderByName(loggedUser.getUserId())
                 .stream()
                 .map(groupMapper::toDto)
                 .toList();
@@ -80,7 +80,7 @@ public class GroupService {
 
     public GroupDto findOrCreateGroup(GroupDto group) {
         if (isNull(group)) {
-            return GroupDto.builder().build();
+            return null;
         }
 
         if (isNull(group.getGroupId())) {

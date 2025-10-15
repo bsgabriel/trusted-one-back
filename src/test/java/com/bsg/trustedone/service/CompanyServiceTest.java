@@ -191,17 +191,13 @@ class CompanyServiceTest {
     }
 
     @Test
-    @DisplayName("Should return empty CompanyDto when company is null")
-    void findOrCreateCompany_shouldReturnEmptyCompanyDto_whenCompanyIsNull() {
-        // Given
-        var expectedCompany = CompanyDto.builder().build();
-
+    @DisplayName("Should return null CompanyDto when company is null")
+    void findOrCreateCompany_shouldReturnNullCompanyDto_whenCompanyIsNull() {
         // When
         var result = companyService.findOrCreateCompany(null);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(expectedCompany);
+        assertThat(result).isNull();
         verifyNoInteractions(companyRepository, companyMapper);
     }
 

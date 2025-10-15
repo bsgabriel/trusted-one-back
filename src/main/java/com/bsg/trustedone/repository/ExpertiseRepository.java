@@ -16,4 +16,6 @@ public interface ExpertiseRepository extends JpaRepository<Expertise, Long> {
     boolean existsByNameAndParentExpertiseId(String name, Long parentExpertiseId);
 
     List<Expertise> findByParentExpertiseId(Long parentExpertiseId);
+
+    List<Expertise> findByUserIdAndParentExpertiseIdOrderByName(Long userId, Long parentExpertiseId);
 }

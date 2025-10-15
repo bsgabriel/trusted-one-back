@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: iteration_2-create_table-gains_profile
+      author: bsgabriel
+      description: "Create table gains_profile"
+      changes:
+        - sqlFile:
+            path: sql/001-create_table-gains_profile.sql
+            relativeToChangelogFile: true
+  - changeSet:
+      id: iteration_2-create_table-business_profile
+      author: bsgabriel
+      description: "Create table business_profile"
+      changes:
+        - sqlFile:
+            path: sql/002-create_table-business_profile.sql
+            relativeToChangelogFile: true
