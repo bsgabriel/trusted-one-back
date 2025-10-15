@@ -75,13 +75,20 @@ class PartnerServiceTest {
         var creationDto = PartnerCreationDto.builder()
                 .group(GroupDto.builder().build())
                 .company(CompanyDto.builder().build())
-                .expertises(List.of(ExpertiseDto.builder().expertiseId(10L).availableForReferrals(true).build()))
+                .expertises(List.of(ExpertiseDto.builder()
+                        .expertiseId(10L)
+                        .name("IT").availableForReferrals(true)
+                        .build()))
                 .contactMethods(List.of(ContactMethodCreationDto.builder().build()))
                 .build();
 
         var group = GroupDto.builder().groupId(1L).build();
         var company = CompanyDto.builder().companyId(2L).build();
-        var expertise = ExpertiseDto.builder().expertiseId(10L).availableForReferrals(true).build();
+        var expertise = ExpertiseDto.builder()
+                .expertiseId(10L)
+                .name("IT")
+                .availableForReferrals(true)
+                .build();
 
         var entity = Partner.builder().build();
         var savedEntity = Partner.builder().build();
@@ -90,7 +97,7 @@ class PartnerServiceTest {
         when(groupService.findOrCreateGroup(any())).thenReturn(group);
         when(companyService.findOrCreateCompany(any())).thenReturn(company);
         when(expertiseService.findOrCreateExpertise(any())).thenReturn(expertise);
-        when(partnerFactory.createEntity(any(), eq(group), eq(company), eq(loggedUser), any(), any())).thenReturn(entity);
+        when(partnerFactory.createEntity(any(), eq(group), eq(company), eq(loggedUser), any(), any(), any(), any())).thenReturn(entity);
         when(partnerRepository.save(entity)).thenReturn(savedEntity);
         when(partnerMapper.toDto(savedEntity)).thenReturn(dto);
 

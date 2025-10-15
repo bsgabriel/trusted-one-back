@@ -2,3 +2,6 @@ databaseChangeLog:
   - include:
       file: iterations/iteration-1/changelog.yml
       relativeToChangelogFile: true
+  - include:
+      file: iterations/iteration-2/changelog.yml
+      relativeToChangelogFile: true

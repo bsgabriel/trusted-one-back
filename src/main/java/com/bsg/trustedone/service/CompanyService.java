@@ -42,7 +42,7 @@ public class CompanyService {
 
     public List<CompanyDto> getAllCompanies() {
         var loggedUser = userService.getLoggedUser();
-        return companyRepository.findAllByUserId(loggedUser.getUserId())
+        return companyRepository.findAllByUserIdOrderByName(loggedUser.getUserId())
                 .stream()
                 .map(companyMapper::toDto)
                 .toList();
@@ -81,7 +81,7 @@ public class CompanyService {
 
     public CompanyDto findOrCreateCompany(CompanyDto company) {
         if (isNull(company)) {
-            return CompanyDto.builder().build();
+            return null;
         }
 
         if (isNull(company.getCompanyId())) {

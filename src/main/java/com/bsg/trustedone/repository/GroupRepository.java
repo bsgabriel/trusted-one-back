@@ -11,5 +11,5 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
 
     boolean existsByNameAndUserId(String name, Long userId);
 
-    List<Group> findAllByUserId(Long userId);
+    List<Group> findAllByUserIdOrderByName(Long userId);
 }

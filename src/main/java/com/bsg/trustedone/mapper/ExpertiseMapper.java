@@ -2,6 +2,7 @@ package com.bsg.trustedone.mapper;
 
 import com.bsg.trustedone.dto.ExpertiseCreationDto;
 import com.bsg.trustedone.dto.ExpertiseDto;
+import com.bsg.trustedone.dto.ExpertiseListingDto;
 import com.bsg.trustedone.entity.Expertise;
 import com.bsg.trustedone.entity.PartnerExpertise;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,14 @@ public class ExpertiseMapper {
         return ExpertiseCreationDto.builder()
                 .name(expertise.getName())
                 .parentExpertiseId(expertise.getParentExpertiseId())
+                .build();
+    }
+
+    public ExpertiseListingDto toListingDto(Expertise expertise) {
+        return ExpertiseListingDto.builder()
+                .expertiseId(expertise.getExpertiseId())
+                .parentExpertiseId(expertise.getParentExpertiseId())
+                .name(expertise.getName())
                 .build();
     }
 }

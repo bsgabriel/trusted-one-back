@@ -2,6 +2,7 @@ package com.bsg.trustedone.controller;
 
 import com.bsg.trustedone.dto.ExpertiseCreationDto;
 import com.bsg.trustedone.dto.ExpertiseDto;
+import com.bsg.trustedone.dto.ExpertiseListingDto;
 import com.bsg.trustedone.service.ExpertiseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -43,4 +44,13 @@ public class ExpertiseController {
         return ResponseEntity.ok(expertiseService.updateExpertise(expertiseCreationDto, expertiseId));
     }
 
+    @GetMapping("/parents")
+    public ResponseEntity<List<ExpertiseListingDto>> getParents() {
+        return ResponseEntity.ok(expertiseService.findParents());
+    }
+
+    @GetMapping("/{parentExpertiseId}/children")
+    public ResponseEntity<List<ExpertiseListingDto>> getChildren(@PathVariable("parentExpertiseId") Long parentExpertiseId) {
+        return ResponseEntity.ok(expertiseService.findChildren(parentExpertiseId));
+    }
 }

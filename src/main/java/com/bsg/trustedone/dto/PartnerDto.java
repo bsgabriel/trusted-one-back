@@ -19,5 +19,7 @@ public class PartnerDto {
     private GroupDto group;
     private List<ExpertiseDto> expertises;
     private List<ContactMethodDto> contactMethods;
+    private List<GainsProfileDto> gainsProfile;
+    private List<BusinessProfileDto> businessProfile;
 
 }
