@@ -109,6 +109,11 @@ public class ExpertiseService {
     }
 
     public ExpertiseDto findOrCreateExpertise(ExpertiseDto expertise) {
+        if (isNull(expertise.getParentExpertiseId()) && !isNull(expertise.getParentExpertiseName())) {
+            var parentExpertise = findOrCreateByName(expertise.getParentExpertiseName());
+            expertise.setParentExpertiseId(parentExpertise.getExpertiseId());
+        }
+
         if (isNull(expertise.getExpertiseId())) {
             return this.createExpertise(expertiseMapper.toCreationDto(expertise));
         }
@@ -116,5 +121,19 @@ public class ExpertiseService {
         return this.expertiseRepository.findById(expertise.getExpertiseId())
                 .map(expertiseMapper::toDto)
                 .orElseGet(() -> this.createExpertise(expertiseMapper.toCreationDto(expertise)));
+    }
+
+    private ExpertiseDto findOrCreateByName(String name) {
+        var loggedUser = userService.getLoggedUser();
+
+        return expertiseRepository.findByNameAndUserId(name, loggedUser.getUserId())
+                .map(expertiseMapper::toDto)
+                .orElseGet(() -> {
+                    var creationDto = ExpertiseCreationDto.builder()
+                            .name(name)
+                            .parentExpertiseId(null)
+                            .build();
+                    return createExpertise(creationDto);
+                });
     }
 }
