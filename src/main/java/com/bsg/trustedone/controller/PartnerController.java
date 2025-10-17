@@ -45,4 +45,10 @@ public class PartnerController {
                                                                            @PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(partnerService.listPartners(search, pageable));
     }
+
+    @GetMapping("/{partnerId}")
+    public ResponseEntity<PartnerDto> findPartner(@PathVariable Long partnerId) {
+        return ResponseEntity.ok(partnerService.findPartner(partnerId));
+    }
+
 }

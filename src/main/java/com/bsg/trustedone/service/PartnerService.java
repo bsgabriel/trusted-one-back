@@ -5,6 +5,7 @@ import com.bsg.trustedone.dto.PartnerCreationDto;
 import com.bsg.trustedone.dto.PartnerDto;
 import com.bsg.trustedone.dto.PartnerListingDto;
 import com.bsg.trustedone.entity.Partner;
+import com.bsg.trustedone.exception.ResourceNotFoundException;
 import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.PartnerFactory;
 import com.bsg.trustedone.mapper.PartnerMapper;
@@ -115,6 +116,17 @@ public class PartnerService {
         }
 
         partnerRepository.deleteById(partnerId);
+    }
+
+    public PartnerDto findPartner(Long partnerId) {
+        var partner = partnerRepository.findById(partnerId).orElseThrow(() -> new ResourceNotFoundException("Partner not found"));
+
+        var loggedUser = userService.getLoggedUser();
+        if (!partner.getUserId().equals(loggedUser.getUserId())) {
+            throw new UnauthorizedAccessException("An error occurred while searching partner");
+        }
+
+        return partnerMapper.toDto(partner);
     }
 
 }
