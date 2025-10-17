@@ -1,6 +1,9 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.*;
+import com.bsg.trustedone.dto.PageResponse;
+import com.bsg.trustedone.dto.PartnerCreationDto;
+import com.bsg.trustedone.dto.PartnerDto;
+import com.bsg.trustedone.dto.PartnerListingDto;
 import com.bsg.trustedone.entity.Partner;
 import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.PartnerFactory;
@@ -52,8 +55,11 @@ public class PartnerService {
         var company = companyService.findOrCreateCompany(partnerCreationDto.getCompany());
         var expertises = partnerCreationDto.getExpertises()
                 .stream()
-                .map(expertiseService::findOrCreateExpertise)
-                .peek(p -> p.setAvailableForReferral(isAvailableForReferral(p, partnerCreationDto.getExpertises())))
+                .map(originalExpertise -> {
+                    var expertise = expertiseService.findOrCreateExpertise(originalExpertise);
+                    expertise.setAvailableForReferral(originalExpertise.isAvailableForReferral());
+                    return expertise;
+                })
                 .collect(Collectors.toList());
 
         var partner = partnerRepository.save(partnerFactory.createEntity(partnerCreationDto, group, company, loggedUser, partnerCreationDto.getContactMethods(), expertises, partnerCreationDto.getGainsProfile(), partnerCreationDto.getBusinessProfile()));
@@ -80,14 +86,6 @@ public class PartnerService {
         var page = partnerRepository.findAll(spec, sortedPageable);
 
         return PageResponse.from(page.map(partnerMapper::toListingDto));
-    }
-
-    private boolean isAvailableForReferral(ExpertiseDto expertise, List<ExpertiseDto> expertises) {
-        return expertises.stream()
-                .filter(p -> p.getName().equals(expertise.getName()))
-                .findFirst()
-                .map(ExpertiseDto::isAvailableForReferral)
-                .orElse(false);
     }
 
     public void deletePartner(Long partnerId) {
