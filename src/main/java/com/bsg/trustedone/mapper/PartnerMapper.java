@@ -1,6 +1,7 @@
 package com.bsg.trustedone.mapper;
 
 import com.bsg.trustedone.dto.PartnerDto;
+import com.bsg.trustedone.dto.PartnerListingDto;
 import com.bsg.trustedone.entity.Partner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -37,4 +38,17 @@ public class PartnerMapper {
                 .build();
     }
 
+    public PartnerListingDto toListingDto(Partner partner) {
+        return PartnerListingDto.builder()
+                .partnerId(partner.getPartnerId())
+                .name(partner.getName())
+                .group(Optional.ofNullable(partner.getGroup())
+                        .map(groupMapper::toDto)
+                        .orElse(null))
+                .company(Optional.ofNullable(partner.getCompany())
+                        .map(companyMapper::toDto)
+                        .orElse(null))
+                .metrics(PartnerListingDto.PartnerMetricsDto.builder().build())
+                .build();
+    }
 }
