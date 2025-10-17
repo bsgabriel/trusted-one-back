@@ -59,7 +59,7 @@ public class PartnerFactory {
         return PartnerExpertise.builder()
                 .expertise(expertiseFactory.createEntity(expertiseDto, loggedUser))
                 .partner(partner)
-                .availableForReferrals(expertiseDto.isAvailableForReferrals())
+                .availableForReferral(expertiseDto.isAvailableForReferral())
                 .build();
     }
 

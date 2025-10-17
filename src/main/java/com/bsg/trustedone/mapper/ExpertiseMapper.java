@@ -23,7 +23,7 @@ public class ExpertiseMapper {
                 .expertiseId(partnerExpertise.getExpertise().getExpertiseId())
                 .name(partnerExpertise.getExpertise().getName())
                 .parentExpertiseId(partnerExpertise.getExpertise().getParentExpertiseId())
-                .availableForReferrals(partnerExpertise.isAvailableForReferrals())
+                .availableForReferral(partnerExpertise.isAvailableForReferral())
                 .build();
     }
 

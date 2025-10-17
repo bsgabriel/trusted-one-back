@@ -77,7 +77,7 @@ class PartnerServiceTest {
                 .company(CompanyDto.builder().build())
                 .expertises(List.of(ExpertiseDto.builder()
                         .expertiseId(10L)
-                        .name("IT").availableForReferrals(true)
+                        .name("IT").availableForReferral(true)
                         .build()))
                 .contactMethods(List.of(ContactMethodCreationDto.builder().build()))
                 .build();
@@ -87,7 +87,7 @@ class PartnerServiceTest {
         var expertise = ExpertiseDto.builder()
                 .expertiseId(10L)
                 .name("IT")
-                .availableForReferrals(true)
+                .availableForReferral(true)
                 .build();
 
         var entity = Partner.builder().build();

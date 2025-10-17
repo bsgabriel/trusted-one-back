@@ -53,7 +53,7 @@ public class PartnerService {
         var expertises = partnerCreationDto.getExpertises()
                 .stream()
                 .map(expertiseService::findOrCreateExpertise)
-                .peek(p -> p.setAvailableForReferrals(isAvailableForReferrals(p, partnerCreationDto.getExpertises())))
+                .peek(p -> p.setAvailableForReferral(isAvailableForReferral(p, partnerCreationDto.getExpertises())))
                 .collect(Collectors.toList());
 
         var partner = partnerRepository.save(partnerFactory.createEntity(partnerCreationDto, group, company, loggedUser, partnerCreationDto.getContactMethods(), expertises, partnerCreationDto.getGainsProfile(), partnerCreationDto.getBusinessProfile()));
@@ -82,11 +82,11 @@ public class PartnerService {
         return PageResponse.from(page.map(partnerMapper::toListingDto));
     }
 
-    private boolean isAvailableForReferrals(ExpertiseDto expertise, List<ExpertiseDto> expertises) {
+    private boolean isAvailableForReferral(ExpertiseDto expertise, List<ExpertiseDto> expertises) {
         return expertises.stream()
                 .filter(p -> p.getName().equals(expertise.getName()))
                 .findFirst()
-                .map(ExpertiseDto::isAvailableForReferrals)
+                .map(ExpertiseDto::isAvailableForReferral)
                 .orElse(false);
     }
 

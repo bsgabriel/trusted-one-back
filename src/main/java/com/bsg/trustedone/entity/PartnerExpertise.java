@@ -26,5 +26,5 @@ public class PartnerExpertise {
     @JoinColumn(name = "expertise_id", nullable = false)
     private Expertise expertise;
 
-    private boolean availableForReferrals = false;
+    private boolean availableForReferral = false;
 }
