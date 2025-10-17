@@ -10,6 +10,8 @@ import com.bsg.trustedone.factory.PartnerFactory;
 import com.bsg.trustedone.mapper.PartnerMapper;
 import com.bsg.trustedone.repository.PartnerRepository;
 import com.bsg.trustedone.validator.PartnerValidator;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +22,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -68,18 +71,27 @@ public class PartnerService {
     }
 
     public PageResponse<PartnerListingDto> listPartners(String search, Pageable pageable) {
+        var loggedUser = userService.getLoggedUser();
         Specification<Partner> spec = (root, query, cb) -> {
-            if (StringUtils.isBlank(search)) {
-                return cb.conjunction();
+            var predicate = cb.equal(root.get("userId"), loggedUser.getUserId());
+
+            if (StringUtils.isNotBlank(search)) {
+                var searchPattern = "%" + search.toLowerCase() + "%";
+
+                List<Predicate> searchPredicates = new ArrayList<>();
+                searchPredicates.add(cb.like(cb.lower(root.get("name")), searchPattern));
+
+                var companyJoin = root.join("company", JoinType.LEFT);
+                searchPredicates.add(cb.like(cb.lower(companyJoin.get("name")), searchPattern));
+
+                var groupJoin = root.join("group", JoinType.LEFT);
+                searchPredicates.add(cb.like(cb.lower(groupJoin.get("name")), searchPattern));
+
+                var searchPredicate = cb.or(searchPredicates.toArray(new Predicate[0]));
+                predicate = cb.and(predicate, searchPredicate);
             }
 
-            var searchPattern = "%" + search.toLowerCase() + "%";
-
-            return cb.or(
-                    cb.like(cb.lower(root.get("name")), searchPattern),
-                    cb.like(cb.lower(root.get("company").get("name")), searchPattern),
-                    cb.like(cb.lower(root.get("group").get("name")), searchPattern)
-            );
+            return predicate;
         };
 
         var sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("name").ascending());
