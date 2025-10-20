@@ -50,7 +50,7 @@ public class PartnerService {
     }
 
     @Transactional
-    public PartnerDto createPartner(PartnerCreationDto partnerCreationDto) {
+    public PartnerDto createPartner(Long partnerId, PartnerCreationDto partnerCreationDto) {
         partnerValidator.validatePartnerCreation(partnerCreationDto);
 
         var loggedUser = userService.getLoggedUser();
@@ -66,9 +66,10 @@ public class PartnerService {
                 })
                 .collect(Collectors.toList());
 
-        var partner = partnerRepository.save(partnerFactory.createEntity(partnerCreationDto, group, company, loggedUser, partnerCreationDto.getContactMethods(), expertises, partnerCreationDto.getGainsProfile(), partnerCreationDto.getBusinessProfile()));
+        var entity = partnerFactory.createEntity(partnerCreationDto, group, company, loggedUser, partnerCreationDto.getContactMethods(), expertises, partnerCreationDto.getGainsProfile(), partnerCreationDto.getBusinessProfile());
+        entity.setPartnerId(partnerId);
 
-        return partnerMapper.toDto(partner);
+        return partnerMapper.toDto(partnerRepository.save(entity));
     }
 
     public PageResponse<PartnerListingDto> listPartners(String search, Pageable pageable) {

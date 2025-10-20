@@ -102,7 +102,7 @@ class PartnerServiceTest {
         when(partnerMapper.toDto(savedEntity)).thenReturn(dto);
 
         // When
-        var result = partnerService.createPartner(creationDto);
+        var result = partnerService.createPartner(null, creationDto);
 
         // Then
         assertThat(result).isEqualTo(dto);
@@ -127,7 +127,7 @@ class PartnerServiceTest {
         when(partnerMapper.toDto(any())).thenReturn(PartnerDto.builder().build());
 
         // When
-        var result = partnerService.createPartner(creationDto);
+        var result = partnerService.createPartner(null, creationDto);
 
         // Then
         assertThat(result).isNotNull();
@@ -151,7 +151,7 @@ class PartnerServiceTest {
         when(partnerMapper.toDto(any())).thenReturn(PartnerDto.builder().build());
 
         // When
-        var result = partnerService.createPartner(creationDto);
+        var result = partnerService.createPartner(null, creationDto);
 
         // Then
         assertThat(result).isNotNull();
