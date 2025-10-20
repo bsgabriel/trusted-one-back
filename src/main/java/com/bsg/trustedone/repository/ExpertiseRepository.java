@@ -14,11 +14,11 @@ public interface ExpertiseRepository extends JpaRepository<Expertise, Long> {
 
     List<Expertise> findAllByUserId(Long userId);
 
-    boolean existsByNameAndParentExpertiseId(String name, Long parentExpertiseId);
+    boolean existsByNameAndParentExpertiseExpertiseId(String name, Long parentExpertiseId);
 
-    List<Expertise> findByParentExpertiseId(Long parentExpertiseId);
+    List<Expertise> findByParentExpertiseExpertiseId(Long parentExpertiseId);
 
-    List<Expertise> findByUserIdAndParentExpertiseIdOrderByName(Long userId, Long parentExpertiseId);
+    List<Expertise> findByUserIdAndParentExpertiseExpertiseIdOrderByName(Long userId, Long parentExpertiseId);
 
     Optional<Expertise> findByNameAndUserId(String name, Long userId);
 }
