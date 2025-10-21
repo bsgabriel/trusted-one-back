@@ -125,6 +125,7 @@ class PartnerServiceTest {
         when(companyService.findOrCreateCompany(any())).thenReturn(CompanyDto.builder().build());
         when(partnerRepository.save(any())).thenReturn(Partner.builder().build());
         when(partnerMapper.toDto(any())).thenReturn(PartnerDto.builder().build());
+        when(partnerFactory.createEntity(any(), any(), any(), eq(loggedUser), any(), any(), any(), any())).thenReturn(Partner.builder().build());
 
         // When
         var result = partnerService.createPartner(null, creationDto);
@@ -149,6 +150,7 @@ class PartnerServiceTest {
         when(companyService.findOrCreateCompany(null)).thenReturn(emptyCompany);
         when(partnerRepository.save(any())).thenReturn(Partner.builder().build());
         when(partnerMapper.toDto(any())).thenReturn(PartnerDto.builder().build());
+        when(partnerFactory.createEntity(any(), any(), any(), eq(loggedUser), any(), any(), any(), any())).thenReturn(Partner.builder().build());
 
         // When
         var result = partnerService.createPartner(null, creationDto);
