@@ -15,3 +15,19 @@ databaseChangeLog:
         - sqlFile:
             path: sql/002-create_table-business_profile.sql
             relativeToChangelogFile: true
+  - changeSet:
+      id: iteration_2-alter_table-partner_expertises
+      author: bsgabriel
+      description: "Rename column available_for_referrals to available_for_referral"
+      changes:
+        - sqlFile:
+            path: sql/003-alter_table-partner_expertises.sql
+            relativeToChangelogFile: true
+  - changeSet:
+      id: iteration_2-alter_table-partners
+      author: bsgabriel
+      description: "Make company_id column nullable in partners table"
+      changes:
+        - sqlFile:
+            path: sql/004-alter_table-partner.sql
+            relativeToChangelogFile: true

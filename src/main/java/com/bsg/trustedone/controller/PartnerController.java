@@ -29,9 +29,16 @@ public class PartnerController {
 
     @PostMapping
     public ResponseEntity<PartnerDto> createPartner(@RequestBody PartnerCreationDto request) {
-        var createdPartner = partnerService.createPartner(request);
+        var createdPartner = partnerService.createPartner(null, request);
         var uri = URI.create(String.format("/partner/%d", createdPartner.getPartnerId()));
         return ResponseEntity.created(uri).body(createdPartner);
+    }
+
+    @PutMapping("/{partnerId}")
+    public ResponseEntity<PartnerDto> updatePartner(@PathVariable Long partnerId, @RequestBody PartnerCreationDto request){
+        var updatedPartner = partnerService.createPartner(partnerId, request);
+        var uri = URI.create(String.format("/partner/%d", updatedPartner.getPartnerId()));
+        return ResponseEntity.created(uri).body(updatedPartner);
     }
 
     @DeleteMapping("/{partnerId}")
@@ -45,4 +52,10 @@ public class PartnerController {
                                                                            @PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(partnerService.listPartners(search, pageable));
     }
+
+    @GetMapping("/{partnerId}")
+    public ResponseEntity<PartnerDto> findPartner(@PathVariable Long partnerId) {
+        return ResponseEntity.ok(partnerService.findPartner(partnerId));
+    }
+
 }

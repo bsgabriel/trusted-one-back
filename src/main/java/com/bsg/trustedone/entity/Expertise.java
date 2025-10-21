@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Entity
 @Data
 @Builder
@@ -21,13 +19,10 @@ public class Expertise {
     private Long expertiseId;
 
     private String name;
-    private Long parentExpertiseId;
     private Long userId;
 
-    @OneToMany(mappedBy = "parentExpertiseId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Expertise> specializations;
-
-    @OneToMany(mappedBy = "expertise", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PartnerExpertise> partnerExpertises;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_expertise_id")
+    private Expertise parentExpertise;
 
 }

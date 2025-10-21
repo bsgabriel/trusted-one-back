@@ -1,12 +1,18 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.*;
+import com.bsg.trustedone.dto.PageResponse;
+import com.bsg.trustedone.dto.PartnerCreationDto;
+import com.bsg.trustedone.dto.PartnerDto;
+import com.bsg.trustedone.dto.PartnerListingDto;
 import com.bsg.trustedone.entity.Partner;
+import com.bsg.trustedone.exception.ResourceNotFoundException;
 import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.PartnerFactory;
 import com.bsg.trustedone.mapper.PartnerMapper;
 import com.bsg.trustedone.repository.PartnerRepository;
 import com.bsg.trustedone.validator.PartnerValidator;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +23,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,7 +50,7 @@ public class PartnerService {
     }
 
     @Transactional
-    public PartnerDto createPartner(PartnerCreationDto partnerCreationDto) {
+    public PartnerDto createPartner(Long partnerId, PartnerCreationDto partnerCreationDto) {
         partnerValidator.validatePartnerCreation(partnerCreationDto);
 
         var loggedUser = userService.getLoggedUser();
@@ -52,42 +59,47 @@ public class PartnerService {
         var company = companyService.findOrCreateCompany(partnerCreationDto.getCompany());
         var expertises = partnerCreationDto.getExpertises()
                 .stream()
-                .map(expertiseService::findOrCreateExpertise)
-                .peek(p -> p.setAvailableForReferrals(isAvailableForReferrals(p, partnerCreationDto.getExpertises())))
+                .map(originalExpertise -> {
+                    var expertise = expertiseService.findOrCreateExpertise(originalExpertise);
+                    expertise.setAvailableForReferral(originalExpertise.isAvailableForReferral());
+                    return expertise;
+                })
                 .collect(Collectors.toList());
 
-        var partner = partnerRepository.save(partnerFactory.createEntity(partnerCreationDto, group, company, loggedUser, partnerCreationDto.getContactMethods(), expertises, partnerCreationDto.getGainsProfile(), partnerCreationDto.getBusinessProfile()));
+        var entity = partnerFactory.createEntity(partnerCreationDto, group, company, loggedUser, partnerCreationDto.getContactMethods(), expertises, partnerCreationDto.getGainsProfile(), partnerCreationDto.getBusinessProfile());
+        entity.setPartnerId(partnerId);
 
-        return partnerMapper.toDto(partner);
+        return partnerMapper.toDto(partnerRepository.save(entity));
     }
 
     public PageResponse<PartnerListingDto> listPartners(String search, Pageable pageable) {
+        var loggedUser = userService.getLoggedUser();
         Specification<Partner> spec = (root, query, cb) -> {
-            if (StringUtils.isBlank(search)) {
-                return cb.conjunction();
+            var predicate = cb.equal(root.get("userId"), loggedUser.getUserId());
+
+            if (StringUtils.isNotBlank(search)) {
+                var searchPattern = "%" + search.toLowerCase() + "%";
+
+                List<Predicate> searchPredicates = new ArrayList<>();
+                searchPredicates.add(cb.like(cb.lower(root.get("name")), searchPattern));
+
+                var companyJoin = root.join("company", JoinType.LEFT);
+                searchPredicates.add(cb.like(cb.lower(companyJoin.get("name")), searchPattern));
+
+                var groupJoin = root.join("group", JoinType.LEFT);
+                searchPredicates.add(cb.like(cb.lower(groupJoin.get("name")), searchPattern));
+
+                var searchPredicate = cb.or(searchPredicates.toArray(new Predicate[0]));
+                predicate = cb.and(predicate, searchPredicate);
             }
 
-            var searchPattern = "%" + search.toLowerCase() + "%";
-
-            return cb.or(
-                    cb.like(cb.lower(root.get("name")), searchPattern),
-                    cb.like(cb.lower(root.get("company").get("name")), searchPattern),
-                    cb.like(cb.lower(root.get("group").get("name")), searchPattern)
-            );
+            return predicate;
         };
 
         var sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("name").ascending());
         var page = partnerRepository.findAll(spec, sortedPageable);
 
         return PageResponse.from(page.map(partnerMapper::toListingDto));
-    }
-
-    private boolean isAvailableForReferrals(ExpertiseDto expertise, List<ExpertiseDto> expertises) {
-        return expertises.stream()
-                .filter(p -> p.getName().equals(expertise.getName()))
-                .findFirst()
-                .map(ExpertiseDto::isAvailableForReferrals)
-                .orElse(false);
     }
 
     public void deletePartner(Long partnerId) {
@@ -105,6 +117,17 @@ public class PartnerService {
         }
 
         partnerRepository.deleteById(partnerId);
+    }
+
+    public PartnerDto findPartner(Long partnerId) {
+        var partner = partnerRepository.findById(partnerId).orElseThrow(() -> new ResourceNotFoundException("Partner not found"));
+
+        var loggedUser = userService.getLoggedUser();
+        if (!partner.getUserId().equals(loggedUser.getUserId())) {
+            throw new UnauthorizedAccessException("An error occurred while searching partner");
+        }
+
+        return partnerMapper.toDto(partner);
     }
 
 }

@@ -15,7 +15,9 @@ public class PartnerMapper {
     private final GroupMapper groupMapper;
     private final CompanyMapper companyMapper;
     private final ExpertiseMapper expertiseMapper;
+    private final GainsProfileMapper gainsProfileMapper;
     private final ContactMethodMapper contactMethodMapper;
+    private final BusinessProfileMapper businessProfileMapper;
 
     public PartnerDto toDto(Partner entity) {
         return PartnerDto.builder()
@@ -34,6 +36,14 @@ public class PartnerMapper {
                 .expertises(entity.getPartnerExpertises()
                         .stream()
                         .map(expertiseMapper::toDto)
+                        .toList())
+                .gainsProfile(entity.getGainsProfile()
+                        .stream()
+                        .map(gainsProfileMapper::toDto)
+                        .toList())
+                .businessProfile(entity.getBusinessProfile()
+                        .stream()
+                        .map(businessProfileMapper::toDto)
                         .toList())
                 .build();
     }

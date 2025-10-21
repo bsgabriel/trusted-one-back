@@ -48,7 +48,7 @@ public class ExpertiseService {
 
     public List<ExpertiseListingDto> findParents() {
         var userId = userService.getLoggedUser().getUserId();
-        return expertiseRepository.findByUserIdAndParentExpertiseIdOrderByName(userId, null)
+        return expertiseRepository.findByUserIdAndParentExpertiseExpertiseIdOrderByName(userId, null)
                 .stream()
                 .map(expertiseMapper::toListingDto)
                 .toList();
@@ -56,7 +56,7 @@ public class ExpertiseService {
 
     public List<ExpertiseListingDto> findChildren(Long parentId) {
         var userId = userService.getLoggedUser().getUserId();
-        return expertiseRepository.findByUserIdAndParentExpertiseIdOrderByName(userId, parentId)
+        return expertiseRepository.findByUserIdAndParentExpertiseExpertiseIdOrderByName(userId, parentId)
                 .stream()
                 .map(expertiseMapper::toListingDto)
                 .toList();
@@ -71,11 +71,11 @@ public class ExpertiseService {
     }
 
     private ExpertiseDto saveEspecialization(Expertise expertise) {
-        if (expertiseRepository.existsByNameAndParentExpertiseId(expertise.getName(), expertise.getParentExpertiseId())) {
+        if (expertiseRepository.existsByNameAndParentExpertiseExpertiseId(expertise.getName(), expertise.getParentExpertise().getExpertiseId())) {
             throw new ResourceAlreadyExistsException("A especialization for this expertise already exists with this name. Please choose a different name.");
         }
 
-        var parentExpertise = expertiseRepository.findById(expertise.getParentExpertiseId())
+        var parentExpertise = expertiseRepository.findById(expertise.getParentExpertise().getExpertiseId())
                 .orElseThrow(() -> new ResourceCreationException("Parent expertise not found"));
 
         if (!parentExpertise.getUserId().equals(expertise.getUserId())) {
@@ -86,7 +86,7 @@ public class ExpertiseService {
     }
 
     public void deleteExpertise(Long expertiseId) {
-        List<Expertise> specializations = expertiseRepository.findByParentExpertiseId(expertiseId);
+        List<Expertise> specializations = expertiseRepository.findByParentExpertiseExpertiseId(expertiseId);
         for (Expertise specialization : specializations) {
             deleteExpertise(specialization.getExpertiseId());
         }
@@ -104,7 +104,9 @@ public class ExpertiseService {
         }
 
         expertise.setName(request.getName());
-        expertise.setParentExpertiseId(request.getParentExpertiseId());
+        expertise.setParentExpertise(Expertise.builder()
+                .expertiseId(request.getParentExpertiseId())
+                .build());
         return expertiseMapper.toDto(expertiseRepository.save(expertise));
     }
 

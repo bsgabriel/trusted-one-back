@@ -12,7 +12,9 @@ public class ExpertiseFactory {
     public Expertise createEntity(ExpertiseCreationDto creationDto, UserDto user) {
         return Expertise.builder()
                 .name(creationDto.getName())
-                .parentExpertiseId(creationDto.getParentExpertiseId())
+                .parentExpertise(Expertise.builder()
+                        .expertiseId(creationDto.getParentExpertiseId())
+                        .build())
                 .userId(user.getUserId())
                 .build();
     }
@@ -20,7 +22,9 @@ public class ExpertiseFactory {
     public Expertise createEntity(ExpertiseDto expertiseDto, UserDto user) {
         return Expertise.builder()
                 .name(expertiseDto.getName())
-                .parentExpertiseId(expertiseDto.getParentExpertiseId())
+                .parentExpertise(Expertise.builder()
+                        .expertiseId(expertiseDto.getParentExpertiseId())
+                        .build())
                 .userId(user.getUserId())
                 .expertiseId(expertiseDto.getExpertiseId())
                 .build();

@@ -77,7 +77,7 @@ class PartnerServiceTest {
                 .company(CompanyDto.builder().build())
                 .expertises(List.of(ExpertiseDto.builder()
                         .expertiseId(10L)
-                        .name("IT").availableForReferrals(true)
+                        .name("IT").availableForReferral(true)
                         .build()))
                 .contactMethods(List.of(ContactMethodCreationDto.builder().build()))
                 .build();
@@ -87,7 +87,7 @@ class PartnerServiceTest {
         var expertise = ExpertiseDto.builder()
                 .expertiseId(10L)
                 .name("IT")
-                .availableForReferrals(true)
+                .availableForReferral(true)
                 .build();
 
         var entity = Partner.builder().build();
@@ -102,7 +102,7 @@ class PartnerServiceTest {
         when(partnerMapper.toDto(savedEntity)).thenReturn(dto);
 
         // When
-        var result = partnerService.createPartner(creationDto);
+        var result = partnerService.createPartner(null, creationDto);
 
         // Then
         assertThat(result).isEqualTo(dto);
@@ -125,9 +125,10 @@ class PartnerServiceTest {
         when(companyService.findOrCreateCompany(any())).thenReturn(CompanyDto.builder().build());
         when(partnerRepository.save(any())).thenReturn(Partner.builder().build());
         when(partnerMapper.toDto(any())).thenReturn(PartnerDto.builder().build());
+        when(partnerFactory.createEntity(any(), any(), any(), eq(loggedUser), any(), any(), any(), any())).thenReturn(Partner.builder().build());
 
         // When
-        var result = partnerService.createPartner(creationDto);
+        var result = partnerService.createPartner(null, creationDto);
 
         // Then
         assertThat(result).isNotNull();
@@ -149,9 +150,10 @@ class PartnerServiceTest {
         when(companyService.findOrCreateCompany(null)).thenReturn(emptyCompany);
         when(partnerRepository.save(any())).thenReturn(Partner.builder().build());
         when(partnerMapper.toDto(any())).thenReturn(PartnerDto.builder().build());
+        when(partnerFactory.createEntity(any(), any(), any(), eq(loggedUser), any(), any(), any(), any())).thenReturn(Partner.builder().build());
 
         // When
-        var result = partnerService.createPartner(creationDto);
+        var result = partnerService.createPartner(null, creationDto);
 
         // Then
         assertThat(result).isNotNull();

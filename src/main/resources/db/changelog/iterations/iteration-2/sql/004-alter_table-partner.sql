@@ -1,0 +1,1 @@
+ALTER TABLE partners ALTER COLUMN company_id DROP NOT NULL;
