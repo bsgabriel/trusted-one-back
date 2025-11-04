@@ -1,7 +1,6 @@
 package com.bsg.trustedone.controller;
 
 import com.bsg.trustedone.dto.*;
-import com.bsg.trustedone.service.ExpertiseService;
 import com.bsg.trustedone.service.PartnerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +17,6 @@ import java.util.List;
 public class PartnerController {
 
     private final PartnerService partnerService;
-    private final ExpertiseService expertiseService;
 
     @GetMapping
     public ResponseEntity<List<PartnerDto>> findAllPartners() {
@@ -47,8 +45,9 @@ public class PartnerController {
 
     @GetMapping("/listing")
     public ResponseEntity<PageResponse<PartnerListingDto>> listAllPartners(@RequestParam(required = false) String search,
+                                                                           @RequestParam(required = false, defaultValue = "true") boolean fullSearch,
                                                                            @PageableDefault(size = 20) Pageable pageable) {
-        return ResponseEntity.ok(partnerService.listPartners(search, pageable));
+        return ResponseEntity.ok(partnerService.listPartners(search, pageable, fullSearch));
     }
 
     @GetMapping("/{partnerId}")

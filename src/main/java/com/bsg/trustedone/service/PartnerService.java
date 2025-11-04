@@ -73,7 +73,7 @@ public class PartnerService {
         return partnerMapper.toDto(partnerRepository.save(entity));
     }
 
-    public PageResponse<PartnerListingDto> listPartners(String search, Pageable pageable) {
+    public PageResponse<PartnerListingDto> listPartners(String search, Pageable pageable, boolean fullSearch) {
         var loggedUser = userService.getLoggedUser();
         Specification<Partner> spec = (root, query, cb) -> {
             var predicate = cb.equal(root.get("userId"), loggedUser.getUserId());
@@ -84,11 +84,13 @@ public class PartnerService {
                 List<Predicate> searchPredicates = new ArrayList<>();
                 searchPredicates.add(cb.like(cb.lower(root.get("name")), searchPattern));
 
-                var companyJoin = root.join("company", JoinType.LEFT);
-                searchPredicates.add(cb.like(cb.lower(companyJoin.get("name")), searchPattern));
+                if (fullSearch) {
+                    var companyJoin = root.join("company", JoinType.LEFT);
+                    searchPredicates.add(cb.like(cb.lower(companyJoin.get("name")), searchPattern));
 
-                var groupJoin = root.join("group", JoinType.LEFT);
-                searchPredicates.add(cb.like(cb.lower(groupJoin.get("name")), searchPattern));
+                    var groupJoin = root.join("group", JoinType.LEFT);
+                    searchPredicates.add(cb.like(cb.lower(groupJoin.get("name")), searchPattern));
+                }
 
                 var searchPredicate = cb.or(searchPredicates.toArray(new Predicate[0]));
                 predicate = cb.and(predicate, searchPredicate);
