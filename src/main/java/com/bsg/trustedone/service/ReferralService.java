@@ -41,24 +41,21 @@ public class ReferralService {
         Specification<Referral> spec = (root, query, cb) -> {
             var predicate = cb.equal(root.get("userId"), loggedUser.getUserId());
 
-            List<Predicate> searchPredicates = new ArrayList<>();
-
             if (StringUtils.isNotBlank(search)) {
                 var searchPattern = "%" + search.toLowerCase() + "%";
+                List<Predicate> searchPredicates = new ArrayList<>();
 
                 searchPredicates.add(cb.like(cb.lower(root.get("referredTo")), searchPattern));
 
                 var partnerJoin = root.join("partner", JoinType.LEFT);
                 searchPredicates.add(cb.like(cb.lower(partnerJoin.get("name")), searchPattern));
+
+                var searchPredicate = cb.or(searchPredicates.toArray(new Predicate[0]));
+                predicate = cb.and(predicate, searchPredicate);
             }
 
             if (status != null) {
-                searchPredicates.add(cb.equal(root.get("status"), status));
-            }
-
-            if (!searchPredicates.isEmpty()) {
-                var searchPredicate = cb.or(searchPredicates.toArray(new Predicate[0]));
-                predicate = cb.and(predicate, searchPredicate);
+                predicate = cb.and(predicate, cb.equal(root.get("status"), status));
             }
 
             return predicate;
