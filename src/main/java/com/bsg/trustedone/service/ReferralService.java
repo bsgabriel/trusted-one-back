@@ -44,6 +44,15 @@ public class ReferralService {
     public PageResponse<ReferralDto> findByFilter(String search, ReferralStatus status, ReferralSortType sortBy, Pageable pageable) {
         var loggedUser = userService.getLoggedUser();
         Specification<Referral> spec = (root, query, cb) -> {
+            if (query != null && !query.getResultType().equals(Long.class)) {
+                var expertiseFetch = root.fetch("expertise", JoinType.LEFT);
+                expertiseFetch.fetch("parentExpertise", JoinType.LEFT);
+
+                var partnerFetch = root.fetch("partner", JoinType.LEFT);
+                partnerFetch.fetch("company", JoinType.LEFT);
+                partnerFetch.fetch("group", JoinType.LEFT);
+            }
+
             var predicate = cb.equal(root.get("userId"), loggedUser.getUserId());
 
             if (StringUtils.isNotBlank(search)) {
