@@ -34,5 +34,10 @@ public class ReferralController {
                                                                   @PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(referralService.findByFilter(search, status, sortBy, pageable));
     }
-    // updateStatus - PUT - ID da referral por path, tipo por parâmetro
+
+    @PutMapping("/{referralId}/status")
+    public ResponseEntity<ReferralDto> updateStatus(@PathVariable("referralId") Long referralId, @RequestBody ReferralStatus status) {
+        return ResponseEntity.ok(referralService.updateStatus(referralId, status));
+    }
+
 }

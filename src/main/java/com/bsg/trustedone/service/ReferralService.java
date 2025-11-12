@@ -6,6 +6,9 @@ import com.bsg.trustedone.dto.ReferralDto;
 import com.bsg.trustedone.entity.Referral;
 import com.bsg.trustedone.enums.ReferralSortType;
 import com.bsg.trustedone.enums.ReferralStatus;
+import com.bsg.trustedone.exception.ResourceNotFoundException;
+import com.bsg.trustedone.exception.ResourceUpdateException;
+import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.mapper.ReferralMapper;
 import com.bsg.trustedone.repository.ReferralRepository;
 import jakarta.persistence.criteria.JoinType;
@@ -17,7 +20,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,5 +76,23 @@ public class ReferralService {
         var page = referralRepository.findAll(spec, sortedPageable);
 
         return PageResponse.from(page.map(referralMapper::toDto));
+    }
+
+    @Transactional
+    public ReferralDto updateStatus(Long referralId, ReferralStatus status) {
+        if (ReferralStatus.PENDING.equals(status)) {
+            throw new ResourceUpdateException("Could not update referral status", List.of("Status should be different than 'PENDING'"));
+        }
+
+        var loggedUser = userService.getLoggedUser();
+        var referral = referralRepository.findById(referralId).orElseThrow(() -> new ResourceNotFoundException("Referral not found"));
+
+        if (!referral.getUserId().equals(loggedUser.getUserId())) {
+            throw new UnauthorizedAccessException("User not allowed to perform this operation");
+        }
+
+        referral.setStatus(status);
+        referral.setUpdatedAt(LocalDateTime.now());
+        return referralMapper.toDto(referral);
     }
 }
