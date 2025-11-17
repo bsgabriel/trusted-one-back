@@ -3,6 +3,7 @@ package com.bsg.trustedone.controller;
 import com.bsg.trustedone.dto.PageResponse;
 import com.bsg.trustedone.dto.ReferralCreationDto;
 import com.bsg.trustedone.dto.ReferralDto;
+import com.bsg.trustedone.dto.ReferralStatsDto;
 import com.bsg.trustedone.enums.ReferralSortType;
 import com.bsg.trustedone.enums.ReferralStatus;
 import com.bsg.trustedone.service.ReferralService;
@@ -40,4 +41,8 @@ public class ReferralController {
         return ResponseEntity.ok(referralService.updateStatus(referralId, status));
     }
 
+    @GetMapping("/stats")
+    public ResponseEntity<ReferralStatsDto> findStats() {
+        return ResponseEntity.ok(referralService.findReferralStats());
+    }
 }

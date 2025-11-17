@@ -3,6 +3,7 @@ package com.bsg.trustedone.service;
 import com.bsg.trustedone.dto.PageResponse;
 import com.bsg.trustedone.dto.ReferralCreationDto;
 import com.bsg.trustedone.dto.ReferralDto;
+import com.bsg.trustedone.dto.ReferralStatsDto;
 import com.bsg.trustedone.entity.Referral;
 import com.bsg.trustedone.enums.ReferralSortType;
 import com.bsg.trustedone.enums.ReferralStatus;
@@ -103,5 +104,10 @@ public class ReferralService {
         referral.setStatus(status);
         referral.setUpdatedAt(LocalDateTime.now());
         return referralMapper.toDto(referral);
+    }
+
+    public ReferralStatsDto findReferralStats() {
+        var loggedUser = userService.getLoggedUser();
+        return referralMapper.toReferralStats(referralRepository.getReferralStats(loggedUser.getUserId()));
     }
 }
