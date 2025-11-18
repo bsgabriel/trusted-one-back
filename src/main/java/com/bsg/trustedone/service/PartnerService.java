@@ -1,14 +1,13 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.PageResponse;
-import com.bsg.trustedone.dto.PartnerCreationDto;
-import com.bsg.trustedone.dto.PartnerDto;
-import com.bsg.trustedone.dto.PartnerListingDto;
+import com.bsg.trustedone.dto.*;
 import com.bsg.trustedone.entity.Partner;
 import com.bsg.trustedone.exception.ResourceNotFoundException;
 import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.PartnerFactory;
+import com.bsg.trustedone.mapper.ExpertiseMapper;
 import com.bsg.trustedone.mapper.PartnerMapper;
+import com.bsg.trustedone.repository.PartnerExpertiseRepository;
 import com.bsg.trustedone.repository.PartnerRepository;
 import com.bsg.trustedone.validator.PartnerValidator;
 import jakarta.persistence.criteria.JoinType;
@@ -40,6 +39,8 @@ public class PartnerService {
     private final PartnerFactory partnerFactory;
     private final PartnerValidator partnerValidator;
     private final PartnerRepository partnerRepository;
+    private final ExpertiseMapper expertiseMapper;
+    private final PartnerExpertiseRepository partnerExpertiseRepository;
 
     public List<PartnerDto> findAllPartners() {
         var loggedUser = userService.getLoggedUser();
@@ -72,7 +73,7 @@ public class PartnerService {
         return partnerMapper.toDto(partnerRepository.save(entity));
     }
 
-    public PageResponse<PartnerListingDto> listPartners(String search, Pageable pageable) {
+    public PageResponse<PartnerListingDto> listPartners(String search, Pageable pageable, boolean fullSearch) {
         var loggedUser = userService.getLoggedUser();
         Specification<Partner> spec = (root, query, cb) -> {
             var predicate = cb.equal(root.get("userId"), loggedUser.getUserId());
@@ -83,11 +84,13 @@ public class PartnerService {
                 List<Predicate> searchPredicates = new ArrayList<>();
                 searchPredicates.add(cb.like(cb.lower(root.get("name")), searchPattern));
 
-                var companyJoin = root.join("company", JoinType.LEFT);
-                searchPredicates.add(cb.like(cb.lower(companyJoin.get("name")), searchPattern));
+                if (fullSearch) {
+                    var companyJoin = root.join("company", JoinType.LEFT);
+                    searchPredicates.add(cb.like(cb.lower(companyJoin.get("name")), searchPattern));
 
-                var groupJoin = root.join("group", JoinType.LEFT);
-                searchPredicates.add(cb.like(cb.lower(groupJoin.get("name")), searchPattern));
+                    var groupJoin = root.join("group", JoinType.LEFT);
+                    searchPredicates.add(cb.like(cb.lower(groupJoin.get("name")), searchPattern));
+                }
 
                 var searchPredicate = cb.or(searchPredicates.toArray(new Predicate[0]));
                 predicate = cb.and(predicate, searchPredicate);
@@ -128,6 +131,13 @@ public class PartnerService {
         }
 
         return partnerMapper.toDto(partner);
+    }
+
+    public List<ExpertiseDto> findRecommendableExpertises(Long partnerId) {
+        return partnerExpertiseRepository.findRecommendableExpertisesForPartner(partnerId)
+                .stream()
+                .map(expertiseMapper::toDto)
+                .toList();
     }
 
 }

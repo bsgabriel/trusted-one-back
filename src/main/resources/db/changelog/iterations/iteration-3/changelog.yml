@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: iteration_3-create_table-referrals
+      author: bsgabriel
+      comment: "Create enum 'referral_type' and table referrals."
+      changes:
+        - sqlFile:
+            path: sql/001-create_table-referrals.sql
+            relativeToChangelogFile: true
