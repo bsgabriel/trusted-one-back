@@ -1,12 +1,8 @@
 package com.bsg.trustedone.controller;
 
-import com.bsg.trustedone.dto.PageResponse;
-import com.bsg.trustedone.dto.PartnerCreationDto;
-import com.bsg.trustedone.dto.PartnerDto;
-import com.bsg.trustedone.dto.PartnerListingDto;
+import com.bsg.trustedone.dto.*;
 import com.bsg.trustedone.service.PartnerService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -49,8 +45,9 @@ public class PartnerController {
 
     @GetMapping("/listing")
     public ResponseEntity<PageResponse<PartnerListingDto>> listAllPartners(@RequestParam(required = false) String search,
+                                                                           @RequestParam(required = false, defaultValue = "true") boolean fullSearch,
                                                                            @PageableDefault(size = 20) Pageable pageable) {
-        return ResponseEntity.ok(partnerService.listPartners(search, pageable));
+        return ResponseEntity.ok(partnerService.listPartners(search, pageable, fullSearch));
     }
 
     @GetMapping("/{partnerId}")
@@ -58,4 +55,8 @@ public class PartnerController {
         return ResponseEntity.ok(partnerService.findPartner(partnerId));
     }
 
+    @GetMapping("/{partnerId}/recommendable-expertises")
+    public ResponseEntity<List<ExpertiseDto>> findRecommendableExpertises(@PathVariable Long partnerId) {
+        return ResponseEntity.ok(partnerService.findRecommendableExpertises(partnerId));
+    }
 }
