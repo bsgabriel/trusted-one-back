@@ -18,7 +18,7 @@ public class ApiExceptionHandler {
         var detail = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
         detail.setTitle("An error ocurred on login");
         detail.setDetail("Invalid email or password");
-
+        detail.setProperty("errorCode", "INVALID_CREDENTIALS");
         return createResponseEntity(detail);
     }
 

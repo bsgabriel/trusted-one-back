@@ -56,15 +56,12 @@ public class SecurityConfig  {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/user/**").permitAll()
+                        .requestMatchers("/user/login", "/user/register").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session
-                        .invalidSessionStrategy((request, response) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        })
                         .maximumSessions(1)
                         .maxSessionsPreventsLogin(false)
                 )
