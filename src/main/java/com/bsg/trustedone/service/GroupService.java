@@ -2,6 +2,8 @@ package com.bsg.trustedone.service;
 
 import com.bsg.trustedone.dto.GroupCreationDto;
 import com.bsg.trustedone.dto.GroupDto;
+import com.bsg.trustedone.dto.GroupListingDto;
+import com.bsg.trustedone.dto.PageResponse;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.exception.ResourceNotFoundException;
 import com.bsg.trustedone.exception.UnauthorizedAccessException;
@@ -10,6 +12,10 @@ import com.bsg.trustedone.mapper.GroupMapper;
 import com.bsg.trustedone.repository.GroupRepository;
 import com.bsg.trustedone.validator.GroupValidator;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -90,5 +96,15 @@ public class GroupService {
         return this.groupRepository.findById(group.getGroupId())
                 .map(groupMapper::toDto)
                 .orElseGet(() -> this.createGroup(groupMapper.toCreationDto(group)));
-    };
+    }
+
+    public PageResponse<GroupListingDto> listGroups(String search, Pageable pageable) {
+        var loggedUser = userService.getLoggedUser();
+        var sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("name").ascending());
+        var searchParam = StringUtils.isBlank(search) ? null : search.trim();
+
+        var page = groupRepository.listGroups(loggedUser.getUserId(), searchParam, sortedPageable);
+        return PageResponse.from(page.map(groupMapper::toListingDto));
+    }
+
 }

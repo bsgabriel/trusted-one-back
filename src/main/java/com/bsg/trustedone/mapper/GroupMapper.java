@@ -2,7 +2,9 @@ package com.bsg.trustedone.mapper;
 
 import com.bsg.trustedone.dto.GroupCreationDto;
 import com.bsg.trustedone.dto.GroupDto;
+import com.bsg.trustedone.dto.GroupListingDto;
 import com.bsg.trustedone.entity.Group;
+import com.bsg.trustedone.projection.GroupListingProjection;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,6 +22,15 @@ public class GroupMapper {
         return GroupCreationDto.builder()
                 .name(groupDto.getName())
                 .description(groupDto.getDescription())
+                .build();
+    }
+
+    public GroupListingDto toListingDto(GroupListingProjection projection) {
+        return GroupListingDto.builder()
+                .groupId(projection.getGroupId())
+                .name(projection.getName())
+                .description(projection.getDescription())
+                .partnerCount(projection.getPartnerCount() == null ? 0 : projection.getPartnerCount())
                 .build();
     }
 }
