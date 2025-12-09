@@ -5,7 +5,10 @@ import com.bsg.trustedone.dto.GroupDto;
 import com.bsg.trustedone.dto.GroupListingDto;
 import com.bsg.trustedone.entity.Group;
 import com.bsg.trustedone.projection.GroupListingProjection;
+import com.bsg.trustedone.projection.GroupWithPartnersProjection;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class GroupMapper {
@@ -15,6 +18,22 @@ public class GroupMapper {
                 .groupId(entity.getGroupId())
                 .name(entity.getName())
                 .description(entity.getDescription())
+                .build();
+    }
+
+    public GroupDto toDto(List<GroupWithPartnersProjection> projections) {
+        var first = projections.getFirst();
+
+        return GroupDto.builder()
+                .groupId(first.getGroupId())
+                .name(first.getGroupName())
+                .description(first.getGroupDescription())
+                .partners(projections.stream()
+                        .map(p -> GroupDto.GroupPartnerDto.builder()
+                                .partnerId(p.getPartnerId())
+                                .name(p.getPartnerName())
+                                .build())
+                        .toList())
                 .build();
     }
 

@@ -33,6 +33,11 @@ public class GroupController {
         return ResponseEntity.created(uri).body(createdGroup);
     }
 
+    @GetMapping("/{groupId}")
+    public ResponseEntity<GroupDto> findGroup(@PathVariable("groupId") Long groupId) {
+        return ResponseEntity.ok(groupService.findById(groupId));
+    }
+
     @DeleteMapping("/{groupId}")
     public ResponseEntity<Void> deleteGroup(@PathVariable("groupId") Long groupdId) {
         groupService.deleteGroup(groupdId);

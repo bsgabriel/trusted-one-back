@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -107,4 +108,13 @@ public class GroupService {
         return PageResponse.from(page.map(groupMapper::toListingDto));
     }
 
+    public GroupDto findById(Long groupId) {
+        var groupProjections = groupRepository.findGroupWithPartners(groupId);
+
+        if (CollectionUtils.isEmpty(groupProjections)) {
+            throw new ResourceNotFoundException("Group not found");
+        }
+
+        return groupMapper.toDto(groupProjections);
+    }
 }

@@ -2,6 +2,7 @@ package com.bsg.trustedone.repository;
 
 import com.bsg.trustedone.entity.Group;
 import com.bsg.trustedone.projection.GroupListingProjection;
+import com.bsg.trustedone.projection.GroupWithPartnersProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -39,5 +40,20 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
                 group.description
             """)
     Page<GroupListingProjection> listGroups(Long userId, String name, Pageable pageable);
+
+    @Query("""
+            select
+                group.groupId as groupId,
+                group.name as groupName,
+                partner.partnerId as partnerId,
+                partner.name as partnerName
+            from
+                Group group
+            left join Partner partner ON
+                partner.group.id = group.groupId
+            where
+                group.groupId = :id
+            """)
+    List<GroupWithPartnersProjection> findGroupWithPartners(Long id);
 
 }
