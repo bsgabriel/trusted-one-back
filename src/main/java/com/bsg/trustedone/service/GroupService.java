@@ -1,9 +1,6 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.GroupCreationDto;
-import com.bsg.trustedone.dto.GroupDto;
-import com.bsg.trustedone.dto.GroupListingDto;
-import com.bsg.trustedone.dto.PageResponse;
+import com.bsg.trustedone.dto.*;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.exception.ResourceNotFoundException;
 import com.bsg.trustedone.exception.UnauthorizedAccessException;
@@ -17,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -54,21 +52,11 @@ public class GroupService {
         return groupMapper.toDto(groupRepository.save(entity));
     }
 
+    @Transactional
     public void deleteGroup(Long groupId) {
-        var opt = groupRepository.findById(groupId);
-
-        if (opt.isEmpty()) {
-            return;
-        }
-
-        var loggedUser = userService.getLoggedUser();
-        var group = opt.get();
-
-        if (!group.getUserId().equals(loggedUser.getUserId())) {
-            throw new UnauthorizedAccessException("An error occurred while deleting group");
-        }
-
-        groupRepository.deleteById(groupId);
+        var loggedUserId = userService.getLoggedUser().getUserId();
+        groupRepository.removePartnersFromGroup(groupId, loggedUserId);
+        groupRepository.deleteByGroupIdAndUserId(groupId, loggedUserId);
     }
 
     public GroupDto updateGroup(GroupCreationDto request, Long groupId) {
