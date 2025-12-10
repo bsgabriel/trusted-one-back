@@ -145,12 +145,7 @@ public class PartnerService {
         this.partnerRepository.removePartnersFromGroup(groupId, loggedUserId);
     }
 
-    public void syncPartnersWithGroup(Long groupId, List<Long> partnerIds) {
-        var loggedUserId = userService.getLoggedUser().getUserId();
-        partnerRepository.removePartnersFromGroup(groupId, loggedUserId);
-
-        if (!partnerIds.isEmpty()) {
-            partnerRepository.addPartnersToGroup(partnerIds, groupId);
-        }
+    public void addPartnersToGroup(List<Long> partnerIds, Long groupId) {
+        partnerRepository.addPartnersToGroup(partnerIds, groupId);
     }
 }

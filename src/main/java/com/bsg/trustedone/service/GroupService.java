@@ -60,7 +60,7 @@ public class GroupService {
     @Transactional
     public void deleteGroup(Long groupId) {
         var loggedUserId = userService.getLoggedUser().getUserId();
-        partnerServiceProvider.getIfAvailable().removePartnersFromGroup(groupId);
+        partnerServiceProvider.getObject().removePartnersFromGroup(groupId);
         groupRepository.deleteByGroupIdAndUserId(groupId, loggedUserId);
     }
 
@@ -76,7 +76,7 @@ public class GroupService {
 
         group.setName(request.getName());
         group.setDescription(request.getDescription());
-        partnerServiceProvider.getIfAvailable().syncPartnersWithGroup(groupId, request.getPartners());
+        this.syncPartnersWithGroup(groupId, request.getPartners());
         return groupMapper.toDto(groupRepository.save(group));
     }
 
@@ -112,4 +112,13 @@ public class GroupService {
 
         return groupMapper.toDto(groupProjections);
     }
+
+    public void syncPartnersWithGroup(Long groupId, List<Long> partnerIds) {
+        partnerServiceProvider.getObject().removePartnersFromGroup(groupId);
+
+        if (!partnerIds.isEmpty()) {
+            partnerServiceProvider.getObject().addPartnersToGroup(partnerIds, groupId);
+        }
+    }
+
 }
