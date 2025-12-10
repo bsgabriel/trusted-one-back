@@ -140,4 +140,9 @@ public class PartnerService {
                 .toList();
     }
 
+    public void removePartnersFromGroup(Long groupId) {
+        var loggedUserId = userService.getLoggedUser().getUserId();
+        this.partnerRepository.removePartnersFromGroup(groupId, loggedUserId);
+    }
+
 }

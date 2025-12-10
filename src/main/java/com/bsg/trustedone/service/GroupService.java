@@ -10,6 +10,7 @@ import com.bsg.trustedone.repository.GroupRepository;
 import com.bsg.trustedone.validator.GroupValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -30,6 +31,7 @@ public class GroupService {
     private final GroupFactory groupFactory;
     private final GroupValidator groupValidator;
     private final GroupRepository groupRepository;
+    private final ObjectProvider<PartnerService> partnerServiceProvider;
 
     public List<GroupDto> getAllGroups() {
         var loggedUser = userService.getLoggedUser();
@@ -55,7 +57,7 @@ public class GroupService {
     @Transactional
     public void deleteGroup(Long groupId) {
         var loggedUserId = userService.getLoggedUser().getUserId();
-        groupRepository.removePartnersFromGroup(groupId, loggedUserId);
+        partnerServiceProvider.getIfAvailable().removePartnersFromGroup(groupId);
         groupRepository.deleteByGroupIdAndUserId(groupId, loggedUserId);
     }
 

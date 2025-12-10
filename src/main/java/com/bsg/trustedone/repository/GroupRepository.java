@@ -60,23 +60,6 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             """)
     List<GroupWithPartnersProjection> findGroupWithPartners(Long id);
 
-    /*
-     * FIXME: This method manipulates Partner entities and should be in PartnerRepository.
-     * Currently here to avoid circular dependency (GroupRepository -> PartnerRepository -> GroupRepository).
-     * TODO: Refactor using a service layer or domain events to properly handle this relationship.
-     */
-    @Modifying
-    @Query("""
-            update
-                Partner p
-            set
-                p.group = null
-            where
-                p.group.groupId = :groupId
-                and p.userId = :userId
-            """)
-    void removePartnersFromGroup(@Param("groupId") Long groupId, @Param("userId") Long userId);
-
     @Modifying
     @Query("""
             delete from
