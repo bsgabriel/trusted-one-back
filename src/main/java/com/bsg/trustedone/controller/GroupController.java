@@ -1,6 +1,6 @@
 package com.bsg.trustedone.controller;
 
-import com.bsg.trustedone.dto.GroupCreationDto;
+import com.bsg.trustedone.dto.GroupFormDto;
 import com.bsg.trustedone.dto.GroupDto;
 import com.bsg.trustedone.dto.GroupListingDto;
 import com.bsg.trustedone.dto.PageResponse;
@@ -27,7 +27,7 @@ public class GroupController {
     }
 
     @PostMapping
-    public ResponseEntity<GroupDto> createGroup(@RequestBody GroupCreationDto request) {
+    public ResponseEntity<GroupDto> createGroup(@RequestBody GroupFormDto request) {
         var createdGroup = groupService.createGroup(request);
         var uri = URI.create(String.format("/group/%d", createdGroup.getGroupId()));
         return ResponseEntity.created(uri).body(createdGroup);
@@ -45,7 +45,7 @@ public class GroupController {
     }
 
     @PutMapping("/{groupId}")
-    public ResponseEntity<GroupDto> update(@PathVariable("groupId") Long groupId, @RequestBody GroupCreationDto groupCreationDto) {
+    public ResponseEntity<GroupDto> update(@PathVariable("groupId") Long groupId, @RequestBody GroupFormDto groupCreationDto) {
         return ResponseEntity.ok(groupService.updateGroup(groupCreationDto, groupId));
     }
 

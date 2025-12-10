@@ -1,6 +1,6 @@
 package com.bsg.trustedone.mapper;
 
-import com.bsg.trustedone.dto.GroupCreationDto;
+import com.bsg.trustedone.dto.GroupFormDto;
 import com.bsg.trustedone.dto.GroupDto;
 import com.bsg.trustedone.dto.GroupListingDto;
 import com.bsg.trustedone.entity.Group;
@@ -37,8 +37,8 @@ public class GroupMapper {
                 .build();
     }
 
-    public GroupCreationDto toCreationDto(GroupDto groupDto) {
-        return GroupCreationDto.builder()
+    public GroupFormDto toCreationDto(GroupDto groupDto) {
+        return GroupFormDto.builder()
                 .name(groupDto.getName())
                 .description(groupDto.getDescription())
                 .build();

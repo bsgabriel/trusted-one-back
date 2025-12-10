@@ -1,6 +1,6 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.GroupCreationDto;
+import com.bsg.trustedone.dto.GroupFormDto;
 import com.bsg.trustedone.dto.GroupDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.Group;
@@ -55,7 +55,7 @@ class GroupServiceTest {
     public void beforeAll() {
         lenient().when(groupMapper.toDto(any(Group.class))).thenCallRealMethod();
         lenient().when(groupMapper.toCreationDto(any(GroupDto.class))).thenCallRealMethod();
-        lenient().when(groupFactory.createEntity(any(GroupCreationDto.class), any(UserDto.class))).thenCallRealMethod();
+        lenient().when(groupFactory.createEntity(any(GroupFormDto.class), any(UserDto.class))).thenCallRealMethod();
         lenient().when(groupRepository.save(any(Group.class))).then(invocation -> {
             var created = (Group) invocation.getArguments()[0];
             created.setGroupId(RandomUtils.nextLong(1, 999));
@@ -70,7 +70,7 @@ class GroupServiceTest {
     @DisplayName("Should propagate exception when group creation validate fails")
     void groupCreation_withInvalidGroupData_shouldPropagateValidationException() {
         // Given
-        var groupCreationDto = DummyObjects.newInstance(GroupCreationDto.class);
+        var groupCreationDto = DummyObjects.newInstance(GroupFormDto.class);
 
         doThrow(new ResourceAlreadyExistsException("Error", List.of()))
                 .when(groupValidator).validateGroupCreate(groupCreationDto);
@@ -87,7 +87,7 @@ class GroupServiceTest {
     @DisplayName("Should throw error if group already exist")
     void groupCreation_withAlreadyRegisteredName_shouldThrowException() {
         // Given
-        var groupCreationDto = DummyObjects.newInstance(GroupCreationDto.class);
+        var groupCreationDto = DummyObjects.newInstance(GroupFormDto.class);
 
         when(groupRepository.existsByNameAndUserId(groupCreationDto.getName(), loggedUser.getUserId())).thenReturn(true);
 
@@ -100,7 +100,7 @@ class GroupServiceTest {
     @DisplayName("Should create group successfully when data is valid")
     void createGroup_withValidData_shouldCreateGroupSuccessfully() {
         // Given
-        var groupCreationDto = DummyObjects.newInstance(GroupCreationDto.class);
+        var groupCreationDto = DummyObjects.newInstance(GroupFormDto.class);
 
         when(groupRepository.existsByNameAndUserId(groupCreationDto.getName(), loggedUser.getUserId())).thenReturn(false);
         when(groupRepository.save(any(Group.class))).then(invocation -> invocation.getArguments()[0]);
@@ -134,7 +134,7 @@ class GroupServiceTest {
     @DisplayName("Should propagate exception when group update validate fails")
     void groupUpdate_withInvalidGroupData_shouldPropagateValidationException() {
         // Given
-        var updateData = DummyObjects.newInstance(GroupCreationDto.class);
+        var updateData = DummyObjects.newInstance(GroupFormDto.class);
 
         doThrow(new ResourceUpdateException("Error", List.of()))
                 .when(groupValidator).validateGroupUpdate(updateData);
@@ -154,7 +154,7 @@ class GroupServiceTest {
         var groupOwner = DummyObjects.newInstance(UserDto.class);
 
         var groupId = 999L;
-        var updateData = DummyObjects.newInstance(GroupCreationDto.class);
+        var updateData = DummyObjects.newInstance(GroupFormDto.class);
         var group = DummyObjects.newInstance(Group.class);
 
         group.setGroupId(groupId);
@@ -172,7 +172,7 @@ class GroupServiceTest {
     void updateGroup_shouldSuccessfullyUpdate() {
         // Given
         var groupId = 999L;
-        var updateData = DummyObjects.newInstance(GroupCreationDto.class);
+        var updateData = DummyObjects.newInstance(GroupFormDto.class);
         var existingGroup = DummyObjects.newInstance(Group.class);
 
         existingGroup.setGroupId(groupId);

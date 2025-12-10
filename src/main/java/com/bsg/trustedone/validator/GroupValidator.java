@@ -1,6 +1,6 @@
 package com.bsg.trustedone.validator;
 
-import com.bsg.trustedone.dto.GroupCreationDto;
+import com.bsg.trustedone.dto.GroupFormDto;
 import com.bsg.trustedone.exception.BaseException;
 import com.bsg.trustedone.exception.ResourceCreationException;
 import com.bsg.trustedone.exception.ResourceUpdateException;
@@ -17,11 +17,11 @@ import java.util.function.Function;
 public class GroupValidator {
     private final Validator validator;
 
-    public void validateGroupCreate(GroupCreationDto groupCreationDto) {
+    public void validateGroupCreate(GroupFormDto groupCreationDto) {
         doValidation(groupCreationDto, errors -> new ResourceCreationException("Invalid data for group creation", errors));
     }
 
-    public void validateGroupUpdate(GroupCreationDto groupCreationDto) {
+    public void validateGroupUpdate(GroupFormDto groupCreationDto) {
         doValidation(groupCreationDto, errors -> new ResourceUpdateException("Invalid data for group update", errors));
     }
 

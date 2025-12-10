@@ -41,7 +41,7 @@ public class GroupService {
                 .toList();
     }
 
-    public GroupDto createGroup(GroupCreationDto group) {
+    public GroupDto createGroup(GroupFormDto group) {
         group.setName(group.getName().trim());
         groupValidator.validateGroupCreate(group);
         var loggedUser = userService.getLoggedUser();
@@ -61,7 +61,7 @@ public class GroupService {
         groupRepository.deleteByGroupIdAndUserId(groupId, loggedUserId);
     }
 
-    public GroupDto updateGroup(GroupCreationDto request, Long groupId) {
+    public GroupDto updateGroup(GroupFormDto request, Long groupId) {
         groupValidator.validateGroupUpdate(request);
 
         var group = groupRepository.findById(groupId).orElseThrow(() -> new ResourceNotFoundException("Group not found"));
