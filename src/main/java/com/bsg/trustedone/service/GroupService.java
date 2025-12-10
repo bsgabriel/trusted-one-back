@@ -44,6 +44,7 @@ public class GroupService {
                 .toList();
     }
 
+    @Transactional
     public GroupDto createGroup(GroupFormDto group) {
         group.setName(group.getName().trim());
         groupValidator.validateGroupCreate(group);
@@ -53,8 +54,9 @@ public class GroupService {
             throw new ResourceAlreadyExistsException("A group with this name already exists. Please choose a different name.");
         }
 
-        var entity = groupFactory.createEntity(group, loggedUser);
-        return groupMapper.toDto(groupRepository.save(entity));
+        var entity = groupRepository.save(groupFactory.createEntity(group, loggedUser));
+        partnerServiceProvider.getObject().addPartnersToGroup(group.getPartners(), entity.getGroupId());
+        return groupMapper.toDto(entity);
     }
 
     @Transactional
