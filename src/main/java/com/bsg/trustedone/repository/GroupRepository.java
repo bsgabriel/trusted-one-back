@@ -55,6 +55,8 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
                 partner.group.id = group.groupId
             where
                 group.groupId = :id
+            order by
+                partner.name
             """)
     List<GroupWithPartnersProjection> findGroupWithPartners(Long id);
 
