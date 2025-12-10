@@ -1,6 +1,9 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.*;
+import com.bsg.trustedone.dto.GroupDto;
+import com.bsg.trustedone.dto.GroupFormDto;
+import com.bsg.trustedone.dto.GroupListingDto;
+import com.bsg.trustedone.dto.PageResponse;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.exception.ResourceNotFoundException;
 import com.bsg.trustedone.exception.UnauthorizedAccessException;
@@ -61,6 +64,7 @@ public class GroupService {
         groupRepository.deleteByGroupIdAndUserId(groupId, loggedUserId);
     }
 
+    @Transactional
     public GroupDto updateGroup(GroupFormDto request, Long groupId) {
         groupValidator.validateGroupUpdate(request);
 
@@ -72,6 +76,7 @@ public class GroupService {
 
         group.setName(request.getName());
         group.setDescription(request.getDescription());
+        partnerServiceProvider.getIfAvailable().syncPartnersWithGroup(groupId, request.getPartners());
         return groupMapper.toDto(groupRepository.save(group));
     }
 

@@ -26,4 +26,15 @@ public interface PartnerRepository extends JpaRepository<Partner, Long>, JpaSpec
                 and p.userId = :userId
             """)
     void removePartnersFromGroup(@Param("groupId") Long groupId, @Param("userId") Long userId);
+
+    @Modifying
+    @Query("""
+            update
+                Partner p
+            set
+                p.group.groupId = :groupId
+            where
+                p.partnerId in :partnerIds
+            """)
+    void addPartnersToGroup(List<Long> partnerIds, Long groupId);
 }
