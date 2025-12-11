@@ -47,6 +47,7 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             select
                 group.groupId as groupId,
                 group.name as groupName,
+                group.description as groupDescription,
                 partner.partnerId as partnerId,
                 partner.name as partnerName
             from
