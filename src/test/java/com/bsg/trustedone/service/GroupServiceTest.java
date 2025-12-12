@@ -1,7 +1,7 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.GroupFormDto;
 import com.bsg.trustedone.dto.GroupDto;
+import com.bsg.trustedone.dto.GroupFormDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.Group;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
@@ -19,7 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
 
 import java.util.List;
 import java.util.Optional;
@@ -49,6 +51,9 @@ class GroupServiceTest {
     @Mock
     private GroupFactory groupFactory;
 
+    @Mock
+    private ObjectProvider<PartnerService> partnerServiceProvider;
+
     private UserDto loggedUser;
 
     @BeforeEach
@@ -64,6 +69,9 @@ class GroupServiceTest {
 
         this.loggedUser = DummyObjects.newInstance(UserDto.class);
         lenient().when(userService.getLoggedUser()).thenReturn(loggedUser);
+
+        lenient().when(partnerServiceProvider.getObject()).thenReturn(Mockito.mock(PartnerService.class));
+
     }
 
     @Test
@@ -115,19 +123,19 @@ class GroupServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when deleting group from another user")
-    void deleteGroup_withUserIdDifferentThanLogged_shouldThrowException() {
+    @DisplayName("Should remove partner from grouop")
+    void deleteGroup_shouldRemovePartnerFromGrouop() {
         // Given
         var groupOwner = DummyObjects.newInstance(UserDto.class);
 
         var group = DummyObjects.newInstance(Group.class);
         group.setUserId(groupOwner.getUserId());
 
-        when(groupRepository.findById(group.getGroupId())).thenReturn(Optional.of(group));
+        // When
+        groupService.deleteGroup(group.getGroupId());
 
-        // When & Then
-        assertThatThrownBy(() -> groupService.deleteGroup(group.getGroupId()))
-                .isInstanceOf(UnauthorizedAccessException.class);
+        // Then
+        verify(partnerServiceProvider.getObject(), times(1)).removePartnersFromGroup(group.getGroupId());
     }
 
     @Test
