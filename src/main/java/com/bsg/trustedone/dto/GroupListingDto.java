@@ -1,6 +1,5 @@
 package com.bsg.trustedone.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,10 +9,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GroupCreationDto {
+public class GroupListingDto {
 
-    @NotBlank(message = "Group name is required")
+    private Long groupId;
     private String name;
-
     private String description;
+    private int partnerCount;
 }

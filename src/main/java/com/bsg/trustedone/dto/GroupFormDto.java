@@ -1,5 +1,6 @@
 package com.bsg.trustedone.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,21 +13,13 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GroupDto {
+public class GroupFormDto {
 
-    private Long groupId;
+    @NotBlank(message = "Group name is required")
     private String name;
+
     private String description;
 
     @Builder.Default
-    private List<GroupPartnerDto> partners = new ArrayList<>();
-
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class GroupPartnerDto {
-        private Long partnerId;
-        private String name;
-    }
+    private List<Long> partners = new ArrayList<>();
 }
