@@ -6,7 +6,9 @@ import com.bsg.trustedone.projection.CompanyWithPartnersProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -55,5 +57,15 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
                 partner.name
             """)
     List<CompanyWithPartnersProjection> findCompanyWithPartners(Long companyId);
+
+    @Modifying
+    @Query("""
+            delete from
+                Company c
+            where
+                c.companyId = :companyId
+                and c.userId = :userId
+            """)
+    void deleteByCompanyIdAndUserId(@Param("companyId") Long companyId, @Param("userId") Long userId);
 
 }

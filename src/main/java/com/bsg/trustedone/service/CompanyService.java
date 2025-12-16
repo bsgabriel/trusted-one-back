@@ -1,7 +1,7 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.CompanyFormDto;
 import com.bsg.trustedone.dto.CompanyDto;
+import com.bsg.trustedone.dto.CompanyFormDto;
 import com.bsg.trustedone.dto.CompanyListingDto;
 import com.bsg.trustedone.dto.PageResponse;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
@@ -13,10 +13,12 @@ import com.bsg.trustedone.repository.CompanyRepository;
 import com.bsg.trustedone.validator.CompanyValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -32,6 +34,7 @@ public class CompanyService {
     private final CompanyFactory companyFactory;
     private final CompanyValidator companyValidator;
     private final CompanyRepository companyRepository;
+    private final ObjectProvider<PartnerService> partnerServiceProvider;
 
     public CompanyDto createCompany(CompanyFormDto company) {
         company.setName(company.getName().trim());
@@ -55,21 +58,11 @@ public class CompanyService {
                 .toList();
     }
 
+    @Transactional
     public void deleteCompany(Long companyId) {
-        var opt = companyRepository.findById(companyId);
-
-        if (opt.isEmpty()) {
-            return;
-        }
-
-        var loggedUser = userService.getLoggedUser();
-        var company = opt.get();
-
-        if (!company.getUserId().equals(loggedUser.getUserId())) {
-            throw new UnauthorizedAccessException("An error ocurred while deleting company");
-        }
-
-        companyRepository.delete(company);
+        var loggedUserId = userService.getLoggedUser().getUserId();
+        partnerServiceProvider.getObject().removePartnersFromCompany(companyId);
+        companyRepository.deleteByCompanyIdAndUserId(companyId, loggedUserId);
     }
 
     public CompanyDto updateCompany(CompanyFormDto request, Long companyId) {
