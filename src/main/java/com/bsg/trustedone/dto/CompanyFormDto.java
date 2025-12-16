@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -16,4 +19,7 @@ public class CompanyFormDto {
     private String name;
 
     private String image;
+
+    @Builder.Default
+    private List<Long> partners = new ArrayList<>();
 }

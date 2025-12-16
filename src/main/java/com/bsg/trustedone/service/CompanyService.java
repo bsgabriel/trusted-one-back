@@ -1,7 +1,7 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.CompanyDto;
 import com.bsg.trustedone.dto.CompanyFormDto;
+import com.bsg.trustedone.dto.CompanyDto;
 import com.bsg.trustedone.dto.CompanyListingDto;
 import com.bsg.trustedone.dto.PageResponse;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
@@ -65,6 +65,7 @@ public class CompanyService {
         companyRepository.deleteByCompanyIdAndUserId(companyId, loggedUserId);
     }
 
+    @Transactional
     public CompanyDto updateCompany(CompanyFormDto request, Long companyId) {
         companyValidator.validateCompanyUpdate(request);
 
@@ -76,6 +77,7 @@ public class CompanyService {
 
         company.setName(request.getName());
         company.setImage(request.getImage());
+        this.syncPartnersWithCompany(companyId, request.getPartners());
         return companyMapper.toDto(companyRepository.save(company));
     }
 
@@ -112,5 +114,12 @@ public class CompanyService {
         return companyMapper.toDto(companyProjections);
     }
 
+    private void syncPartnersWithCompany(Long groupId, List<Long> partnerIds) {
+        partnerServiceProvider.getObject().removePartnersFromCompany(groupId);
+
+        if (!partnerIds.isEmpty()) {
+            partnerServiceProvider.getObject().addPartnersToCompany(partnerIds, groupId);
+        }
+    }
 
 }

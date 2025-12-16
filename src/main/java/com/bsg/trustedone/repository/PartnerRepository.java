@@ -50,4 +50,14 @@ public interface PartnerRepository extends JpaRepository<Partner, Long>, JpaSpec
             """)
     void removePartnersFromCompany(@Param("companyId") Long companyId, @Param("userId") Long userId);
 
+    @Modifying
+    @Query("""
+            update
+                Partner p
+            set
+                p.company.companyId = :companyId
+            where
+                p.partnerId in :partnerIds
+            """)
+    void addPartnersToCompany(List<Long> partnerIds, Long companyId);
 }

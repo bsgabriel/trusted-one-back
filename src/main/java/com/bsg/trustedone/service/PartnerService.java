@@ -154,4 +154,8 @@ public class PartnerService {
         this.partnerRepository.removePartnersFromCompany(companyId, loggerUserId);
     }
 
+    public void addPartnersToCompany(List<Long> partnerIds, Long companyId) {
+        this.partnerRepository.addPartnersToCompany(partnerIds, companyId);
+    }
+
 }
