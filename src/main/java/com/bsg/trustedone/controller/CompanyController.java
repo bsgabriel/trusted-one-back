@@ -1,9 +1,13 @@
 package com.bsg.trustedone.controller;
 
-import com.bsg.trustedone.dto.CompanyCreationDto;
+import com.bsg.trustedone.dto.CompanyFormDto;
 import com.bsg.trustedone.dto.CompanyDto;
+import com.bsg.trustedone.dto.CompanyListingDto;
+import com.bsg.trustedone.dto.PageResponse;
 import com.bsg.trustedone.service.CompanyService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,10 +27,15 @@ public class CompanyController {
     }
 
     @PostMapping
-    public ResponseEntity<CompanyDto> createCompany(@RequestBody CompanyCreationDto request) {
+    public ResponseEntity<CompanyDto> createCompany(@RequestBody CompanyFormDto request) {
         var createdCompany = companyService.createCompany(request);
         var uri = URI.create(String.format("/company/%d", createdCompany.getCompanyId()));
         return ResponseEntity.created(uri).body(createdCompany);
+    }
+
+    @GetMapping("/{companyId}")
+    public ResponseEntity<CompanyDto> findCompany(@PathVariable("companyId") Long companyId) {
+        return ResponseEntity.ok(companyService.findById(companyId));
     }
 
     @DeleteMapping("/{companyId}")
@@ -36,8 +45,12 @@ public class CompanyController {
     }
 
     @PutMapping("/{companyId}")
-    public ResponseEntity<CompanyDto> update(@PathVariable("companyId") Long companyId, @RequestBody CompanyCreationDto companyCreationDto) {
-        return ResponseEntity.ok(companyService.updateCompany(companyCreationDto, companyId));
+    public ResponseEntity<CompanyDto> update(@PathVariable("companyId") Long companyId, @RequestBody CompanyFormDto companyFormDto) {
+        return ResponseEntity.ok(companyService.updateCompany(companyFormDto, companyId));
     }
 
+    @GetMapping("/listing")
+    public ResponseEntity<PageResponse<CompanyListingDto>> listCompanies(@RequestParam(required = false) String search, @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(companyService.listCompanies(search, pageable));
+    }
 }

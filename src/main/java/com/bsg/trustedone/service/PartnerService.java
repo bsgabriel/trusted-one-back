@@ -148,4 +148,14 @@ public class PartnerService {
     public void addPartnersToGroup(List<Long> partnerIds, Long groupId) {
         partnerRepository.addPartnersToGroup(partnerIds, groupId);
     }
+
+    public void removePartnersFromCompany(Long companyId) {
+        var loggerUserId = userService.getLoggedUser().getUserId();
+        this.partnerRepository.removePartnersFromCompany(companyId, loggerUserId);
+    }
+
+    public void addPartnersToCompany(List<Long> partnerIds, Long companyId) {
+        this.partnerRepository.addPartnersToCompany(partnerIds, companyId);
+    }
+
 }
