@@ -2,6 +2,8 @@ package com.bsg.trustedone.service;
 
 import com.bsg.trustedone.dto.CompanyCreationDto;
 import com.bsg.trustedone.dto.CompanyDto;
+import com.bsg.trustedone.dto.CompanyListingDto;
+import com.bsg.trustedone.dto.PageResponse;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.exception.ResourceNotFoundException;
 import com.bsg.trustedone.exception.UnauthorizedAccessException;
@@ -10,6 +12,10 @@ import com.bsg.trustedone.mapper.CompanyMapper;
 import com.bsg.trustedone.repository.CompanyRepository;
 import com.bsg.trustedone.validator.CompanyValidator;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -92,5 +98,15 @@ public class CompanyService {
                 .map(companyMapper::toDto)
                 .orElseGet(() -> this.createCompany(companyMapper.toCreationDto(company)));
     }
+
+    public PageResponse<CompanyListingDto> listCompanies(String search, Pageable pageable) {
+        var loggedUser = userService.getLoggedUser();
+        var sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("name").ascending());
+        var searchParam = StringUtils.isBlank(search) ? null : search.trim();
+
+        var page = companyRepository.listCompanies(loggedUser.getUserId(), searchParam, sortedPageable);
+        return PageResponse.from(page.map(companyMapper::toListingDto));
+    }
+
 
 }
