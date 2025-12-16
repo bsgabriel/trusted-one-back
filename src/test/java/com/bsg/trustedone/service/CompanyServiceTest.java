@@ -1,7 +1,7 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.CompanyFormDto;
 import com.bsg.trustedone.dto.CompanyDto;
+import com.bsg.trustedone.dto.CompanyFormDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.Company;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
@@ -19,7 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +53,9 @@ class CompanyServiceTest {
     @Mock
     private CompanyFactory companyFactory;
 
+    @Mock
+    private ObjectProvider<PartnerService> partnerServiceProvider;
+
     private UserDto loggedUser;
 
     @BeforeEach
@@ -66,6 +71,7 @@ class CompanyServiceTest {
 
         this.loggedUser = DummyObjects.newInstance(UserDto.class);
         lenient().when(userService.getLoggedUser()).thenReturn(this.loggedUser);
+        lenient().when(partnerServiceProvider.getObject()).thenReturn(Mockito.mock(PartnerService.class));
     }
 
     @Test
@@ -117,18 +123,19 @@ class CompanyServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when deleting company from another user")
-    void deleteCompany_withUserIdDifferentThanLogged_shouldThrowException() {
+    @DisplayName("Should remove partner from company")
+    void deleteCompany_shouldRemovePartnerFromCompany() {
         // Given
         var companyOwner = DummyObjects.newInstance(UserDto.class);
 
         var company = DummyObjects.newInstance(Company.class);
         company.setUserId(companyOwner.getUserId());
-        when(companyRepository.findById(company.getCompanyId())).thenReturn(Optional.of(company));
 
-        // When & Then
-        assertThatThrownBy(() -> companyService.deleteCompany(company.getCompanyId()))
-                .isInstanceOf(UnauthorizedAccessException.class);
+        // When
+        companyService.deleteCompany(company.getCompanyId());
+
+        // Then
+        verify(partnerServiceProvider.getObject(), times(1)).removePartnersFromCompany(company.getCompanyId());
     }
 
     @Test
