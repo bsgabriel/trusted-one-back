@@ -1,6 +1,6 @@
 package com.bsg.trustedone.mapper;
 
-import com.bsg.trustedone.dto.CompanyCreationDto;
+import com.bsg.trustedone.dto.CompanyFormDto;
 import com.bsg.trustedone.dto.CompanyDto;
 import com.bsg.trustedone.dto.CompanyListingDto;
 import com.bsg.trustedone.entity.Company;
@@ -40,8 +40,8 @@ public class CompanyMapper {
                 .build();
     }
 
-    public CompanyCreationDto toCreationDto(CompanyDto company) {
-        return CompanyCreationDto.builder()
+    public CompanyFormDto toCreationDto(CompanyDto company) {
+        return CompanyFormDto.builder()
                 .name(company.getName())
                 .image(company.getImage())
                 .build();

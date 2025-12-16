@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CompanyCreationDto {
+public class CompanyFormDto {
 
     @NotBlank(message = "Group name is required")
     private String name;

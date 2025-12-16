@@ -1,6 +1,6 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.CompanyCreationDto;
+import com.bsg.trustedone.dto.CompanyFormDto;
 import com.bsg.trustedone.dto.CompanyDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.Company;
@@ -56,7 +56,7 @@ class CompanyServiceTest {
     @BeforeEach
     public void beforeAll() {
         lenient().when(companyMapper.toDto(any(Company.class))).thenCallRealMethod();
-        lenient().when(companyFactory.createEntity(any(CompanyCreationDto.class), any(Long.class))).thenCallRealMethod();
+        lenient().when(companyFactory.createEntity(any(CompanyFormDto.class), any(Long.class))).thenCallRealMethod();
         lenient().when(companyMapper.toCreationDto(any(CompanyDto.class))).thenCallRealMethod();
         lenient().when(companyRepository.save(any(Company.class))).then(invocation -> {
             var created = (Company) invocation.getArguments()[0];
@@ -72,7 +72,7 @@ class CompanyServiceTest {
     @DisplayName("Should propagate exception when company creation validate fails")
     void companyCreation_withInvalidCompanyData_shouldPropagateValidationException() {
         // Given
-        var companyCreationDto = DummyObjects.newInstance(CompanyCreationDto.class);
+        var companyCreationDto = DummyObjects.newInstance(CompanyFormDto.class);
 
         doThrow(new ResourceAlreadyExistsException("Error", List.of()))
                 .when(companypValidator).validateCompanyCreate(companyCreationDto);
@@ -89,7 +89,7 @@ class CompanyServiceTest {
     @DisplayName("Should throw error if company already exist")
     void companyCreation_withAlreadyRegisteredName_shouldThrowException() {
         // Given
-        var company = DummyObjects.newInstance(CompanyCreationDto.class);
+        var company = DummyObjects.newInstance(CompanyFormDto.class);
 
         when(companyRepository.existsByNameAndUserId(company.getName(), loggedUser.getUserId())).thenReturn(true);
 
@@ -102,7 +102,7 @@ class CompanyServiceTest {
     @DisplayName("Should create company successfully when data is valid")
     void createCompany_withValidData_shouldCreateCompanySuccessfully() {
         // Given
-        var companyCreationDto = DummyObjects.newInstance(CompanyCreationDto.class);
+        var companyCreationDto = DummyObjects.newInstance(CompanyFormDto.class);
 
         when(companyRepository.existsByNameAndUserId(companyCreationDto.getName(), loggedUser.getUserId())).thenReturn(false);
         when(companyRepository.save(any(Company.class))).then(invocation -> invocation.getArguments()[0]);
@@ -135,7 +135,7 @@ class CompanyServiceTest {
     @DisplayName("Should propagate exception when company update validate fails")
     void companyUpdate_withInvalidCompanyData_shouldPropagateValidationException() {
         // Given
-        var updateData = DummyObjects.newInstance(CompanyCreationDto.class);
+        var updateData = DummyObjects.newInstance(CompanyFormDto.class);
 
         doThrow(new ResourceUpdateException("Error", List.of()))
                 .when(companypValidator).validateCompanyUpdate(updateData);
@@ -155,7 +155,7 @@ class CompanyServiceTest {
         var companyOwner = DummyObjects.newInstance(UserDto.class);
 
         var companyId = 999L;
-        var updateData = DummyObjects.newInstance(CompanyCreationDto.class);
+        var updateData = DummyObjects.newInstance(CompanyFormDto.class);
         var company = DummyObjects.newInstance(Company.class);
 
         company.setCompanyId(companyId);
@@ -173,7 +173,7 @@ class CompanyServiceTest {
     void updateCompany_shouldSuccessfullyUpdate() {
         // Given
         var companyId = 999L;
-        var updateData = DummyObjects.newInstance(CompanyCreationDto.class);
+        var updateData = DummyObjects.newInstance(CompanyFormDto.class);
         var existingCompany = DummyObjects.newInstance(Company.class);
 
         existingCompany.setCompanyId(companyId);

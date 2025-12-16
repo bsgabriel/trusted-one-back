@@ -1,6 +1,6 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.CompanyCreationDto;
+import com.bsg.trustedone.dto.CompanyFormDto;
 import com.bsg.trustedone.dto.CompanyDto;
 import com.bsg.trustedone.dto.CompanyListingDto;
 import com.bsg.trustedone.dto.PageResponse;
@@ -33,7 +33,7 @@ public class CompanyService {
     private final CompanyValidator companyValidator;
     private final CompanyRepository companyRepository;
 
-    public CompanyDto createCompany(CompanyCreationDto company) {
+    public CompanyDto createCompany(CompanyFormDto company) {
         company.setName(company.getName().trim());
         companyValidator.validateCompanyCreate(company);
 
@@ -72,7 +72,7 @@ public class CompanyService {
         companyRepository.delete(company);
     }
 
-    public CompanyDto updateCompany(CompanyCreationDto request, Long companyId) {
+    public CompanyDto updateCompany(CompanyFormDto request, Long companyId) {
         companyValidator.validateCompanyUpdate(request);
 
         var company = companyRepository.findById(companyId).orElseThrow(() -> new ResourceNotFoundException("Company not found"));

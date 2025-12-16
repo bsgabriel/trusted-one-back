@@ -1,6 +1,6 @@
 package com.bsg.trustedone.controller;
 
-import com.bsg.trustedone.dto.CompanyCreationDto;
+import com.bsg.trustedone.dto.CompanyFormDto;
 import com.bsg.trustedone.dto.CompanyDto;
 import com.bsg.trustedone.dto.CompanyListingDto;
 import com.bsg.trustedone.dto.PageResponse;
@@ -27,7 +27,7 @@ public class CompanyController {
     }
 
     @PostMapping
-    public ResponseEntity<CompanyDto> createCompany(@RequestBody CompanyCreationDto request) {
+    public ResponseEntity<CompanyDto> createCompany(@RequestBody CompanyFormDto request) {
         var createdCompany = companyService.createCompany(request);
         var uri = URI.create(String.format("/company/%d", createdCompany.getCompanyId()));
         return ResponseEntity.created(uri).body(createdCompany);
@@ -45,8 +45,8 @@ public class CompanyController {
     }
 
     @PutMapping("/{companyId}")
-    public ResponseEntity<CompanyDto> update(@PathVariable("companyId") Long companyId, @RequestBody CompanyCreationDto companyCreationDto) {
-        return ResponseEntity.ok(companyService.updateCompany(companyCreationDto, companyId));
+    public ResponseEntity<CompanyDto> update(@PathVariable("companyId") Long companyId, @RequestBody CompanyFormDto companyFormDto) {
+        return ResponseEntity.ok(companyService.updateCompany(companyFormDto, companyId));
     }
 
     @GetMapping("/listing")
