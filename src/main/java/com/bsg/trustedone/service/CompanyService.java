@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -106,6 +107,16 @@ public class CompanyService {
 
         var page = companyRepository.listCompanies(loggedUser.getUserId(), searchParam, sortedPageable);
         return PageResponse.from(page.map(companyMapper::toListingDto));
+    }
+
+    public CompanyDto findById(Long companyId) {
+        var companyProjections = companyRepository.findCompanyWithPartners(companyId);
+
+        if (CollectionUtils.isEmpty(companyProjections)) {
+            throw new ResourceNotFoundException("Company not found");
+        }
+
+        return companyMapper.toDto(companyProjections);
     }
 
 

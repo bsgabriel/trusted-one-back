@@ -33,6 +33,11 @@ public class CompanyController {
         return ResponseEntity.created(uri).body(createdCompany);
     }
 
+    @GetMapping("/{companyId}")
+    public ResponseEntity<CompanyDto> findCompany(@PathVariable("companyId") Long companyId) {
+        return ResponseEntity.ok(companyService.findById(companyId));
+    }
+
     @DeleteMapping("/{companyId}")
     public ResponseEntity<Void> deleteCompany(@PathVariable("companyId") Long companyId) {
         companyService.deleteCompany(companyId);

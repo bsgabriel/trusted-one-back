@@ -2,6 +2,7 @@ package com.bsg.trustedone.repository;
 
 import com.bsg.trustedone.entity.Company;
 import com.bsg.trustedone.projection.CompanyListingProjection;
+import com.bsg.trustedone.projection.CompanyWithPartnersProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,4 +38,22 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
                 company.name
             """)
     Page<CompanyListingProjection> listCompanies(Long userId, String name, Pageable pageable);
+
+    @Query("""
+            select
+                company.companyId as companyId,
+                company.name as companyName,
+                partner.partnerId as partnerId,
+                partner.name as partnerName
+            from
+                Company company
+            left join Partner partner ON
+                partner.company.id = company.companyId
+            where
+                company.companyId = :companyId
+            order by
+                partner.name
+            """)
+    List<CompanyWithPartnersProjection> findCompanyWithPartners(Long companyId);
+
 }
