@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExpertiseDto {
+public class AssignedExpertiseDto {
 
     private Long parentExpertiseId;
     private Long expertiseId;

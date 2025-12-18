@@ -1,7 +1,7 @@
 package com.bsg.trustedone.service;
 
 import com.bsg.trustedone.dto.ExpertiseCreationDto;
-import com.bsg.trustedone.dto.ExpertiseDto;
+import com.bsg.trustedone.dto.AssignedExpertiseDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.Expertise;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
@@ -61,7 +61,7 @@ class ExpertiseServiceTest {
     @BeforeEach
     public void beforeAll() {
         lenient().when(expertiseMapper.toDto(any(Expertise.class))).thenCallRealMethod();
-        lenient().when(expertiseMapper.toCreationDto(any(ExpertiseDto.class))).thenCallRealMethod();
+        lenient().when(expertiseMapper.toCreationDto(any(AssignedExpertiseDto.class))).thenCallRealMethod();
         lenient().when(expertiseFactory.createEntity(any(ExpertiseCreationDto.class), any(UserDto.class))).thenCallRealMethod();
         lenient().when(expertiseRepository.save(any(Expertise.class))).then(invocation -> {
             var created = (Expertise) invocation.getArguments()[0];

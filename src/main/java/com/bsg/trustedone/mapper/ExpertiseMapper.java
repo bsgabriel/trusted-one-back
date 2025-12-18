@@ -1,21 +1,20 @@
 package com.bsg.trustedone.mapper;
 
 import com.bsg.trustedone.dto.ExpertiseCreationDto;
-import com.bsg.trustedone.dto.ExpertiseDto;
+import com.bsg.trustedone.dto.AssignedExpertiseDto;
 import com.bsg.trustedone.dto.ExpertiseListingDto;
 import com.bsg.trustedone.entity.Expertise;
 import com.bsg.trustedone.entity.PartnerExpertise;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
 import java.util.Optional;
 
 @Component
 public class ExpertiseMapper {
 
-    public ExpertiseDto toDto(Expertise expertise) {
+    public AssignedExpertiseDto toDto(Expertise expertise) {
         var optParent = Optional.ofNullable(expertise.getParentExpertise());
-        return ExpertiseDto.builder()
+        return AssignedExpertiseDto.builder()
                 .expertiseId(expertise.getExpertiseId())
                 .name(expertise.getName())
                 .parentExpertiseId(optParent.map(Expertise::getExpertiseId)
@@ -25,9 +24,9 @@ public class ExpertiseMapper {
                 .build();
     }
 
-    public ExpertiseDto toDto(PartnerExpertise partnerExpertise) {
+    public AssignedExpertiseDto toDto(PartnerExpertise partnerExpertise) {
         var optParent = Optional.ofNullable(partnerExpertise.getExpertise().getParentExpertise());
-        return ExpertiseDto.builder()
+        return AssignedExpertiseDto.builder()
                 .expertiseId(partnerExpertise.getExpertise().getExpertiseId())
                 .name(partnerExpertise.getExpertise().getName())
                 .parentExpertiseId(optParent.map(Expertise::getExpertiseId)
@@ -38,7 +37,7 @@ public class ExpertiseMapper {
                 .build();
     }
 
-    public ExpertiseCreationDto toCreationDto(ExpertiseDto expertise) {
+    public ExpertiseCreationDto toCreationDto(AssignedExpertiseDto expertise) {
         return ExpertiseCreationDto.builder()
                 .name(expertise.getName())
                 .parentExpertiseId(expertise.getParentExpertiseId())

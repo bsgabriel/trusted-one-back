@@ -133,7 +133,7 @@ public class PartnerService {
         return partnerMapper.toDto(partner);
     }
 
-    public List<ExpertiseDto> findRecommendableExpertises(Long partnerId) {
+    public List<AssignedExpertiseDto> findRecommendableExpertises(Long partnerId) {
         return partnerExpertiseRepository.findRecommendableExpertisesForPartner(partnerId)
                 .stream()
                 .map(expertiseMapper::toDto)

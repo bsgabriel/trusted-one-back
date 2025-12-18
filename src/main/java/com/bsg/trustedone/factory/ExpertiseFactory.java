@@ -1,7 +1,7 @@
 package com.bsg.trustedone.factory;
 
 import com.bsg.trustedone.dto.ExpertiseCreationDto;
-import com.bsg.trustedone.dto.ExpertiseDto;
+import com.bsg.trustedone.dto.AssignedExpertiseDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.Expertise;
 import org.springframework.stereotype.Component;
@@ -19,14 +19,14 @@ public class ExpertiseFactory {
                 .build();
     }
 
-    public Expertise createEntity(ExpertiseDto expertiseDto, UserDto user) {
+    public Expertise createEntity(AssignedExpertiseDto assignedExpertiseDto, UserDto user) {
         return Expertise.builder()
-                .name(expertiseDto.getName())
+                .name(assignedExpertiseDto.getName())
                 .parentExpertise(Expertise.builder()
-                        .expertiseId(expertiseDto.getParentExpertiseId())
+                        .expertiseId(assignedExpertiseDto.getParentExpertiseId())
                         .build())
                 .userId(user.getUserId())
-                .expertiseId(expertiseDto.getExpertiseId())
+                .expertiseId(assignedExpertiseDto.getExpertiseId())
                 .build();
     }
 

@@ -1,7 +1,7 @@
 package com.bsg.trustedone.service;
 
 import com.bsg.trustedone.dto.ExpertiseCreationDto;
-import com.bsg.trustedone.dto.ExpertiseDto;
+import com.bsg.trustedone.dto.AssignedExpertiseDto;
 import com.bsg.trustedone.dto.ExpertiseListingDto;
 import com.bsg.trustedone.entity.Expertise;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
@@ -29,7 +29,7 @@ public class ExpertiseService {
     private final ExpertiseValidator expertiseValidator;
     private final ExpertiseRepository expertiseRepository;
 
-    public List<ExpertiseDto> findAllExpertises() {
+    public List<AssignedExpertiseDto> findAllExpertises() {
         var loggedUser = userService.getLoggedUser();
         return expertiseRepository.findAllByUserId(loggedUser.getUserId())
                 .stream()
@@ -37,7 +37,7 @@ public class ExpertiseService {
                 .toList();
     }
 
-    public ExpertiseDto createExpertise(ExpertiseCreationDto expertise) {
+    public AssignedExpertiseDto createExpertise(ExpertiseCreationDto expertise) {
         expertiseValidator.validateExpertiseCreate(expertise);
         var entity = expertiseFactory.createEntity(expertise, userService.getLoggedUser());
 
@@ -62,7 +62,7 @@ public class ExpertiseService {
                 .toList();
     }
 
-    private ExpertiseDto saveNewExpertise(Expertise expertise) {
+    private AssignedExpertiseDto saveNewExpertise(Expertise expertise) {
         if (expertiseRepository.existsByNameAndUserId(expertise.getName(), expertise.getUserId())) {
             throw new ResourceAlreadyExistsException("A expertise with this name already exists. Please choose a different name.");
         }
@@ -70,7 +70,7 @@ public class ExpertiseService {
         return expertiseMapper.toDto(expertiseRepository.save(expertise));
     }
 
-    private ExpertiseDto saveEspecialization(Expertise expertise) {
+    private AssignedExpertiseDto saveEspecialization(Expertise expertise) {
         if (expertiseRepository.existsByNameAndParentExpertiseExpertiseId(expertise.getName(), expertise.getParentExpertise().getExpertiseId())) {
             throw new ResourceAlreadyExistsException("A especialization for this expertise already exists with this name. Please choose a different name.");
         }
@@ -94,7 +94,7 @@ public class ExpertiseService {
         expertiseRepository.deleteById(expertiseId);
     }
 
-    public ExpertiseDto updateExpertise(ExpertiseCreationDto request, Long expertiseId) {
+    public AssignedExpertiseDto updateExpertise(ExpertiseCreationDto request, Long expertiseId) {
         expertiseValidator.validateExpertiseUpdate(request);
 
         var expertise = expertiseRepository.findById(expertiseId).orElseThrow(() -> new ResourceNotFoundException("Expertise not found"));
@@ -110,7 +110,7 @@ public class ExpertiseService {
         return expertiseMapper.toDto(expertiseRepository.save(expertise));
     }
 
-    public ExpertiseDto findOrCreateExpertise(ExpertiseDto expertise) {
+    public AssignedExpertiseDto findOrCreateExpertise(AssignedExpertiseDto expertise) {
         if (isNull(expertise.getParentExpertiseId()) && !isNull(expertise.getParentExpertiseName())) {
             var parentExpertise = findOrCreateByName(expertise.getParentExpertiseName());
             expertise.setParentExpertiseId(parentExpertise.getExpertiseId());
@@ -125,7 +125,7 @@ public class ExpertiseService {
                 .orElseGet(() -> this.createExpertise(expertiseMapper.toCreationDto(expertise)));
     }
 
-    private ExpertiseDto findOrCreateByName(String name) {
+    private AssignedExpertiseDto findOrCreateByName(String name) {
         var loggedUser = userService.getLoggedUser();
 
         return expertiseRepository.findByNameAndUserId(name, loggedUser.getUserId())

@@ -56,7 +56,7 @@ public class PartnerController {
     }
 
     @GetMapping("/{partnerId}/recommendable-expertises")
-    public ResponseEntity<List<ExpertiseDto>> findRecommendableExpertises(@PathVariable Long partnerId) {
+    public ResponseEntity<List<AssignedExpertiseDto>> findRecommendableExpertises(@PathVariable Long partnerId) {
         return ResponseEntity.ok(partnerService.findRecommendableExpertises(partnerId));
     }
 }

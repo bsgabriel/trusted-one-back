@@ -19,7 +19,7 @@ public class PartnerCreationDto {
 
     private CompanyDto company;
     private GroupDto group;
-    private List<ExpertiseDto> expertises;
+    private List<AssignedExpertiseDto> expertises;
     private List<ContactMethodCreationDto> contactMethods;
     private List<GainsProfileDto> gainsProfile;
     private List<BusinessProfileDto> businessProfile;
