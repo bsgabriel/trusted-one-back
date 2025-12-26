@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Data
 @Builder
@@ -25,4 +28,11 @@ public class Expertise {
     @JoinColumn(name = "parent_expertise_id")
     private Expertise parentExpertise;
 
+    @Builder.Default
+    @OneToMany(mappedBy = "parentExpertise", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Expertise> specializations = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "expertise", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PartnerExpertise> partnerExpertises = new ArrayList<>();
 }
