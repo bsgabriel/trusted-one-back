@@ -12,7 +12,9 @@ import com.bsg.trustedone.entity.PartnerExpertise;
 import com.bsg.trustedone.projection.SpecializationListingProjection;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class ExpertiseMapper {
@@ -108,7 +110,7 @@ public class ExpertiseMapper {
                                 .partnerId(partnerExpertise.getPartnerId())
                                 .build())
                         .build())
-                .toList());
+                .collect(Collectors.toCollection(ArrayList::new)));
         return specialization;
     }
 
