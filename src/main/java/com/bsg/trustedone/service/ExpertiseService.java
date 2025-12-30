@@ -94,9 +94,9 @@ public class ExpertiseService {
         expertise.getSpecializations().clear();
         expertise.getSpecializations()
                 .addAll(request.getSpecializations()
-                .stream()
-                .map(form -> expertiseMapper.specializationFormToEntity(form, user))
-                .collect(Collectors.toCollection(ArrayList::new)));
+                        .stream()
+                        .map(form -> expertiseMapper.specializationFormToEntity(form, user))
+                        .collect(Collectors.toCollection(ArrayList::new)));
         return expertiseMapper.entityToExpertiseDto(expertiseRepository.save(expertise));
     }
 
@@ -149,10 +149,11 @@ public class ExpertiseService {
         }
 
         specialization.setName(request.getName());
-        specialization.setPartnerExpertises(request.getPartners()
+        specialization.getPartnerExpertises().clear();
+        specialization.getPartnerExpertises().addAll(request.getPartners()
                 .stream()
                 .map(expertiseMapper::partnerExpertiseFormToEntity)
-                .toList());
+                .collect(Collectors.toCollection(ArrayList::new)));
 
         return expertiseMapper.entityToSpecialization(expertiseRepository.save(specialization));
     }
