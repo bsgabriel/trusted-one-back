@@ -41,8 +41,10 @@ public class ExpertiseService {
     public PageResponse<ExpertiseListingDto> listExpertises(String search, Pageable pageable) {
         var loggedUser = userService.getLoggedUser();
         Specification<Expertise> spec = (root, query, cb) -> {
-            var predicate = cb.equal(root.get("userId"), loggedUser.getUserId());
-            predicate = cb.and(root.get("parentExpertise").isNull());
+            var predicate = cb.and(
+                    cb.equal(root.get("userId"), loggedUser.getUserId()),
+                    root.get("parentExpertise").isNull()
+            );
 
             if (StringUtils.isNotBlank(search)) {
                 var searchPattern = "%" + search.toLowerCase() + "%";
