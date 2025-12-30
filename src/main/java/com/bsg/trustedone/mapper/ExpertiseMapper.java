@@ -116,12 +116,13 @@ public class ExpertiseMapper {
         return specialization;
     }
 
-    public PartnerExpertise partnerExpertiseFormToEntity(PartnerExpertiseFormDto partnerExpertise) {
+    public PartnerExpertise partnerExpertiseFormToEntity(PartnerExpertiseFormDto partnerExpertise, Expertise expertise) {
         return PartnerExpertise.builder()
                 .availableForReferral(partnerExpertise.isAvailableForReferral())
                 .partner(Partner.builder()
                         .partnerId(partnerExpertise.getPartnerId())
                         .build())
+                .expertise(expertise)
                 .build();
     }
 

@@ -152,7 +152,7 @@ public class ExpertiseService {
         specialization.getPartnerExpertises().clear();
         specialization.getPartnerExpertises().addAll(request.getPartners()
                 .stream()
-                .map(expertiseMapper::partnerExpertiseFormToEntity)
+                .map(partner -> expertiseMapper.partnerExpertiseFormToEntity(partner, specialization))
                 .collect(Collectors.toCollection(ArrayList::new)));
 
         return expertiseMapper.entityToSpecialization(expertiseRepository.save(specialization));
