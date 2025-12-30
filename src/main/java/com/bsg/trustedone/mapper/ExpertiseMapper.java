@@ -10,6 +10,7 @@ import com.bsg.trustedone.entity.Expertise;
 import com.bsg.trustedone.entity.Partner;
 import com.bsg.trustedone.entity.PartnerExpertise;
 import com.bsg.trustedone.projection.SpecializationListingProjection;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -45,12 +46,13 @@ public class ExpertiseMapper {
 
         expertise.setSpecializations(entity.getSpecializations()
                 .stream()
-                .map(e -> SpecializationDto.builder()
-                        .parentExpertiseId(e.getParentExpertise().getExpertiseId())
-                        .parentExpertiseName(e.getParentExpertise().getName())
-                        .expertiseId(e.getExpertiseId())
-                        .name(e.getName())
+                .map(s -> SpecializationListingDto.builder()
+                        .parentExpertiseId(s.getParentExpertise().getExpertiseId())
+                        .expertiseId(s.getExpertiseId())
+                        .name(s.getName())
+                        .partnerCount(s.getPartnerExpertises().size())
                         .build())
+                .sorted((s1, s2) -> StringUtils.compare(s1.getName(), s2.getName()))
                 .toList());
 
         return expertise;

@@ -14,5 +14,5 @@ import java.util.List;
 public class ExpertiseDto {
     private Long expertiseId;
     private String name;
-    private List<SpecializationDto> specializations;
+    private List<SpecializationListingDto> specializations;
 }
