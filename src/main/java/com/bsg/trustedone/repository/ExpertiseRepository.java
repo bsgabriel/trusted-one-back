@@ -1,6 +1,5 @@
 package com.bsg.trustedone.repository;
 
-import com.bsg.trustedone.dto.expertise.SpecializationListingDto;
 import com.bsg.trustedone.entity.Expertise;
 import com.bsg.trustedone.projection.SpecializationListingProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,12 +24,15 @@ public interface ExpertiseRepository extends JpaRepository<Expertise, Long>, Jpa
                 e.parentExpertise.expertiseId as parentExpertiseId,
                 e.expertiseId as expertiseId,
                 e.name as name,
-                count(partnerExpertises)
+                count(pe) as partnerCount
             from
                 Expertise e
+                left join e.partnerExpertises pe
             where
                 e.parentExpertise.expertiseId = :parentExpertiseId
                 and e.userId = :userId
+            group by
+                e.parentExpertise.expertiseId, e.expertiseId, e.name
             order by
                 e.name
             """)
