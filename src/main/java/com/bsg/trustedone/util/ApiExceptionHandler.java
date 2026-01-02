@@ -1,10 +1,14 @@
 package com.bsg.trustedone.util;
 
 import com.bsg.trustedone.exception.*;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -63,6 +67,27 @@ public class ApiExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ProblemDetail> handleResourceNotFoundException(ResourceNotFoundException ex) {
         var detail = createProblemDetail(HttpStatus.NOT_FOUND, "Resource not found", ex);
+        return createResponseEntity(detail);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ProblemDetail> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        var detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+
+        detail.setTitle("Validation failed");
+        detail.setDetail("Please verify that all required fields are correctly filled");
+
+        var errors = ex.getBindingResult()
+                .getAllErrors()
+                .stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .filter(StringUtils::isNotBlank)
+                .toList();
+
+        if(!CollectionUtils.isEmpty(errors)){
+            detail.setProperty("errors", errors);
+        }
+
         return createResponseEntity(detail);
     }
 
