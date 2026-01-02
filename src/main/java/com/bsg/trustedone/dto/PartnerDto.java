@@ -17,7 +17,7 @@ public class PartnerDto {
     private String name;
     private CompanyDto company;
     private GroupDto group;
-    private List<ExpertiseDto> expertises;
+    private List<AssignedExpertiseDto> expertises;
     private List<ContactMethodDto> contactMethods;
     private List<GainsProfileDto> gainsProfile;
     private List<BusinessProfileDto> businessProfile;

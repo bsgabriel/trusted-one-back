@@ -75,7 +75,7 @@ class PartnerServiceTest {
         var creationDto = PartnerCreationDto.builder()
                 .group(GroupDto.builder().build())
                 .company(CompanyDto.builder().build())
-                .expertises(List.of(ExpertiseDto.builder()
+                .expertises(List.of(AssignedExpertiseDto.builder()
                         .expertiseId(10L)
                         .name("IT").availableForReferral(true)
                         .build()))
@@ -84,7 +84,7 @@ class PartnerServiceTest {
 
         var group = GroupDto.builder().groupId(1L).build();
         var company = CompanyDto.builder().companyId(2L).build();
-        var expertise = ExpertiseDto.builder()
+        var expertise = AssignedExpertiseDto.builder()
                 .expertiseId(10L)
                 .name("IT")
                 .availableForReferral(true)
