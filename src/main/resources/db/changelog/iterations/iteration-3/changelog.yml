@@ -7,3 +7,19 @@ databaseChangeLog:
         - sqlFile:
             path: sql/001-create_table-referrals.sql
             relativeToChangelogFile: true
+  - changeSet:
+      id: iteration_3-alter_table-partners
+      author: bsgabriel
+      comment: "Add active boolean column to partners table for soft-delete support and historical data integrity"
+      changes:
+        - sqlFile:
+            path: sql/002-alter_table-partners-add_column-active.sql
+            relativeToChangelogFile: true
+  - changeSet:
+      id: iteration_3-alter_table-expertises
+      author: bsgabriel
+      comment: "Add active boolean column to expertises table for soft-delete support and historical data integrity"
+      changes:
+        - sqlFile:
+            path: sql/003-alter_table-expertises-add_column-active.sql
+            relativeToChangelogFile: true

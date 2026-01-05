@@ -24,6 +24,9 @@ public class Expertise {
     private String name;
     private Long userId;
 
+    @Builder.Default
+    private boolean active = true;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_expertise_id")
     private Expertise parentExpertise;
