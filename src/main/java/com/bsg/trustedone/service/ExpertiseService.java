@@ -43,7 +43,8 @@ public class ExpertiseService {
         Specification<Expertise> spec = (root, query, cb) -> {
             var predicate = cb.and(
                     cb.equal(root.get("userId"), loggedUser.getUserId()),
-                    root.get("parentExpertise").isNull()
+                    root.get("parentExpertise").isNull(),
+                    cb.isTrue(root.get("active"))
             );
 
             if (StringUtils.isNotBlank(search)) {

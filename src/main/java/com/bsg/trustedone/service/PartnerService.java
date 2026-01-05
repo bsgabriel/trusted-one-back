@@ -76,7 +76,10 @@ public class PartnerService {
     public PageResponse<PartnerListingDto> listPartners(String search, Pageable pageable, boolean fullSearch) {
         var loggedUser = userService.getLoggedUser();
         Specification<Partner> spec = (root, query, cb) -> {
-            var predicate = cb.equal(root.get("userId"), loggedUser.getUserId());
+            var predicate = cb.and(
+                    cb.equal(root.get("userId"), loggedUser.getUserId()),
+                    cb.isTrue(root.get("active"))
+            );
 
             if (StringUtils.isNotBlank(search)) {
                 var searchPattern = "%" + search.toLowerCase() + "%";

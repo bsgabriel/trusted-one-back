@@ -31,6 +31,7 @@ public interface ExpertiseRepository extends JpaRepository<Expertise, Long>, Jpa
             where
                 e.parentExpertise.expertiseId = :parentExpertiseId
                 and e.userId = :userId
+                and e.active
             group by
                 e.parentExpertise.expertiseId, e.expertiseId, e.name
             order by
