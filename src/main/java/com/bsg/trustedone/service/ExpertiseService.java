@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,13 +102,9 @@ public class ExpertiseService {
         return expertiseMapper.entityToExpertiseDto(expertiseRepository.save(expertise));
     }
 
+    @Transactional
     public void deleteExpertise(Long expertiseId) {
-        List<Expertise> specializations = expertiseRepository.findByParentExpertiseExpertiseId(expertiseId);
-        for (Expertise specialization : specializations) {
-            deleteExpertise(specialization.getExpertiseId());
-        }
-
-        expertiseRepository.deleteById(expertiseId);
+        expertiseRepository.deactivate(expertiseId, userService.getLoggedUser().getUserId());
     }
 
     public List<SpecializationListingDto> listSpecializations(Long expertiseId) {

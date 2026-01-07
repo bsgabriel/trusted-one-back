@@ -4,6 +4,7 @@ import com.bsg.trustedone.entity.Expertise;
 import com.bsg.trustedone.projection.SpecializationListingProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -14,8 +15,6 @@ import java.util.Optional;
 public interface ExpertiseRepository extends JpaRepository<Expertise, Long>, JpaSpecificationExecutor<Expertise> {
 
     boolean existsByNameAndUserId(String name, Long userId);
-
-    List<Expertise> findByParentExpertiseExpertiseId(Long parentExpertiseId);
 
     Optional<Expertise> findByNameAndUserId(String name, Long userId);
 
@@ -38,4 +37,16 @@ public interface ExpertiseRepository extends JpaRepository<Expertise, Long>, Jpa
                 e.name
             """)
     List<SpecializationListingProjection> listSpecializations(Long parentExpertiseId, Long userId);
+
+    @Modifying
+    @Query("""
+            update
+                Expertise e
+            set
+                active = false
+            where
+                expertiseId = :expertiseId
+                and userId = :userId
+            """)
+    void deactivate(Long expertiseId, Long userId);
 }
