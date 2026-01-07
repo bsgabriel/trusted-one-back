@@ -35,6 +35,7 @@ public class PartnerMapper {
                         .toList())
                 .expertises(entity.getPartnerExpertises()
                         .stream()
+                        .filter(e -> e.getExpertise().isActive())
                         .map(expertiseMapper::toDto)
                         .toList())
                 .gainsProfile(entity.getGainsProfile()
