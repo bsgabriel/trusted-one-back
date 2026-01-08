@@ -30,6 +30,7 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
                 Group group
             left join Partner partner on
                 partner.group.groupId = group.groupId
+                and partner.active
             where
                 group.userId = :userId
                 AND (
@@ -54,6 +55,7 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
                 Group group
             left join Partner partner ON
                 partner.group.id = group.groupId
+                and partner.active
             where
                 group.groupId = :id
             order by
