@@ -128,10 +128,25 @@ public class PartnerService {
     public PartnerDto findPartner(Long partnerId) {
         var partner = partnerRepository.findById(partnerId).orElseThrow(() -> new ResourceNotFoundException("Partner not found"));
 
+        if (!partner.isActive()) {
+            throw new ResourceNotFoundException("Partner not found");
+        }
+
         var loggedUser = userService.getLoggedUser();
         if (!partner.getUserId().equals(loggedUser.getUserId())) {
             throw new UnauthorizedAccessException("An error occurred while searching partner");
         }
+
+
+        partner.getPartnerExpertises().removeIf(partnerExpertise -> {
+            var expertise = partnerExpertise.getExpertise();
+
+            if (!expertise.isActive()) {
+                return true;
+            }
+
+            return expertise.getParentExpertise() != null && !expertise.getParentExpertise().isActive();
+        });
 
         return partnerMapper.toDto(partner);
     }
