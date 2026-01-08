@@ -68,9 +68,19 @@ public class ExpertiseService {
     }
 
     public ExpertiseDto findExpertise(Long expertiseId) {
-        return expertiseRepository.findById(expertiseId)
-                .map(expertiseMapper::entityToExpertiseDto)
-                .orElseThrow(() -> new ResourceNotFoundException("Expertise not found"));
+        var expertise = expertiseRepository.findById(expertiseId).orElseThrow(() -> new ResourceNotFoundException("Expertise not found"));
+
+        if (!expertise.isActive()) {
+            throw new ResourceNotFoundException("Expertise not found");
+        }
+
+        var loggedUser = userService.getLoggedUser();
+        if (!expertise.getUserId().equals(loggedUser.getUserId())) {
+            throw new UnauthorizedAccessException("An error occurred while searching partner");
+        }
+
+        expertise.getSpecializations().removeIf(e -> !e.isActive());
+        return expertiseMapper.entityToExpertiseDto(expertise);
     }
 
     public ExpertiseDto createExpertise(ExpertiseFormDto expertise) {
