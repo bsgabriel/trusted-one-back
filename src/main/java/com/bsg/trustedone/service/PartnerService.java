@@ -108,21 +108,9 @@ public class PartnerService {
         return PageResponse.from(page.map(partnerMapper::toListingDto));
     }
 
+    @Transactional
     public void deletePartner(Long partnerId) {
-        var opt = partnerRepository.findById(partnerId);
-
-        if (opt.isEmpty()) {
-            return;
-        }
-
-        var loggedUser = userService.getLoggedUser();
-        var partner = opt.get();
-
-        if (!partner.getUserId().equals(loggedUser.getUserId())) {
-            throw new UnauthorizedAccessException("An error occurred while deleting partner");
-        }
-
-        partnerRepository.deleteById(partnerId);
+        partnerRepository.deactivate(partnerId, userService.getLoggedUser().getUserId());
     }
 
     public PartnerDto findPartner(Long partnerId) {
