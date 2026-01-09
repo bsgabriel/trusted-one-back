@@ -76,7 +76,10 @@ public class PartnerService {
     public PageResponse<PartnerListingDto> listPartners(String search, Pageable pageable, boolean fullSearch) {
         var loggedUser = userService.getLoggedUser();
         Specification<Partner> spec = (root, query, cb) -> {
-            var predicate = cb.equal(root.get("userId"), loggedUser.getUserId());
+            var predicate = cb.and(
+                    cb.equal(root.get("userId"), loggedUser.getUserId()),
+                    cb.isTrue(root.get("active"))
+            );
 
             if (StringUtils.isNotBlank(search)) {
                 var searchPattern = "%" + search.toLowerCase() + "%";
@@ -105,30 +108,33 @@ public class PartnerService {
         return PageResponse.from(page.map(partnerMapper::toListingDto));
     }
 
+    @Transactional
     public void deletePartner(Long partnerId) {
-        var opt = partnerRepository.findById(partnerId);
-
-        if (opt.isEmpty()) {
-            return;
-        }
-
-        var loggedUser = userService.getLoggedUser();
-        var partner = opt.get();
-
-        if (!partner.getUserId().equals(loggedUser.getUserId())) {
-            throw new UnauthorizedAccessException("An error occurred while deleting partner");
-        }
-
-        partnerRepository.deleteById(partnerId);
+        partnerRepository.deactivate(partnerId, userService.getLoggedUser().getUserId());
     }
 
     public PartnerDto findPartner(Long partnerId) {
         var partner = partnerRepository.findById(partnerId).orElseThrow(() -> new ResourceNotFoundException("Partner not found"));
 
+        if (!partner.isActive()) {
+            throw new ResourceNotFoundException("Partner not found");
+        }
+
         var loggedUser = userService.getLoggedUser();
         if (!partner.getUserId().equals(loggedUser.getUserId())) {
             throw new UnauthorizedAccessException("An error occurred while searching partner");
         }
+
+
+        partner.getPartnerExpertises().removeIf(partnerExpertise -> {
+            var expertise = partnerExpertise.getExpertise();
+
+            if (!expertise.isActive()) {
+                return true;
+            }
+
+            return expertise.getParentExpertise() != null && !expertise.getParentExpertise().isActive();
+        });
 
         return partnerMapper.toDto(partner);
     }

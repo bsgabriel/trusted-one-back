@@ -62,7 +62,10 @@ public class ExpertiseMapper {
         return ExpertiseListingDto.builder()
                 .expertiseId(expertise.getExpertiseId())
                 .name(expertise.getName())
-                .specializationCount(expertise.getSpecializations().size())
+                 .specializationCount((int) expertise.getSpecializations()
+                        .stream()
+                        .filter(Expertise::isActive)
+                        .count())
                 .build();
     }
 

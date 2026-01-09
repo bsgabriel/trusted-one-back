@@ -29,6 +29,7 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
                 Company company
             left join Partner partner on
                 partner.company.companyId = company.companyId
+                and partner.active
             where
                 company.userId = :userId
                 AND (
@@ -51,6 +52,7 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
                 Company company
             left join Partner partner ON
                 partner.company.id = company.companyId
+                and partner.active
             where
                 company.companyId = :companyId
             order by

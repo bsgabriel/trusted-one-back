@@ -4,6 +4,7 @@ import com.bsg.trustedone.entity.Expertise;
 import com.bsg.trustedone.projection.SpecializationListingProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -15,8 +16,6 @@ public interface ExpertiseRepository extends JpaRepository<Expertise, Long>, Jpa
 
     boolean existsByNameAndUserId(String name, Long userId);
 
-    List<Expertise> findByParentExpertiseExpertiseId(Long parentExpertiseId);
-
     Optional<Expertise> findByNameAndUserId(String name, Long userId);
 
     @Query("""
@@ -27,14 +26,27 @@ public interface ExpertiseRepository extends JpaRepository<Expertise, Long>, Jpa
                 count(pe) as partnerCount
             from
                 Expertise e
-                left join e.partnerExpertises pe
+                left join e.partnerExpertises pe on pe.partner.active = true
             where
                 e.parentExpertise.expertiseId = :parentExpertiseId
                 and e.userId = :userId
+                and e.active
             group by
                 e.parentExpertise.expertiseId, e.expertiseId, e.name
             order by
                 e.name
             """)
     List<SpecializationListingProjection> listSpecializations(Long parentExpertiseId, Long userId);
+
+    @Modifying
+    @Query("""
+            update
+                Expertise e
+            set
+                active = false
+            where
+                expertiseId = :expertiseId
+                and userId = :userId
+            """)
+    void deactivate(Long expertiseId, Long userId);
 }

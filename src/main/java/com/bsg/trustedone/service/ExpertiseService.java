@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,8 @@ public class ExpertiseService {
         Specification<Expertise> spec = (root, query, cb) -> {
             var predicate = cb.and(
                     cb.equal(root.get("userId"), loggedUser.getUserId()),
-                    root.get("parentExpertise").isNull()
+                    root.get("parentExpertise").isNull(),
+                    cb.isTrue(root.get("active"))
             );
 
             if (StringUtils.isNotBlank(search)) {
@@ -66,9 +68,21 @@ public class ExpertiseService {
     }
 
     public ExpertiseDto findExpertise(Long expertiseId) {
-        return expertiseRepository.findById(expertiseId)
-                .map(expertiseMapper::entityToExpertiseDto)
-                .orElseThrow(() -> new ResourceNotFoundException("Expertise not found"));
+        var expertise = expertiseRepository.findById(expertiseId).orElseThrow(() -> new ResourceNotFoundException("Expertise not found"));
+
+        if (!expertise.isActive()) {
+            throw new ResourceNotFoundException("Expertise not found");
+        }
+
+        var loggedUser = userService.getLoggedUser();
+        if (!expertise.getUserId().equals(loggedUser.getUserId())) {
+            throw new UnauthorizedAccessException("An error occurred while searching partner");
+        }
+
+        expertise.getSpecializations().removeIf(e -> !e.isActive());
+        expertise.getSpecializations().forEach(s -> s.getPartnerExpertises().removeIf(pe -> !pe.getPartner().isActive()));
+        expertise.getPartnerExpertises().removeIf(pe -> !pe.getPartner().isActive());
+        return expertiseMapper.entityToExpertiseDto(expertise);
     }
 
     public ExpertiseDto createExpertise(ExpertiseFormDto expertise) {
@@ -100,13 +114,9 @@ public class ExpertiseService {
         return expertiseMapper.entityToExpertiseDto(expertiseRepository.save(expertise));
     }
 
+    @Transactional
     public void deleteExpertise(Long expertiseId) {
-        List<Expertise> specializations = expertiseRepository.findByParentExpertiseExpertiseId(expertiseId);
-        for (Expertise specialization : specializations) {
-            deleteExpertise(specialization.getExpertiseId());
-        }
-
-        expertiseRepository.deleteById(expertiseId);
+        expertiseRepository.deactivate(expertiseId, userService.getLoggedUser().getUserId());
     }
 
     public List<SpecializationListingDto> listSpecializations(Long expertiseId) {
@@ -118,9 +128,10 @@ public class ExpertiseService {
     }
 
     public SpecializationDto findSpecialization(Long specializationId) {
-        return expertiseRepository.findById(specializationId)
-                .map(expertiseMapper::entityToSpecialization)
-                .orElseThrow(() -> new ResourceNotFoundException("Specialization not found"));
+        var specialization = expertiseRepository.findById(specializationId).orElseThrow(() -> new ResourceNotFoundException("Specialization not found"));
+
+        specialization.getPartnerExpertises().removeIf(pe -> !pe.getPartner().isActive());
+        return expertiseMapper.entityToSpecialization(specialization);
     }
 
     public SpecializationDto createSpecialization(SpecializationFormDto specialization) {

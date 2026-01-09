@@ -33,6 +33,9 @@ public class Partner {
 
     private Long userId;
 
+    @Builder.Default
+    private boolean active = true;
+
     @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ContactMethod> contactMethods = new ArrayList<>();

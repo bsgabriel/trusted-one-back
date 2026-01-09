@@ -60,4 +60,16 @@ public interface PartnerRepository extends JpaRepository<Partner, Long>, JpaSpec
                 p.partnerId in :partnerIds
             """)
     void addPartnersToCompany(List<Long> partnerIds, Long companyId);
+
+    @Modifying
+    @Query("""
+            update
+                Partner p
+            set
+                active = false
+            where
+                partnerId = :partnerId
+                and userId = :userId
+            """)
+    void deactivate(Long partnerId, Long userId);
 }

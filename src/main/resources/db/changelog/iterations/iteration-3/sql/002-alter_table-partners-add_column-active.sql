@@ -1,0 +1,2 @@
+ALTER TABLE partners ADD COLUMN active BOOLEAN NOT NULL DEFAULT true;
+COMMENT ON COLUMN partners.active IS 'Indicates if the partner is available for use. False acts as a soft delete to preserve historical data.';
