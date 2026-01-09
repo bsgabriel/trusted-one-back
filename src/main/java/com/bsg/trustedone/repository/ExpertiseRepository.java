@@ -26,7 +26,7 @@ public interface ExpertiseRepository extends JpaRepository<Expertise, Long>, Jpa
                 count(pe) as partnerCount
             from
                 Expertise e
-                left join e.partnerExpertises pe
+                left join e.partnerExpertises pe on pe.partner.active = true
             where
                 e.parentExpertise.expertiseId = :parentExpertiseId
                 and e.userId = :userId

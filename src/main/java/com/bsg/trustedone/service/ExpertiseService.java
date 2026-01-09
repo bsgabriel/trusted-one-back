@@ -80,6 +80,8 @@ public class ExpertiseService {
         }
 
         expertise.getSpecializations().removeIf(e -> !e.isActive());
+        expertise.getSpecializations().forEach(s -> s.getPartnerExpertises().removeIf(pe -> !pe.getPartner().isActive()));
+        expertise.getPartnerExpertises().removeIf(pe -> !pe.getPartner().isActive());
         return expertiseMapper.entityToExpertiseDto(expertise);
     }
 
@@ -126,9 +128,10 @@ public class ExpertiseService {
     }
 
     public SpecializationDto findSpecialization(Long specializationId) {
-        return expertiseRepository.findById(specializationId)
-                .map(expertiseMapper::entityToSpecialization)
-                .orElseThrow(() -> new ResourceNotFoundException("Specialization not found"));
+        var specialization = expertiseRepository.findById(specializationId).orElseThrow(() -> new ResourceNotFoundException("Specialization not found"));
+
+        specialization.getPartnerExpertises().removeIf(pe -> !pe.getPartner().isActive());
+        return expertiseMapper.entityToSpecialization(specialization);
     }
 
     public SpecializationDto createSpecialization(SpecializationFormDto specialization) {
