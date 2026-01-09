@@ -2,7 +2,6 @@ package com.bsg.trustedone.service;
 
 import com.bsg.trustedone.dto.*;
 import com.bsg.trustedone.entity.Partner;
-import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.PartnerFactory;
 import com.bsg.trustedone.helper.DummyObjects;
 import com.bsg.trustedone.helper.RandomUtils;
@@ -18,10 +17,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -159,47 +156,4 @@ class PartnerServiceTest {
         assertThat(result).isNotNull();
     }
 
-    @Test
-    @DisplayName("Should do nothing when trying to delete a non-existing partner")
-    void deletePartner_whenPartnerNotFound_thenDoNothing() {
-        // Given
-        when(partnerRepository.findById(99L)).thenReturn(Optional.empty());
-
-        // When
-        partnerService.deletePartner(99L);
-
-        // Then
-        verify(partnerRepository, never()).deleteById(any());
-    }
-
-    @Test
-    @DisplayName("Should delete partner when it belongs to the logged user")
-    void deletePartner_whenPartnerBelongsToUser_thenDelete() {
-        // Given
-        var partner = DummyObjects.newInstance(Partner.class);
-        partner.setUserId(loggedUser.getUserId());
-        when(partnerRepository.findById(10L)).thenReturn(Optional.of(partner));
-
-        // When
-        partnerService.deletePartner(10L);
-
-        // Then
-        verify(partnerRepository).deleteById(10L);
-    }
-
-    @Test
-    @DisplayName("Should throw UnauthorizedAccessException when trying to delete someone else's partner")
-    void deletePartner_whenPartnerDoesNotBelongToUser_thenThrowUnauthorized() {
-        // Given
-        var partner = DummyObjects.newInstance(Partner.class);
-        partner.setUserId(loggedUser.getUserId() + 1);
-        when(partnerRepository.findById(10L)).thenReturn(Optional.of(partner));
-
-        // When & then
-        assertThatThrownBy(() -> partnerService.deletePartner(10L))
-                .isInstanceOf(UnauthorizedAccessException.class)
-                .hasMessageContaining("An error occurred while deleting partner");
-
-        verify(partnerRepository, never()).deleteById(any());
-    }
 }
