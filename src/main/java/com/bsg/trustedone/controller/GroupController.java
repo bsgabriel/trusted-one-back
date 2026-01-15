@@ -26,6 +26,11 @@ public class GroupController {
         return ResponseEntity.ok(groupService.listGroups(search, pageable));
     }
 
+    @GetMapping("/{groupId}")
+    public ResponseEntity<GroupDto> fetchGroup(@PathVariable("groupId") Long groupId) {
+        return ResponseEntity.ok(groupService.findById(groupId));
+    }
+
     @PostMapping
     public ResponseEntity<GroupDto> createGroup(@RequestBody GroupFormDto request) {
         var createdGroup = groupService.createGroup(request);
@@ -33,20 +38,15 @@ public class GroupController {
         return ResponseEntity.created(uri).body(createdGroup);
     }
 
-    @GetMapping("/{groupId}")
-    public ResponseEntity<GroupDto> findGroup(@PathVariable("groupId") Long groupId) {
-        return ResponseEntity.ok(groupService.findById(groupId));
+    @PutMapping("/{groupId}")
+    public ResponseEntity<GroupDto> updateGroup(@PathVariable("groupId") Long groupId, @RequestBody GroupFormDto groupCreationDto) {
+        return ResponseEntity.ok(groupService.updateGroup(groupCreationDto, groupId));
     }
 
     @DeleteMapping("/{groupId}")
     public ResponseEntity<Void> deleteGroup(@PathVariable("groupId") Long groupdId) {
         groupService.deleteGroup(groupdId);
         return ResponseEntity.noContent().build();
-    }
-
-    @PutMapping("/{groupId}")
-    public ResponseEntity<GroupDto> updateGroup(@PathVariable("groupId") Long groupId, @RequestBody GroupFormDto groupCreationDto) {
-        return ResponseEntity.ok(groupService.updateGroup(groupCreationDto, groupId));
     }
 
 }
