@@ -115,7 +115,7 @@ public class GroupService {
         return groupMapper.toDto(groupProjections);
     }
 
-    public void syncPartnersWithGroup(Long groupId, List<Long> partnerIds) {
+    private void syncPartnersWithGroup(Long groupId, List<Long> partnerIds) {
         partnerServiceProvider.getObject().removePartnersFromGroup(groupId);
 
         if (!partnerIds.isEmpty()) {
