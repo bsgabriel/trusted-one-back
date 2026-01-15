@@ -35,12 +35,13 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final ObjectProvider<PartnerService> partnerServiceProvider;
 
-    public List<GroupDto> getAllGroups() {
+    public PageResponse<GroupListingDto> listGroups(String search, Pageable pageable) {
         var loggedUser = userService.getLoggedUser();
-        return groupRepository.findAllByUserIdOrderByName(loggedUser.getUserId())
-                .stream()
-                .map(groupMapper::toDto)
-                .toList();
+        var sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("name").ascending());
+        var searchParam = StringUtils.isBlank(search) ? null : search.trim();
+
+        var page = groupRepository.listGroups(loggedUser.getUserId(), searchParam, sortedPageable);
+        return PageResponse.from(page.map(groupMapper::toListingDto));
     }
 
     @Transactional
@@ -90,15 +91,6 @@ public class GroupService {
         return this.groupRepository.findByGroupIdAndUserId(group.getGroupId(), userService.getLoggedUser().getUserId())
                 .map(groupMapper::toDto)
                 .orElseGet(() -> this.createGroup(groupMapper.toCreationDto(group)));
-    }
-
-    public PageResponse<GroupListingDto> listGroups(String search, Pageable pageable) {
-        var loggedUser = userService.getLoggedUser();
-        var sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("name").ascending());
-        var searchParam = StringUtils.isBlank(search) ? null : search.trim();
-
-        var page = groupRepository.listGroups(loggedUser.getUserId(), searchParam, sortedPageable);
-        return PageResponse.from(page.map(groupMapper::toListingDto));
     }
 
     public GroupDto findById(Long groupId) {

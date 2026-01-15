@@ -22,8 +22,8 @@ public class GroupController {
     private final GroupService groupService;
 
     @GetMapping
-    public ResponseEntity<List<GroupDto>> findAllGroups() {
-        return ResponseEntity.ok(groupService.getAllGroups());
+    public ResponseEntity<PageResponse<GroupListingDto>> listGroups(@RequestParam(required = false) String search, @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(groupService.listGroups(search, pageable));
     }
 
     @PostMapping
@@ -45,14 +45,8 @@ public class GroupController {
     }
 
     @PutMapping("/{groupId}")
-    public ResponseEntity<GroupDto> update(@PathVariable("groupId") Long groupId, @RequestBody GroupFormDto groupCreationDto) {
+    public ResponseEntity<GroupDto> updateGroup(@PathVariable("groupId") Long groupId, @RequestBody GroupFormDto groupCreationDto) {
         return ResponseEntity.ok(groupService.updateGroup(groupCreationDto, groupId));
     }
-
-    @GetMapping("/listing")
-    public ResponseEntity<PageResponse<GroupListingDto>> listGroups(@RequestParam(required = false) String search, @PageableDefault(size = 20) Pageable pageable) {
-        return ResponseEntity.ok(groupService.listGroups(search, pageable));
-    }
-
 
 }
