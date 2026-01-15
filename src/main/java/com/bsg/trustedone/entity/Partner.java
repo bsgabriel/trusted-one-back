@@ -49,4 +49,8 @@ public class Partner {
     @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<BusinessProfile> businessProfile = new ArrayList<>();
+
+    @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Referral> referrals = new ArrayList<>();
 }
