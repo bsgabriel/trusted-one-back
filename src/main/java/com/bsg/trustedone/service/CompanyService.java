@@ -61,7 +61,8 @@ public class CompanyService {
     public CompanyDto updateCompany(CompanyFormDto request, Long companyId) {
         companyValidator.validateCompanyUpdate(request);
 
-        var company = companyRepository.findById(companyId).orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+        var company = companyRepository.findByCompanyIdAndUserId(companyId, userService.getLoggedUser().getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
 
         if (!company.getUserId().equals(userService.getLoggedUser().getUserId())) {
             throw new UnauthorizedAccessException("An error ocurred while updating company");
@@ -82,7 +83,7 @@ public class CompanyService {
             return this.createCompany(companyMapper.toCreationDto(company));
         }
 
-        return this.companyRepository.findById(company.getCompanyId())
+        return this.companyRepository.findByCompanyIdAndUserId(company.getCompanyId(), userService.getLoggedUser().getUserId())
                 .map(companyMapper::toDto)
                 .orElseGet(() -> this.createCompany(companyMapper.toCreationDto(company)));
     }
@@ -97,7 +98,7 @@ public class CompanyService {
     }
 
     public CompanyDto findById(Long companyId) {
-        var companyProjections = companyRepository.findCompanyWithPartners(companyId);
+        var companyProjections = companyRepository.findCompanyWithPartners(companyId, userService.getLoggedUser().getUserId());
 
         if (CollectionUtils.isEmpty(companyProjections)) {
             throw new ResourceNotFoundException("Company not found");
