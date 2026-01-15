@@ -50,14 +50,6 @@ public class CompanyService {
         return companyMapper.toDto(companyRepository.save(entity));
     }
 
-    public List<CompanyDto> getAllCompanies() {
-        var loggedUser = userService.getLoggedUser();
-        return companyRepository.findAllByUserIdOrderByName(loggedUser.getUserId())
-                .stream()
-                .map(companyMapper::toDto)
-                .toList();
-    }
-
     @Transactional
     public void deleteCompany(Long companyId) {
         var loggedUserId = userService.getLoggedUser().getUserId();
