@@ -9,7 +9,6 @@ import com.bsg.trustedone.exception.ResourceNotFoundException;
 import com.bsg.trustedone.factory.GroupFactory;
 import com.bsg.trustedone.mapper.GroupMapper;
 import com.bsg.trustedone.repository.GroupRepository;
-import com.bsg.trustedone.validator.GroupValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.ObjectProvider;
@@ -31,7 +30,7 @@ public class GroupService {
     private final GroupMapper groupMapper;
     private final UserService userService;
     private final GroupFactory groupFactory;
-    private final GroupValidator groupValidator;
+    private final MessageService messageService;
     private final GroupRepository groupRepository;
     private final ObjectProvider<PartnerService> partnerServiceProvider;
 
@@ -47,11 +46,10 @@ public class GroupService {
     @Transactional
     public GroupDto createGroup(GroupFormDto group) {
         group.setName(group.getName().trim());
-        groupValidator.validateGroupCreate(group);
         var loggedUser = userService.getLoggedUser();
 
         if (groupRepository.existsByNameAndUserId(group.getName(), loggedUser.getUserId())) {
-            throw new ResourceAlreadyExistsException("A group with this name already exists. Please choose a different name.");
+            throw new ResourceAlreadyExistsException(messageService.getMessage("group.error.already-exists"));
         }
 
         var entity = groupRepository.save(groupFactory.createEntity(group, loggedUser));
@@ -68,10 +66,8 @@ public class GroupService {
 
     @Transactional
     public GroupDto updateGroup(GroupFormDto request, Long groupId) {
-        groupValidator.validateGroupUpdate(request);
-
         var group = groupRepository.findByGroupIdAndUserId(groupId, userService.getLoggedUser().getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("group.error.not-found")));
 
         group.setName(request.getName());
         group.setDescription(request.getDescription());
@@ -97,7 +93,7 @@ public class GroupService {
         var groupProjections = groupRepository.findGroupWithPartners(groupId, userService.getLoggedUser().getUserId());
 
         if (CollectionUtils.isEmpty(groupProjections)) {
-            throw new ResourceNotFoundException("Group not found");
+            throw new ResourceNotFoundException(messageService.getMessage("group.error.not-found"));
         }
 
         return groupMapper.toDto(groupProjections);

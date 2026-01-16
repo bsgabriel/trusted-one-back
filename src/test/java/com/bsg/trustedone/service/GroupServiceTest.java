@@ -5,6 +5,7 @@ import com.bsg.trustedone.dto.GroupFormDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.Group;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
+import com.bsg.trustedone.exception.ResourceCreationException;
 import com.bsg.trustedone.exception.ResourceUpdateException;
 import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.GroupFactory;
@@ -12,7 +13,6 @@ import com.bsg.trustedone.helper.DummyObjects;
 import com.bsg.trustedone.helper.RandomUtils;
 import com.bsg.trustedone.mapper.GroupMapper;
 import com.bsg.trustedone.repository.GroupRepository;
-import com.bsg.trustedone.validator.GroupValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.ObjectProvider;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,9 +40,6 @@ class GroupServiceTest {
 
     @Mock
     private GroupRepository groupRepository;
-
-    @Mock
-    private GroupValidator groupValidator;
 
     @Mock
     private GroupMapper groupMapper;
@@ -78,17 +74,11 @@ class GroupServiceTest {
     @DisplayName("Should propagate exception when group creation validate fails")
     void groupCreation_withInvalidGroupData_shouldPropagateValidationException() {
         // Given
-        var groupCreationDto = DummyObjects.newInstance(GroupFormDto.class);
-
-        doThrow(new ResourceAlreadyExistsException("Error", List.of()))
-                .when(groupValidator).validateGroupCreate(groupCreationDto);
+        var groupCreationDto = GroupFormDto.builder().build();
 
         // When & Then
         assertThatThrownBy(() -> groupService.createGroup(groupCreationDto))
-                .isInstanceOf(ResourceAlreadyExistsException.class)
-                .hasMessage("Error");
-
-        verify(groupValidator).validateGroupCreate(groupCreationDto);
+                .isInstanceOf(ResourceCreationException.class);
     }
 
     @Test
@@ -142,17 +132,11 @@ class GroupServiceTest {
     @DisplayName("Should propagate exception when group update validate fails")
     void groupUpdate_withInvalidGroupData_shouldPropagateValidationException() {
         // Given
-        var updateData = DummyObjects.newInstance(GroupFormDto.class);
-
-        doThrow(new ResourceUpdateException("Error", List.of()))
-                .when(groupValidator).validateGroupUpdate(updateData);
+        var updateData = GroupFormDto.builder().build();
 
         // When & Then
         assertThatThrownBy(() -> groupService.updateGroup(updateData, anyLong()))
-                .isInstanceOf(ResourceUpdateException.class)
-                .hasMessage("Error");
-
-        verify(groupValidator).validateGroupUpdate(updateData);
+                .isInstanceOf(ResourceUpdateException.class);
     }
 
     @Test

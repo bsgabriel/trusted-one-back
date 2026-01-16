@@ -1,10 +1,11 @@
 package com.bsg.trustedone.controller;
 
-import com.bsg.trustedone.dto.GroupFormDto;
 import com.bsg.trustedone.dto.GroupDto;
+import com.bsg.trustedone.dto.GroupFormDto;
 import com.bsg.trustedone.dto.GroupListingDto;
 import com.bsg.trustedone.dto.PageResponse;
 import com.bsg.trustedone.service.GroupService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -12,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/group")
@@ -32,14 +32,14 @@ public class GroupController {
     }
 
     @PostMapping
-    public ResponseEntity<GroupDto> createGroup(@RequestBody GroupFormDto request) {
+    public ResponseEntity<GroupDto> createGroup(@RequestBody @Valid GroupFormDto request) {
         var createdGroup = groupService.createGroup(request);
         var uri = URI.create(String.format("/group/%d", createdGroup.getGroupId()));
         return ResponseEntity.created(uri).body(createdGroup);
     }
 
     @PutMapping("/{groupId}")
-    public ResponseEntity<GroupDto> updateGroup(@PathVariable("groupId") Long groupId, @RequestBody GroupFormDto groupCreationDto) {
+    public ResponseEntity<GroupDto> updateGroup(@PathVariable("groupId") Long groupId, @RequestBody @Valid GroupFormDto groupCreationDto) {
         return ResponseEntity.ok(groupService.updateGroup(groupCreationDto, groupId));
     }
 
