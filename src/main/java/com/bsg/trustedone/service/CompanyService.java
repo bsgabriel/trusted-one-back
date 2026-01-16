@@ -1,16 +1,14 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.CompanyFormDto;
 import com.bsg.trustedone.dto.CompanyDto;
+import com.bsg.trustedone.dto.CompanyFormDto;
 import com.bsg.trustedone.dto.CompanyListingDto;
 import com.bsg.trustedone.dto.PageResponse;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.exception.ResourceNotFoundException;
-import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.CompanyFactory;
 import com.bsg.trustedone.mapper.CompanyMapper;
 import com.bsg.trustedone.repository.CompanyRepository;
-import com.bsg.trustedone.validator.CompanyValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.ObjectProvider;
@@ -31,19 +29,16 @@ public class CompanyService {
 
     private final UserService userService;
     private final CompanyMapper companyMapper;
+    private final MessageService messageService;
     private final CompanyFactory companyFactory;
-    private final CompanyValidator companyValidator;
     private final CompanyRepository companyRepository;
     private final ObjectProvider<PartnerService> partnerServiceProvider;
 
     public CompanyDto createCompany(CompanyFormDto company) {
-        company.setName(company.getName().trim());
-        companyValidator.validateCompanyCreate(company);
-
         var loggedUser = userService.getLoggedUser();
 
         if (companyRepository.existsByNameAndUserId(company.getName(), loggedUser.getUserId())) {
-            throw new ResourceAlreadyExistsException("A company with this name already exists. Please choose a different name.");
+            throw new ResourceAlreadyExistsException(messageService.getMessage("company.error.already-exists"));
         }
 
         var entity = companyFactory.createEntity(company, loggedUser.getUserId());
@@ -59,14 +54,8 @@ public class CompanyService {
 
     @Transactional
     public CompanyDto updateCompany(CompanyFormDto request, Long companyId) {
-        companyValidator.validateCompanyUpdate(request);
-
         var company = companyRepository.findByCompanyIdAndUserId(companyId, userService.getLoggedUser().getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
-
-        if (!company.getUserId().equals(userService.getLoggedUser().getUserId())) {
-            throw new UnauthorizedAccessException("An error ocurred while updating company");
-        }
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("company.error.not-found")));
 
         company.setName(request.getName());
         company.setImage(request.getImage());
@@ -101,7 +90,7 @@ public class CompanyService {
         var companyProjections = companyRepository.findCompanyWithPartners(companyId, userService.getLoggedUser().getUserId());
 
         if (CollectionUtils.isEmpty(companyProjections)) {
-            throw new ResourceNotFoundException("Company not found");
+            throw new ResourceNotFoundException(messageService.getMessage("company.error.not-found"));
         }
 
         return companyMapper.toDto(companyProjections);

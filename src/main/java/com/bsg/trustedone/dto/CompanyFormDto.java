@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class CompanyFormDto {
 
-    @NotBlank(message = "Group name is required")
+    @NotBlank(message = "{company.validation.name.required}")
     private String name;
 
     private String image;

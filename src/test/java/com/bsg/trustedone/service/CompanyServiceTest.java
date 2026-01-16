@@ -12,7 +12,6 @@ import com.bsg.trustedone.helper.DummyObjects;
 import com.bsg.trustedone.helper.RandomUtils;
 import com.bsg.trustedone.mapper.CompanyMapper;
 import com.bsg.trustedone.repository.CompanyRepository;
-import com.bsg.trustedone.validator.CompanyValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,7 +22,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.ObjectProvider;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,9 +41,6 @@ class CompanyServiceTest {
 
     @Mock
     private CompanyRepository companyRepository;
-
-    @Mock
-    private CompanyValidator companypValidator;
 
     @Mock
     private CompanyMapper companyMapper;
@@ -78,17 +73,12 @@ class CompanyServiceTest {
     @DisplayName("Should propagate exception when company creation validate fails")
     void companyCreation_withInvalidCompanyData_shouldPropagateValidationException() {
         // Given
-        var companyCreationDto = DummyObjects.newInstance(CompanyFormDto.class);
-
-        doThrow(new ResourceAlreadyExistsException("Error", List.of()))
-                .when(companypValidator).validateCompanyCreate(companyCreationDto);
+        var companyCreationDto = CompanyFormDto.builder().build();
 
         // When & Then
         assertThatThrownBy(() -> companyService.createCompany(companyCreationDto))
-                .isInstanceOf(ResourceAlreadyExistsException.class)
-                .hasMessage("Error");
+                .isInstanceOf(ResourceAlreadyExistsException.class);
 
-        verify(companypValidator).validateCompanyCreate(companyCreationDto);
     }
 
     @Test
@@ -142,17 +132,11 @@ class CompanyServiceTest {
     @DisplayName("Should propagate exception when company update validate fails")
     void companyUpdate_withInvalidCompanyData_shouldPropagateValidationException() {
         // Given
-        var updateData = DummyObjects.newInstance(CompanyFormDto.class);
-
-        doThrow(new ResourceUpdateException("Error", List.of()))
-                .when(companypValidator).validateCompanyUpdate(updateData);
+        var updateData = CompanyFormDto.builder().build();
 
         // When & Then
         assertThatThrownBy(() -> companyService.updateCompany(updateData, anyLong()))
-                .isInstanceOf(ResourceUpdateException.class)
-                .hasMessage("Error");
-
-        verify(companypValidator).validateCompanyUpdate(updateData);
+                .isInstanceOf(ResourceUpdateException.class);
     }
 
     @Test
