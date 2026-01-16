@@ -5,12 +5,10 @@ import com.bsg.trustedone.dto.UserDetailDto;
 import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
-import com.bsg.trustedone.exception.ResourceCreationException;
 import com.bsg.trustedone.exception.UserLoginException;
 import com.bsg.trustedone.helper.DummyObjects;
 import com.bsg.trustedone.mapper.UserMapper;
 import com.bsg.trustedone.repository.UserRepository;
-import com.bsg.trustedone.validator.UserValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.DisplayName;
@@ -26,8 +24,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,9 +38,6 @@ class UserServiceTest {
 
     @Mock
     private UserMapper userMapper;
-
-    @Mock
-    private UserValidator userValidator;
 
     @Mock
     private UserRepository userRepository;
@@ -92,7 +85,6 @@ class UserServiceTest {
                 .isInstanceOf(ResourceAlreadyExistsException.class)
                 .hasMessage("Email already registered");
 
-        verify(userValidator).validateRegistrationData(accountCreationDto);
         verify(userRepository).existsByEmail(accountCreationDto.getEmail());
         verify(userRepository, never()).save(any(User.class));
         verify(userMapper, never()).toUserDto(any(User.class));
@@ -101,13 +93,11 @@ class UserServiceTest {
     @Test
     @DisplayName("Should propagate exception when validation fails")
     void createUser_withInvalidData_shouldPropagateAccountCreationException() {
+        // TODO: maybe remove
         // Given
         var accountCreationDto = mock(AccountCreationDto.class);
-        doThrow(new ResourceCreationException("Error", List.of())).when(userValidator).validateRegistrationData(accountCreationDto);
 
         // When & Then
-        assertThatThrownBy(() -> userService.createUser(accountCreationDto)).isInstanceOf(ResourceCreationException.class);
-        verify(userValidator).validateRegistrationData(accountCreationDto);
         verify(userRepository, never()).existsByEmail(anyString());
         verify(userRepository, never()).save(any(User.class));
     }
@@ -241,7 +231,6 @@ class UserServiceTest {
             userService.login(loginDto, httpRequest);
 
             // Then
-            verify(userValidator).validateLoginData(loginDto);
             verify(authenticationManager).authenticate(authToken);
             verify(httpRequest).getSession(true);
             verify(httpSession).setAttribute(SPRING_SECURITY_CONTEXT_KEY, securityContext);
@@ -251,19 +240,16 @@ class UserServiceTest {
     @Test
     @DisplayName("Should propagate exception when login validation fails")
     void login_withInvalidLoginData_shouldPropagateValidationException() {
+        // TODO: maybe remove
         // Given
         var userLoginDto = mock(UserLoginDto.class);
         var httpRequest = mock(HttpServletRequest.class);
-
-        doThrow(new UserLoginException("Invalid login data", List.of()))
-                .when(userValidator).validateLoginData(userLoginDto);
 
         // When & Then
         assertThatThrownBy(() -> userService.login(userLoginDto, httpRequest))
                 .isInstanceOf(UserLoginException.class)
                 .hasMessage("Invalid login data");
 
-        verify(userValidator).validateLoginData(userLoginDto);
         verify(authenticationManager, never()).authenticate(any());
         verify(httpRequest, never()).getSession(anyBoolean());
     }

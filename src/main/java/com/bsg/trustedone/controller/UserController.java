@@ -5,6 +5,7 @@ import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +18,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> register(@RequestBody AccountCreationDto request) {
+    public ResponseEntity<UserDto> register(@RequestBody @Valid AccountCreationDto request) {
         return ResponseEntity.ok(userService.createUser(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody UserLoginDto request, HttpServletRequest httpRequest) {
+    public ResponseEntity<Void> login(@RequestBody @Valid UserLoginDto request, HttpServletRequest httpRequest) {
         userService.login(request, httpRequest);
         return ResponseEntity.noContent().build();
     }

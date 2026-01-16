@@ -14,15 +14,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AccountCreationDto {
 
-    @NotBlank(message = "Name is required")
+    @NotBlank(message = "{user.validation.name.required}")
     private String name;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
+    @NotBlank(message = "{user.validation.email.required}")
+    @Email(message = "{user.validation.email.invalid-format}")
     private String email;
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 8, message = "Password must be at least 8 characters")
+    @NotBlank(message = "{user.validation.password.required}")
+    @Size(min = 8, message = "{user.validation.password.min-length}")
     private String password;
 
 }

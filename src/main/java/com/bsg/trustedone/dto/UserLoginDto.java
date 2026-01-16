@@ -13,10 +13,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserLoginDto {
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
+    @NotBlank(message = "{user.validation.email.required}")
+    @Email(message = "{user.validation.email.invalid-format}")
     private String email;
 
-    @NotBlank(message = "Password is required")
+    @NotBlank(message = "{user.validation.password.required}")
     private String password;
 }
