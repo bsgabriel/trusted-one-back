@@ -68,9 +68,9 @@ public class PartnerMapper {
                         .map(companyMapper::toDto)
                         .orElse(null))
                 .metrics(PartnerListingDto.PartnerMetricsDto.builder()
-                        .acceptedReferrals(counts.get(ReferralStatus.ACCEPTED).intValue())
-                        .rejectedReferrals(counts.get(ReferralStatus.DECLINED).intValue())
-                        .pendingReferrals(counts.get(ReferralStatus.PENDING).intValue())
+                        .acceptedReferrals(counts.getOrDefault(ReferralStatus.ACCEPTED, 0L).intValue())
+                        .rejectedReferrals(counts.getOrDefault(ReferralStatus.DECLINED, 0L).intValue())
+                        .pendingReferrals(counts.getOrDefault(ReferralStatus.PENDING, 0L).intValue())
                         .build())
                 .build();
     }
