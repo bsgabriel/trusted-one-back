@@ -7,6 +7,7 @@ import com.bsg.trustedone.dto.ReferralStatsDto;
 import com.bsg.trustedone.enums.ReferralSortType;
 import com.bsg.trustedone.enums.ReferralStatus;
 import com.bsg.trustedone.service.ReferralService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -23,7 +24,7 @@ public class ReferralController {
     private final ReferralService referralService;
 
     @PostMapping
-    public ResponseEntity<Void> newReferral(@RequestBody ReferralCreationDto request) {
+    public ResponseEntity<Void> newReferral(@RequestBody @Valid ReferralCreationDto request) {
         var id = referralService.createReferral(request);
         return ResponseEntity.created(URI.create("/referral/" + id)).build();
     }

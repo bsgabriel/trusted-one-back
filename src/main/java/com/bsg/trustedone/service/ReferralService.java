@@ -9,7 +9,6 @@ import com.bsg.trustedone.enums.ReferralSortType;
 import com.bsg.trustedone.enums.ReferralStatus;
 import com.bsg.trustedone.exception.ResourceNotFoundException;
 import com.bsg.trustedone.exception.ResourceUpdateException;
-import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.mapper.ReferralMapper;
 import com.bsg.trustedone.repository.ReferralRepository;
 import jakarta.persistence.criteria.JoinType;
@@ -32,12 +31,11 @@ import java.util.List;
 public class ReferralService {
 
     private final UserService userService;
+    private final MessageService messageService;
     private final ReferralMapper referralMapper;
     private final ReferralRepository referralRepository;
 
     public Long createReferral(ReferralCreationDto newReferral) {
-        // TODO: validar
-
         var entity = referralMapper.toEntity(newReferral, userService.getLoggedUser());
         return referralRepository.save(entity).getReferralId();
     }
@@ -91,15 +89,11 @@ public class ReferralService {
     @Transactional
     public ReferralDto updateStatus(Long referralId, ReferralStatus status) {
         if (ReferralStatus.PENDING.equals(status)) {
-            throw new ResourceUpdateException("Could not update referral status", List.of("Status should be different than 'PENDING'"));
+            throw new ResourceUpdateException(messageService.getMessage("referral.error.status.cannot-be-pending"));
         }
 
-        var loggedUser = userService.getLoggedUser();
-        var referral = referralRepository.findById(referralId).orElseThrow(() -> new ResourceNotFoundException("Referral not found"));
-
-        if (!referral.getUserId().equals(loggedUser.getUserId())) {
-            throw new UnauthorizedAccessException("User not allowed to perform this operation");
-        }
+        var referral = referralRepository.findByReferralIdAndUserId(referralId, userService.getLoggedUser().getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("referral.error.not-found")));
 
         referral.setStatus(status);
         referral.setUpdatedAt(LocalDateTime.now());

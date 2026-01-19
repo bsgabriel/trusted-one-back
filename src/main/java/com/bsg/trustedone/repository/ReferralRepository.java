@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface ReferralRepository extends JpaRepository<Referral, Long>, JpaSpecificationExecutor<Referral> {
 
@@ -30,4 +32,6 @@ public interface ReferralRepository extends JpaRepository<Referral, Long>, JpaSp
             WHERE user_id = :userId
             """, nativeQuery = true)
     ReferralStatsProjection getReferralStats(Long userId);
+
+    Optional<Referral> findByReferralIdAndUserId(Long referralId, Long userId);
 }
