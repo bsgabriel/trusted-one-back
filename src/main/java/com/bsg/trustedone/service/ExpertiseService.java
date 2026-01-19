@@ -12,7 +12,6 @@ import com.bsg.trustedone.entity.Expertise;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.exception.ResourceCreationException;
 import com.bsg.trustedone.exception.ResourceNotFoundException;
-import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.mapper.ExpertiseMapper;
 import com.bsg.trustedone.repository.ExpertiseRepository;
 import jakarta.persistence.criteria.Predicate;
@@ -36,6 +35,7 @@ import static java.util.Objects.isNull;
 public class ExpertiseService {
 
     private final UserService userService;
+    private final MessageService messageService;
     private final ExpertiseMapper expertiseMapper;
     private final ExpertiseRepository expertiseRepository;
 
@@ -68,15 +68,11 @@ public class ExpertiseService {
     }
 
     public ExpertiseDto findExpertise(Long expertiseId) {
-        var expertise = expertiseRepository.findById(expertiseId).orElseThrow(() -> new ResourceNotFoundException("Expertise not found"));
+        var expertise = expertiseRepository.findByExpertiseIdAndUserId(expertiseId, userService.getLoggedUser().getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("expertise.error.not-found")));
 
         if (!expertise.isActive()) {
-            throw new ResourceNotFoundException("Expertise not found");
-        }
-
-        var loggedUser = userService.getLoggedUser();
-        if (!expertise.getUserId().equals(loggedUser.getUserId())) {
-            throw new UnauthorizedAccessException("An error occurred while searching partner");
+            throw new ResourceNotFoundException(messageService.getMessage("expertise.error.not-found"));
         }
 
         expertise.getSpecializations().removeIf(e -> !e.isActive());
@@ -89,7 +85,7 @@ public class ExpertiseService {
         var user = userService.getLoggedUser();
 
         if (expertiseRepository.existsByNameAndUserId(expertise.getName(), user.getUserId())) {
-            throw new ResourceAlreadyExistsException("A expertise with this name already exists. Please choose a different name.");
+            throw new ResourceAlreadyExistsException(messageService.getMessage("expertise.error.already-exists"));
         }
 
         var entity = expertiseMapper.expertiseFormToEntity(expertise, user);
@@ -97,12 +93,10 @@ public class ExpertiseService {
     }
 
     public ExpertiseDto updateExpertise(Long expertiseId, ExpertiseFormDto request) {
-        var expertise = expertiseRepository.findById(expertiseId).orElseThrow(() -> new ResourceNotFoundException("Expertise not found"));
-
         var user = userService.getLoggedUser();
-        if (!expertise.getUserId().equals(user.getUserId())) {
-            throw new UnauthorizedAccessException("An error occurred while updating expertise");
-        }
+
+        var expertise = expertiseRepository.findByExpertiseIdAndUserId(expertiseId, user.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("expertise.error.not-found")));
 
         expertise.setName(request.getName());
         expertise.getSpecializations().clear();
@@ -128,7 +122,8 @@ public class ExpertiseService {
     }
 
     public SpecializationDto findSpecialization(Long specializationId) {
-        var specialization = expertiseRepository.findById(specializationId).orElseThrow(() -> new ResourceNotFoundException("Specialization not found"));
+        var specialization = expertiseRepository.findByExpertiseIdAndUserId(specializationId, userService.getLoggedUser().getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("specialization.error.not-found")));
 
         specialization.getPartnerExpertises().removeIf(pe -> !pe.getPartner().isActive());
         return expertiseMapper.entityToSpecialization(specialization);
@@ -138,14 +133,14 @@ public class ExpertiseService {
         var user = userService.getLoggedUser();
 
         var parentExpertise = expertiseRepository.findById(specialization.getParentExpertiseId())
-                .orElseThrow(() -> new ResourceNotFoundException("Expertise not found."));
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("specialization.error.parentExpertise.not-found")));
 
         if (parentExpertise.getParentExpertise() != null) {
-            throw new ResourceCreationException("Cannot create specialization under another specialization.");
+            throw new ResourceCreationException(messageService.getMessage("specialization.error.invalid-parent"));
         }
 
         if (parentExpertise.getSpecializations().stream().anyMatch(s -> s.getName().equalsIgnoreCase(specialization.getName()))) {
-            throw new ResourceAlreadyExistsException("A specialization for this expertise already exists with this name. Please choose a different name.");
+            throw new ResourceAlreadyExistsException(messageService.getMessage("specialization.error.already-exists"));
         }
 
         var entity = expertiseMapper.specializationFormToEntity(specialization, user);
@@ -153,11 +148,8 @@ public class ExpertiseService {
     }
 
     public SpecializationDto updateSpecialization(Long specializationId, SpecializationFormDto request) {
-        var specialization = expertiseRepository.findById(specializationId).orElseThrow(() -> new ResourceNotFoundException("Specialization not found"));
-
-        if (!specialization.getUserId().equals(userService.getLoggedUser().getUserId())) {
-            throw new UnauthorizedAccessException("An error occurred while updating specialization");
-        }
+        var specialization = expertiseRepository.findByExpertiseIdAndUserId(specializationId, userService.getLoggedUser().getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("specialization.error.not-found")));
 
         specialization.setName(request.getName());
         specialization.getPartnerExpertises().clear();

@@ -49,4 +49,6 @@ public interface ExpertiseRepository extends JpaRepository<Expertise, Long>, Jpa
                 and userId = :userId
             """)
     void deactivate(Long expertiseId, Long userId);
+
+    Optional<Expertise> findByExpertiseIdAndUserId(Long expertiseId, Long userId);
 }
