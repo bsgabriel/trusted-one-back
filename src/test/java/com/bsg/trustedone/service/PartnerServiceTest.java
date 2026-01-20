@@ -7,7 +7,6 @@ import com.bsg.trustedone.helper.DummyObjects;
 import com.bsg.trustedone.helper.RandomUtils;
 import com.bsg.trustedone.mapper.PartnerMapper;
 import com.bsg.trustedone.repository.PartnerRepository;
-import com.bsg.trustedone.validator.PartnerValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,9 +45,6 @@ class PartnerServiceTest {
     private PartnerRepository partnerRepository;
 
     @Mock
-    private PartnerValidator partnerValidator;
-
-    @Mock
     private PartnerMapper partnerMapper;
 
     private UserDto loggedUser;
@@ -69,14 +65,14 @@ class PartnerServiceTest {
     @DisplayName("Should create a partner successfully when data is valid")
     void createPartner_whenValidData_thenReturnSavedPartnerDto() {
         // Given
-        var creationDto = PartnerCreationDto.builder()
+        var creationDto = PartnerFormDto.builder()
                 .group(GroupDto.builder().build())
                 .company(CompanyDto.builder().build())
                 .expertises(List.of(AssignedExpertiseDto.builder()
                         .expertiseId(10L)
                         .name("IT").availableForReferral(true)
                         .build()))
-                .contactMethods(List.of(ContactMethodCreationDto.builder().build()))
+                .contactMethods(List.of(ContactMethodFormDto.builder().build()))
                 .build();
 
         var group = GroupDto.builder().groupId(1L).build();
@@ -103,14 +99,13 @@ class PartnerServiceTest {
 
         // Then
         assertThat(result).isEqualTo(dto);
-        verify(partnerValidator).validatePartnerCreation(creationDto);
     }
 
     @Test
     @DisplayName("Should handle null group when creating a partner")
     void createPartner_whenGroupIsNull_thenHandleNullGroup() {
         // Given
-        var creationDto = PartnerCreationDto.builder()
+        var creationDto = PartnerFormDto.builder()
                 .group(null)
                 .company(CompanyDto.builder().build())
                 .expertises(List.of())
@@ -135,7 +130,7 @@ class PartnerServiceTest {
     @DisplayName("Should handle null company when creating a partner")
     void createPartner_whenCompanyIsNull_thenHandleNullCompany() {
         // Given
-        var creationDto = PartnerCreationDto.builder()
+        var creationDto = PartnerFormDto.builder()
                 .group(GroupDto.builder().build())
                 .company(null)
                 .expertises(List.of())

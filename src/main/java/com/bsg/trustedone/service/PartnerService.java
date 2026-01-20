@@ -3,13 +3,11 @@ package com.bsg.trustedone.service;
 import com.bsg.trustedone.dto.*;
 import com.bsg.trustedone.entity.Partner;
 import com.bsg.trustedone.exception.ResourceNotFoundException;
-import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.PartnerFactory;
 import com.bsg.trustedone.mapper.ExpertiseMapper;
 import com.bsg.trustedone.mapper.PartnerMapper;
 import com.bsg.trustedone.repository.PartnerExpertiseRepository;
 import com.bsg.trustedone.repository.PartnerRepository;
-import com.bsg.trustedone.validator.PartnerValidator;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +32,10 @@ public class PartnerService {
     private final UserService userService;
     private final GroupService groupService;
     private final CompanyService companyService;
+    private final MessageService messageService;
     private final ExpertiseService expertiseService;
     private final PartnerMapper partnerMapper;
     private final PartnerFactory partnerFactory;
-    private final PartnerValidator partnerValidator;
     private final PartnerRepository partnerRepository;
     private final ExpertiseMapper expertiseMapper;
     private final PartnerExpertiseRepository partnerExpertiseRepository;
@@ -51,14 +49,12 @@ public class PartnerService {
     }
 
     @Transactional
-    public PartnerDto createPartner(Long partnerId, PartnerCreationDto partnerCreationDto) {
-        partnerValidator.validatePartnerCreation(partnerCreationDto);
-
+    public PartnerDto createPartner(Long partnerId, PartnerFormDto partnerFormDto) {
         var loggedUser = userService.getLoggedUser();
 
-        var group = groupService.findOrCreateGroup(partnerCreationDto.getGroup());
-        var company = companyService.findOrCreateCompany(partnerCreationDto.getCompany());
-        var expertises = partnerCreationDto.getExpertises()
+        var group = groupService.findOrCreateGroup(partnerFormDto.getGroup());
+        var company = companyService.findOrCreateCompany(partnerFormDto.getCompany());
+        var expertises = partnerFormDto.getExpertises()
                 .stream()
                 .map(originalExpertise -> {
                     var expertise = expertiseService.findOrCreateExpertise(originalExpertise);
@@ -67,7 +63,7 @@ public class PartnerService {
                 })
                 .collect(Collectors.toList());
 
-        var entity = partnerFactory.createEntity(partnerCreationDto, group, company, loggedUser, partnerCreationDto.getContactMethods(), expertises, partnerCreationDto.getGainsProfile(), partnerCreationDto.getBusinessProfile());
+        var entity = partnerFactory.createEntity(partnerFormDto, group, company, loggedUser, partnerFormDto.getContactMethods(), expertises, partnerFormDto.getGainsProfile(), partnerFormDto.getBusinessProfile());
         entity.setPartnerId(partnerId);
 
         return partnerMapper.toDto(partnerRepository.save(entity));
@@ -114,17 +110,12 @@ public class PartnerService {
     }
 
     public PartnerDto findPartner(Long partnerId) {
-        var partner = partnerRepository.findById(partnerId).orElseThrow(() -> new ResourceNotFoundException("Partner not found"));
+        var partner = partnerRepository.findByPartnerIdAndUserId(partnerId, userService.getLoggedUser().getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("partner.error.not-found")));
 
         if (!partner.isActive()) {
-            throw new ResourceNotFoundException("Partner not found");
+            throw new ResourceNotFoundException(messageService.getMessage("partner.error.not-found"));
         }
-
-        var loggedUser = userService.getLoggedUser();
-        if (!partner.getUserId().equals(loggedUser.getUserId())) {
-            throw new UnauthorizedAccessException("An error occurred while searching partner");
-        }
-
 
         partner.getPartnerExpertises().removeIf(partnerExpertise -> {
             var expertise = partnerExpertise.getExpertise();

@@ -1,73 +1,69 @@
 package com.bsg.trustedone.validator;
 
-import com.bsg.trustedone.dto.ContactMethodCreationDto;
-import com.bsg.trustedone.exception.BaseException;
-import com.bsg.trustedone.exception.ResourceCreationException;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
+import com.bsg.trustedone.annotation.ValidContactMethod;
+import com.bsg.trustedone.dto.ContactMethodFormDto;
+import com.bsg.trustedone.service.MessageService;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class ContactMethodValidator {
+public class ContactMethodValidator implements ConstraintValidator<ValidContactMethod, ContactMethodFormDto> {
 
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
     private static final String PHONE_REGEX = "^\\+?[1-9]\\d{1,14}$|^\\([0-9]{2}\\)\\s?[0-9]{4,5}-?[0-9]{4}$";
     private static final String LINKEDIN_REGEX = "^(https?://)?(www\\.)?linkedin\\.com/in/[a-zA-Z0-9-]+/?$";
 
-    private final Validator validator;
+    private final MessageService messageService;
 
-    public void validateContactMethodCreation(ContactMethodCreationDto contactMethodCreationDto) {
-        doValidation(contactMethodCreationDto, errors -> new ResourceCreationException("Invalid contact information", errors));
-    }
-
-    private void doValidation(ContactMethodCreationDto obj, Function<List<String>, BaseException> exceptionFactory) {
-        var errors = validator.validate(obj)
-                .stream()
-                .map(ConstraintViolation::getMessage)
-                .collect(Collectors.toList());
-
-        errors.addAll(validateByType(obj));
-        if (errors.isEmpty()) {
-            return;
+    @Override
+    public boolean isValid(ContactMethodFormDto dto, ConstraintValidatorContext context) {
+        // Already validated by @NotBlank and @NotNull
+        if (dto == null || dto.getType() == null || dto.getInfo() == null) {
+            return true;
         }
 
-        throw exceptionFactory.apply(errors);
+        String errorMessage = validateByType(dto);
+
+        if (StringUtils.isNotBlank(errorMessage)) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate(errorMessage).addConstraintViolation();
+            return false;
+        }
+
+        return true;
     }
 
-    private List<String> validateByType(ContactMethodCreationDto dto) {
+    private String validateByType(ContactMethodFormDto dto) {
         return switch (dto.getType()) {
             case EMAIL -> validateEmail(dto.getInfo());
             case PHONE -> validatePhone(dto.getInfo());
             case LINKEDIN -> validateLinkedIn(dto.getInfo());
-            case OTHER -> Collections.emptyList();
+            case OTHER -> null;
         };
     }
 
-    private List<String> validateEmail(String email) {
+    private String validateEmail(String email) {
         if (!email.matches(EMAIL_REGEX)) {
-            return List.of("Invalid email format");
+            return messageService.getMessage("contactMethod.invalid.email", email);
         }
-        return Collections.emptyList();
+        return null;
     }
 
-    private List<String> validatePhone(String phone) {
+    private String validatePhone(String phone) {
         if (!phone.matches(PHONE_REGEX)) {
-            return List.of("Invalid phone number format");
+            return messageService.getMessage("contactMethod.invalid.phone", phone);
         }
-        return Collections.emptyList();
+        return null;
     }
 
-    private List<String> validateLinkedIn(String linkedin) {
-        if (!linkedin.matches(LINKEDIN_REGEX)) {
-            return List.of("Invalid LinkedIn URL format");
+    private String validateLinkedIn(String linkedIn) {
+        if (!linkedIn.matches(LINKEDIN_REGEX)) {
+            return messageService.getMessage("contactMethod.invalid.linkedin", linkedIn);
         }
-        return Collections.emptyList();
+        return null;
     }
 }
