@@ -1,4 +1,7 @@
 spring:
+  jackson:
+    deserialization:
+      accept-empty-string-as-null-object: true
   application:
     name: Trusted One
   datasource:
