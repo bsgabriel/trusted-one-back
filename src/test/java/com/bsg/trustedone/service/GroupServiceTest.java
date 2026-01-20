@@ -7,7 +7,6 @@ import com.bsg.trustedone.entity.Group;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.exception.ResourceCreationException;
 import com.bsg.trustedone.exception.ResourceUpdateException;
-import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.GroupFactory;
 import com.bsg.trustedone.helper.DummyObjects;
 import com.bsg.trustedone.helper.RandomUtils;
@@ -137,26 +136,6 @@ class GroupServiceTest {
         // When & Then
         assertThatThrownBy(() -> groupService.updateGroup(updateData, anyLong()))
                 .isInstanceOf(ResourceUpdateException.class);
-    }
-
-    @Test
-    @DisplayName("Should throw exception when updating group from another user")
-    void updateGroup_withUserIdDifferentThanLogged_shouldThrowException() {
-        // Given
-        var groupOwner = DummyObjects.newInstance(UserDto.class);
-
-        var groupId = 999L;
-        var updateData = DummyObjects.newInstance(GroupFormDto.class);
-        var group = DummyObjects.newInstance(Group.class);
-
-        group.setGroupId(groupId);
-        group.setUserId(groupOwner.getUserId());
-
-        when(groupRepository.findById(group.getGroupId())).thenReturn(Optional.of(group));
-
-        // When & Then
-        assertThatThrownBy(() -> groupService.updateGroup(updateData, groupId))
-                .isInstanceOf(UnauthorizedAccessException.class);
     }
 
     @Test

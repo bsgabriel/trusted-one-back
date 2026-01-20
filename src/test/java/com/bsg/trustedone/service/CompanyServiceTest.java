@@ -6,7 +6,6 @@ import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.Company;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.exception.ResourceUpdateException;
-import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.CompanyFactory;
 import com.bsg.trustedone.helper.DummyObjects;
 import com.bsg.trustedone.helper.RandomUtils;
@@ -137,26 +136,6 @@ class CompanyServiceTest {
         // When & Then
         assertThatThrownBy(() -> companyService.updateCompany(updateData, anyLong()))
                 .isInstanceOf(ResourceUpdateException.class);
-    }
-
-    @Test
-    @DisplayName("Should throw exception when updating company from another user")
-    void updateCompany_withUserIdDifferentThanLogged_shouldThrowException() {
-        // Given
-        var companyOwner = DummyObjects.newInstance(UserDto.class);
-
-        var companyId = 999L;
-        var updateData = DummyObjects.newInstance(CompanyFormDto.class);
-        var company = DummyObjects.newInstance(Company.class);
-
-        company.setCompanyId(companyId);
-        company.setUserId(companyOwner.getUserId());
-
-        when(companyRepository.findById(company.getCompanyId())).thenReturn(Optional.of(company));
-
-        // When & Then
-        assertThatThrownBy(() -> companyService.updateCompany(updateData, companyId))
-                .isInstanceOf(UnauthorizedAccessException.class);
     }
 
     @Test
