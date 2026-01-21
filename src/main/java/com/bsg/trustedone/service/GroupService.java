@@ -49,7 +49,7 @@ public class GroupService {
         var loggedUser = userService.getLoggedUser();
 
         if (groupRepository.existsByNameAndUserId(group.getName(), loggedUser.getUserId())) {
-            throw new ResourceAlreadyExistsException(messageService.getMessage("group.error.already-exists"));
+            throw new ResourceAlreadyExistsException(messageService.getMessage("error.title.create-resource"), messageService.getMessage("group.error.already-exists"));
         }
 
         var entity = groupRepository.save(groupFactory.createEntity(group, loggedUser));
@@ -67,7 +67,7 @@ public class GroupService {
     @Transactional
     public GroupDto updateGroup(GroupFormDto request, Long groupId) {
         var group = groupRepository.findByGroupIdAndUserId(groupId, userService.getLoggedUser().getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("group.error.not-found")));
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("error.title.update-resource"), messageService.getMessage("group.error.not-found")));
 
         group.setName(request.getName());
         group.setDescription(request.getDescription());
@@ -93,7 +93,7 @@ public class GroupService {
         var groupProjections = groupRepository.findGroupWithPartners(groupId, userService.getLoggedUser().getUserId());
 
         if (CollectionUtils.isEmpty(groupProjections)) {
-            throw new ResourceNotFoundException(messageService.getMessage("group.error.not-found"));
+            throw new ResourceNotFoundException(messageService.getMessage("error.title.fetch-resource"), messageService.getMessage("group.error.not-found"));
         }
 
         return groupMapper.toDto(groupProjections);

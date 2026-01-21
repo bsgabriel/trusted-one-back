@@ -34,7 +34,7 @@ public class UserService {
 
     public UserDto createUser(AccountCreationDto registerData) {
         if (userRepository.existsByEmail(registerData.getEmail())) {
-            throw new ResourceAlreadyExistsException(messageService.getMessage("user.error.email.already-exists"));
+            throw new ResourceAlreadyExistsException(messageService.getMessage("error.title.create-resource"), messageService.getMessage("user.error.email.already-exists"));
         }
 
         var user = userRepository.save(User.builder()

@@ -89,11 +89,11 @@ public class ReferralService {
     @Transactional
     public ReferralDto updateStatus(Long referralId, ReferralStatus status) {
         if (ReferralStatus.PENDING.equals(status)) {
-            throw new ResourceUpdateException(messageService.getMessage("referral.error.status.cannot-be-pending"));
+            throw new ResourceUpdateException(messageService.getMessage("error.title.update-resource"), messageService.getMessage("referral.error.status.cannot-be-pending"));
         }
 
         var referral = referralRepository.findByReferralIdAndUserId(referralId, userService.getLoggedUser().getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("referral.error.not-found")));
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("error.title.update-resource"), messageService.getMessage("referral.error.not-found")));
 
         referral.setStatus(status);
         referral.setUpdatedAt(LocalDateTime.now());

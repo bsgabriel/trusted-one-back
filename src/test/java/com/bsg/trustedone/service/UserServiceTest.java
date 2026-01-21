@@ -5,7 +5,6 @@ import com.bsg.trustedone.dto.UserDetailDto;
 import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
-import com.bsg.trustedone.exception.UserLoginException;
 import com.bsg.trustedone.helper.DummyObjects;
 import com.bsg.trustedone.mapper.UserMapper;
 import com.bsg.trustedone.repository.UserRepository;
@@ -235,23 +234,6 @@ class UserServiceTest {
             verify(httpRequest).getSession(true);
             verify(httpSession).setAttribute(SPRING_SECURITY_CONTEXT_KEY, securityContext);
         }
-    }
-
-    @Test
-    @DisplayName("Should propagate exception when login validation fails")
-    void login_withInvalidLoginData_shouldPropagateValidationException() {
-        // TODO: maybe remove
-        // Given
-        var userLoginDto = mock(UserLoginDto.class);
-        var httpRequest = mock(HttpServletRequest.class);
-
-        // When & Then
-        assertThatThrownBy(() -> userService.login(userLoginDto, httpRequest))
-                .isInstanceOf(UserLoginException.class)
-                .hasMessage("Invalid login data");
-
-        verify(authenticationManager, never()).authenticate(any());
-        verify(httpRequest, never()).getSession(anyBoolean());
     }
 
     @Test

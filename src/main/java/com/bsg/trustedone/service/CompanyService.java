@@ -38,7 +38,7 @@ public class CompanyService {
         var loggedUser = userService.getLoggedUser();
 
         if (companyRepository.existsByNameAndUserId(company.getName(), loggedUser.getUserId())) {
-            throw new ResourceAlreadyExistsException(messageService.getMessage("company.error.already-exists"));
+            throw new ResourceAlreadyExistsException(messageService.getMessage("error.title.create"), messageService.getMessage("company.error.already-exists"));
         }
 
         var entity = companyFactory.createEntity(company, loggedUser.getUserId());
@@ -55,7 +55,7 @@ public class CompanyService {
     @Transactional
     public CompanyDto updateCompany(CompanyFormDto request, Long companyId) {
         var company = companyRepository.findByCompanyIdAndUserId(companyId, userService.getLoggedUser().getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("company.error.not-found")));
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("error.title.update"), messageService.getMessage("company.error.not-found")));
 
         company.setName(request.getName());
         company.setImage(request.getImage());
@@ -90,7 +90,7 @@ public class CompanyService {
         var companyProjections = companyRepository.findCompanyWithPartners(companyId, userService.getLoggedUser().getUserId());
 
         if (CollectionUtils.isEmpty(companyProjections)) {
-            throw new ResourceNotFoundException(messageService.getMessage("company.error.not-found"));
+            throw new ResourceNotFoundException(messageService.getMessage("error.title.fetch"), messageService.getMessage("company.error.not-found"));
         }
 
         return companyMapper.toDto(companyProjections);

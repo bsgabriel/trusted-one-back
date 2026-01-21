@@ -111,10 +111,10 @@ public class PartnerService {
 
     public PartnerDto findPartner(Long partnerId) {
         var partner = partnerRepository.findByPartnerIdAndUserId(partnerId, userService.getLoggedUser().getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("partner.error.not-found")));
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("error.title.fetch-resource"), messageService.getMessage("partner.error.not-found")));
 
         if (!partner.isActive()) {
-            throw new ResourceNotFoundException(messageService.getMessage("partner.error.not-found"));
+            throw new ResourceNotFoundException(messageService.getMessage("error.title.fetch-resource"), messageService.getMessage("partner.error.not-found"));
         }
 
         partner.getPartnerExpertises().removeIf(partnerExpertise -> {

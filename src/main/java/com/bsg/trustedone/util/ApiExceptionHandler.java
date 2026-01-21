@@ -12,54 +12,39 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import static org.springframework.util.CollectionUtils.isEmpty;
-
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ProblemDetail> invalidCredential() {
+    public ResponseEntity<ProblemDetail> invalidCredential(BadCredentialsException ex) {
         var detail = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
-        detail.setTitle("An error ocurred on login");
-        detail.setDetail("Invalid email or password");
+        detail.setTitle("Não foi possível fazer login");
+        detail.setDetail("E-mail ou senha inválidos.");
         detail.setProperty("errorCode", "INVALID_CREDENTIALS");
-        return createResponseEntity(detail);
-    }
-
-    @ExceptionHandler(UserLoginException.class)
-    public ResponseEntity<ProblemDetail> handleUserLoginException(UserLoginException ex) {
-        var detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        detail.setTitle("An error ocurred on login");
-        detail.setDetail(ex.getMessage());
-
-        if (!isEmpty(ex.getErrors())) {
-            detail.setProperty("errors", ex.getErrors());
-        }
-
         return createResponseEntity(detail);
     }
 
     @ExceptionHandler(ResourceAlreadyExistsException.class)
     public ResponseEntity<ProblemDetail> handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex) {
-        var detail = createProblemDetail(HttpStatus.CONFLICT, "Resource already exists", ex);
+        var detail = createProblemDetail(HttpStatus.CONFLICT,ex);
         return createResponseEntity(detail);
     }
 
     @ExceptionHandler(ResourceCreationException.class)
     public ResponseEntity<ProblemDetail> handleResourceCreationException(ResourceCreationException ex) {
-        var detail = createProblemDetail(HttpStatus.BAD_REQUEST, "An error ocurred while creating resource", ex);
+        var detail = createProblemDetail(HttpStatus.BAD_REQUEST, ex);
         return createResponseEntity(detail);
     }
 
     @ExceptionHandler(ResourceUpdateException.class)
     public ResponseEntity<ProblemDetail> handleResourceUpdateException(ResourceUpdateException ex) {
-        var detail = createProblemDetail(HttpStatus.BAD_REQUEST, "An error occurred while updating group", ex);
+        var detail = createProblemDetail(HttpStatus.BAD_REQUEST, ex);
         return createResponseEntity(detail);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ProblemDetail> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        var detail = createProblemDetail(HttpStatus.NOT_FOUND, "Resource not found", ex);
+        var detail = createProblemDetail(HttpStatus.NOT_FOUND, ex);
         return createResponseEntity(detail);
     }
 
@@ -84,13 +69,9 @@ public class ApiExceptionHandler {
         return createResponseEntity(detail);
     }
 
-    private ProblemDetail createProblemDetail(HttpStatus status, String title, BaseException ex) {
+    private ProblemDetail createProblemDetail(HttpStatus status, BaseException ex) {
         var detail = ProblemDetail.forStatusAndDetail(status, ex.getMessage());
-        detail.setTitle(title);
-
-        if (!isEmpty(ex.getErrors())) {
-            detail.setProperty("errors", ex.getErrors());
-        }
+        detail.setTitle(ex.getTitle());
 
         return detail;
     }
@@ -98,6 +79,5 @@ public class ApiExceptionHandler {
     private ResponseEntity<ProblemDetail> createResponseEntity(ProblemDetail problemDetail) {
         return ResponseEntity.status(problemDetail.getStatus()).body(problemDetail);
     }
-
 
 }
