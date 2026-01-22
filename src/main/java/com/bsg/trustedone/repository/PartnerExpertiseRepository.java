@@ -15,9 +15,13 @@ public interface PartnerExpertiseRepository extends JpaRepository<PartnerExperti
             	partnerExpertise
             from
             	PartnerExpertise as partnerExpertise
+                join fetch partnerExpertise.expertise specialization
+                left join fetch specialization.parentExpertise expertise
             where
             	partnerExpertise.partner.partnerId = :partnerId
             	and partnerExpertise.availableForReferral = true
+            	and specialization.active = true
+            	and (expertise is null or expertise.active = true)
             order by
             	partnerExpertise.expertise.name
             """)
