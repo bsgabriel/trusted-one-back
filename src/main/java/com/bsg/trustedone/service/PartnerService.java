@@ -40,14 +40,6 @@ public class PartnerService {
     private final ExpertiseMapper expertiseMapper;
     private final PartnerExpertiseRepository partnerExpertiseRepository;
 
-    public List<PartnerDto> findAllPartners() {
-        var loggedUser = userService.getLoggedUser();
-        return partnerRepository.findAllByUserId(loggedUser.getUserId())
-                .stream()
-                .map(partnerMapper::toDto)
-                .toList();
-    }
-
     @Transactional
     public PartnerDto createPartner(Long partnerId, PartnerFormDto partnerFormDto) {
         var loggedUser = userService.getLoggedUser();

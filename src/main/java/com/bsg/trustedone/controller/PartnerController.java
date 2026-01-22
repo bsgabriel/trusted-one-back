@@ -19,11 +19,6 @@ public class PartnerController {
 
     private final PartnerService partnerService;
 
-    @GetMapping
-    public ResponseEntity<List<PartnerDto>> findAllPartners() {
-        return ResponseEntity.ok(partnerService.findAllPartners());
-    }
-
     @PostMapping
     public ResponseEntity<PartnerDto> createPartner(@RequestBody @Valid PartnerFormDto request) {
         var createdPartner = partnerService.createPartner(null, request);

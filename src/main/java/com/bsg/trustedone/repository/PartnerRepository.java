@@ -14,8 +14,6 @@ import java.util.Optional;
 @Repository
 public interface PartnerRepository extends JpaRepository<Partner, Long>, JpaSpecificationExecutor<Partner> {
 
-    List<Partner> findAllByUserId(Long userId);
-
     @Modifying
     @Query("""
             update
