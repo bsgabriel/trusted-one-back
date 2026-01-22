@@ -64,6 +64,15 @@ public class PartnerService {
     public PageResponse<PartnerListingDto> listPartners(String search, Pageable pageable, boolean fullSearch) {
         var loggedUser = userService.getLoggedUser();
         Specification<Partner> spec = (root, query, cb) -> {
+            if (query != null && query.getResultType() != Long.class) {
+                root.fetch("group", JoinType.LEFT);
+                root.fetch("company", JoinType.LEFT);
+
+                root.fetch("referrals", JoinType.LEFT)
+                        .fetch("expertise", JoinType.LEFT)
+                        .fetch("parentExpertise", JoinType.LEFT);
+            }
+
             var predicate = cb.and(
                     cb.equal(root.get("userId"), loggedUser.getUserId()),
                     cb.isTrue(root.get("active"))
