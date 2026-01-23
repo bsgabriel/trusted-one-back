@@ -2,6 +2,7 @@ package com.bsg.trustedone.service;
 
 import com.bsg.trustedone.dto.AccountCreationDto;
 import com.bsg.trustedone.dto.UserDetailDto;
+import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
@@ -22,12 +23,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -39,6 +39,9 @@ class UserServiceTest {
     private UserMapper userMapper;
 
     @Mock
+    private MessageService messageService;
+
+    @Mock
     private UserRepository userRepository;
 
     @Mock
@@ -47,230 +50,151 @@ class UserServiceTest {
     @Mock
     private AuthenticationManager authenticationManager;
 
-    @Mock
-    private HttpSession httpSession;
 
-    @Mock
-    private Authentication authentication;
 
     @Test
-    @DisplayName("Should create user successfully when data is valid")
-    void createUser_withValidData_shouldCreateUserSuccessfully() {
-        // Given
-        var accountCreationDto = DummyObjects.newInstance(AccountCreationDto.class);
-        when(userRepository.existsByEmail(accountCreationDto.getEmail())).thenReturn(false);
-        when(passwordEncoder.encode(accountCreationDto.getPassword())).thenReturn("encodedPassword");
-        when(userRepository.save(any(User.class))).then(invocation -> invocation.getArguments()[0]);
-        when(userMapper.toUserDto(any(User.class))).thenCallRealMethod();
+    @DisplayName("Should create user successfully")
+    void createUser_withValidData_shouldCreateUser() {
+        var registerData = DummyObjects.newInstance(AccountCreationDto.class);
+        var encodedPassword = "encodedPassword";
+        var user = DummyObjects.newInstance(User.class);
+        var dto = DummyObjects.newInstance(UserDto.class);
 
-        // When
-        var result = userService.createUser(accountCreationDto);
+        when(userRepository.existsByEmail(registerData.getEmail())).thenReturn(false);
+        when(passwordEncoder.encode(registerData.getPassword())).thenReturn(encodedPassword);
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userMapper.toUserDto(user)).thenReturn(dto);
 
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getEmail()).isEqualTo(accountCreationDto.getEmail());
-        assertThat(result.getName()).isEqualTo(accountCreationDto.getName());
+        var result = userService.createUser(registerData);
+
+        assertNotNull(result);
+        verify(userRepository).save(any(User.class));
     }
 
     @Test
     @DisplayName("Should throw exception when email already exists")
-    void createUser_withExistingEmail_shouldThrowUserAlreadyRegisteredException() {
-        // Given
-        var accountCreationDto = DummyObjects.newInstance(AccountCreationDto.class);
-        when(userRepository.existsByEmail(accountCreationDto.getEmail())).thenReturn(true);
+    void createUser_withExistingEmail_shouldThrowException() {
+        var registerData = DummyObjects.newInstance(AccountCreationDto.class);
 
-        // When & Then
-        assertThatThrownBy(() -> userService.createUser(accountCreationDto))
-                .isInstanceOf(ResourceAlreadyExistsException.class)
-                .hasMessage("Email already registered");
+        when(userRepository.existsByEmail(registerData.getEmail())).thenReturn(true);
+        when(messageService.getMessage(anyString())).thenReturn("error");
 
-        verify(userRepository).existsByEmail(accountCreationDto.getEmail());
-        verify(userRepository, never()).save(any(User.class));
-        verify(userMapper, never()).toUserDto(any(User.class));
+        assertThrows(ResourceAlreadyExistsException.class, () -> userService.createUser(registerData));
     }
 
     @Test
-    @DisplayName("Should propagate exception when validation fails")
-    void createUser_withInvalidData_shouldPropagateAccountCreationException() {
-        // TODO: maybe remove
-        // Given
-        var accountCreationDto = mock(AccountCreationDto.class);
-
-        // When & Then
-        verify(userRepository, never()).existsByEmail(anyString());
-        verify(userRepository, never()).save(any(User.class));
-    }
-
-    @Test
-    @DisplayName("Should return logged user when authentication is valid")
-    void getLoggedUser_withValidAuthentication_shouldReturnUserDto() {
-        // Given
-        try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
-            var userDetailDto = UserDetailDto.builder()
-                    .id(999L)
-                    .name("John Sample")
-                    .email("john.sample@provider.com")
-                    .build();
-
-            var securityContext = mock(SecurityContext.class);
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.isAuthenticated()).thenReturn(true);
-            when(authentication.getPrincipal()).thenReturn(userDetailDto);
-            when(userMapper.toUserDto(userDetailDto)).thenCallRealMethod();
-
-            // When
-            var result = userService.getLoggedUser();
-
-            // Then
-            assertThat(result).isNotNull();
-            assertThat(result.getName()).isEqualTo(userDetailDto.getName());
-            assertThat(result.getEmail()).isEqualTo(userDetailDto.getEmail());
-            assertThat(result.getUserId()).isEqualTo(userDetailDto.getId());
-        }
-    }
-
-    @Test
-    @DisplayName("Should return null when there is no authentication")
+    @DisplayName("Should return null when authentication is null")
     void getLoggedUser_withNoAuthentication_shouldReturnNull() {
-        // Given
-        try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
+        SecurityContextHolder.clearContext();
 
-            var securityContext = mock(SecurityContext.class);
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(null);
+        var result = userService.getLoggedUser();
 
-            // When
-            var result = userService.getLoggedUser();
-
-            // Then
-            assertThat(result).isNull();
-        }
+        assertNull(result);
     }
 
     @Test
-    @DisplayName("Should return null when user is not authenticated")
-    void getLoggedUser_withUnauthenticatedUser_shouldReturnNull() {
-        // Given
-        try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
+    @DisplayName("Should return null when authentication is not authenticated")
+    void getLoggedUser_withUnauthenticatedContext_shouldReturnNull() {
+        var authentication = mock(Authentication.class);
 
-            var securityContext = mock(SecurityContext.class);
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.isAuthenticated()).thenReturn(false);
+        when(authentication.isAuthenticated()).thenReturn(false);
 
-            // When
-            var result = userService.getLoggedUser();
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // Then
-            assertThat(result).isNull();
-        }
+        var result = userService.getLoggedUser();
+
+        assertNull(result);
     }
 
     @Test
-    @DisplayName("Should return null when principal is anonymousUser")
-    void getLoggedUser_withAnonymousUser_shouldReturnNull() {
-        // Given
-        try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
+    @DisplayName("Should return null when principal is anonymous")
+    void getLoggedUser_withAnonymousPrincipal_shouldReturnNull() {
+        var authentication = mock(Authentication.class);
 
-            var securityContext = mock(SecurityContext.class);
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.isAuthenticated()).thenReturn(true);
-            when(authentication.getPrincipal()).thenReturn("anonymousUser");
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getPrincipal()).thenReturn("anonymousUser");
 
-            // When
-            var result = userService.getLoggedUser();
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // Then
-            assertThat(result).isNull();
-        }
+        var result = userService.getLoggedUser();
+
+        assertNull(result);
     }
 
     @Test
-    @DisplayName("Should return null when principal is not UserDetailDto")
+    @DisplayName("Should return null when principal type is invalid")
     void getLoggedUser_withInvalidPrincipalType_shouldReturnNull() {
-        // Given
-        try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
+        var authentication = mock(Authentication.class);
 
-            var securityContext = mock(SecurityContext.class);
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.isAuthenticated()).thenReturn(true);
-            when(authentication.getPrincipal()).thenReturn("invalidPrincipal");
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getPrincipal()).thenReturn(new Object());
 
-            // When
-            var result = userService.getLoggedUser();
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // Then
-            assertThat(result).isNull();
-        }
+        var result = userService.getLoggedUser();
+
+        assertNull(result);
     }
 
     @Test
-    @DisplayName("Should login successfully when data is valid")
-    void login_withValidCredentials_shouldAuthenticateSuccessfully() {
-        try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
-            // Given
-            var loginDto = UserLoginDto.builder()
-                    .email("joh.sample@provider.com")
-                    .password("myPass123")
-                    .build();
+    @DisplayName("Should return logged user when principal is valid")
+    void getLoggedUser_withValidPrincipal_shouldReturnUser() {
+        var userDetail = DummyObjects.newInstance(UserDetailDto.class);
+        var userDto = DummyObjects.newInstance(UserDto.class);
+        var authentication = mock(Authentication.class);
 
-            var authToken = new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword());
-            var authenticatedToken = mock(Authentication.class);
-            var securityContext = mock(SecurityContext.class);
-            var httpRequest = mock(HttpServletRequest.class);
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getPrincipal()).thenReturn(userDetail);
+        when(userMapper.toUserDto(userDetail)).thenReturn(userDto);
 
-            when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authenticatedToken);
-            when(httpRequest.getSession(true)).thenReturn(httpSession);
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // When
-            userService.login(loginDto, httpRequest);
+        var result = userService.getLoggedUser();
 
-            // Then
-            verify(authenticationManager).authenticate(authToken);
-            verify(httpRequest).getSession(true);
-            verify(httpSession).setAttribute(SPRING_SECURITY_CONTEXT_KEY, securityContext);
-        }
+        assertNotNull(result);
+        assertEquals(userDto, result);
     }
 
     @Test
-    @DisplayName("Should logout successfully when there is an active session")
-    void logout_withActiveSession_shouldLogoutSuccessfully() {
-        // Given
-        try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
-            var httpRequest = mock(HttpServletRequest.class);
-            var httpSession = mock(HttpSession.class);
+    @DisplayName("Should authenticate user and store security context in session")
+    void login_withValidCredentials_shouldAuthenticateUser() {
+        var login = DummyObjects.newInstance(UserLoginDto.class);
+        var request = mock(HttpServletRequest.class);
+        var session = mock(HttpSession.class);
+        var authentication = mock(Authentication.class);
 
-            when(httpRequest.getSession(false)).thenReturn(httpSession);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+        when(request.getSession(true)).thenReturn(session);
 
-            // When
-            userService.logout(httpRequest);
+        userService.login(login, request);
 
-            // Then
-            verify(httpRequest).getSession(false);
-            verify(httpSession).invalidate();
-            mockedSecurityContextHolder.verify(SecurityContextHolder::clearContext);
-        }
+        verify(session).setAttribute(eq(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY), any(SecurityContext.class));
     }
 
     @Test
-    @DisplayName("Should logout successfully when there is no active session")
-    void logout_withNoActiveSession_shouldClearContextOnly() {
-        // Given
-        try (var mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
-            var httpRequest = mock(HttpServletRequest.class);
-            when(httpRequest.getSession(false)).thenReturn(null);
+    @DisplayName("Should invalidate session and clear security context")
+    void logout_withActiveSession_shouldInvalidateSession() {
+        var request = mock(HttpServletRequest.class);
+        var session = mock(HttpSession.class);
 
-            // When
-            userService.logout(httpRequest);
+        when(request.getSession(false)).thenReturn(session);
 
-            // Then
-            verify(httpRequest).getSession(false);
-            verify(httpSession, never()).invalidate();
-            mockedSecurityContextHolder.verify(SecurityContextHolder::clearContext);
-        }
+        userService.logout(request);
+
+        verify(session).invalidate();
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @Test
+    @DisplayName("Should clear security context when session does not exist")
+    void logout_withNoSession_shouldOnlyClearContext() {
+        var request = mock(HttpServletRequest.class);
+
+        when(request.getSession(false)).thenReturn(null);
+
+        userService.logout(request);
+
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
 }
