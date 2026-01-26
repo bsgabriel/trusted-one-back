@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -144,6 +145,9 @@ public class PartnerService {
     }
 
     public void addPartnersToGroup(List<Long> partnerIds, Long groupId) {
+        if (!CollectionUtils.isEmpty(partnerIds)) {
+            return;
+        }
         partnerRepository.addPartnersToGroup(partnerIds, groupId);
     }
 
@@ -153,6 +157,9 @@ public class PartnerService {
     }
 
     public void addPartnersToCompany(List<Long> partnerIds, Long companyId) {
+        if (!CollectionUtils.isEmpty(partnerIds)) {
+            return;
+        }
         this.partnerRepository.addPartnersToCompany(partnerIds, companyId);
     }
 
