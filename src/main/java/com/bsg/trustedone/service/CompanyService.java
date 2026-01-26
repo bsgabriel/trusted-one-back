@@ -42,6 +42,7 @@ public class CompanyService {
         }
 
         var entity = companyFactory.createEntity(company, loggedUser.getUserId());
+        partnerServiceProvider.getObject().addPartnersToCompany(company.getPartners(), entity.getCompanyId());
         return companyMapper.toDto(companyRepository.save(entity));
     }
 
