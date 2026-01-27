@@ -16,10 +16,10 @@ import java.util.List;
 @NoArgsConstructor
 public class SpecializationFormDto {
 
-    @NotBlank
+    @NotBlank(message = "{specialization.validation.name.required}")
     private String name;
 
-    @NotNull
+    @NotNull(message = "{specialization.parentExpertiseId.required}")
     private Long parentExpertiseId;
 
     @Builder.Default

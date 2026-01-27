@@ -6,11 +6,9 @@ import com.bsg.trustedone.dto.GroupListingDto;
 import com.bsg.trustedone.dto.PageResponse;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.exception.ResourceNotFoundException;
-import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.GroupFactory;
 import com.bsg.trustedone.mapper.GroupMapper;
 import com.bsg.trustedone.repository.GroupRepository;
-import com.bsg.trustedone.validator.GroupValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.ObjectProvider;
@@ -32,26 +30,26 @@ public class GroupService {
     private final GroupMapper groupMapper;
     private final UserService userService;
     private final GroupFactory groupFactory;
-    private final GroupValidator groupValidator;
+    private final MessageService messageService;
     private final GroupRepository groupRepository;
     private final ObjectProvider<PartnerService> partnerServiceProvider;
 
-    public List<GroupDto> getAllGroups() {
+    public PageResponse<GroupListingDto> listGroups(String search, Pageable pageable) {
         var loggedUser = userService.getLoggedUser();
-        return groupRepository.findAllByUserIdOrderByName(loggedUser.getUserId())
-                .stream()
-                .map(groupMapper::toDto)
-                .toList();
+        var sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("name").ascending());
+        var searchParam = StringUtils.isBlank(search) ? null : search.trim();
+
+        var page = groupRepository.listGroups(loggedUser.getUserId(), searchParam, sortedPageable);
+        return PageResponse.from(page.map(groupMapper::toListingDto));
     }
 
     @Transactional
     public GroupDto createGroup(GroupFormDto group) {
         group.setName(group.getName().trim());
-        groupValidator.validateGroupCreate(group);
         var loggedUser = userService.getLoggedUser();
 
         if (groupRepository.existsByNameAndUserId(group.getName(), loggedUser.getUserId())) {
-            throw new ResourceAlreadyExistsException("A group with this name already exists. Please choose a different name.");
+            throw new ResourceAlreadyExistsException(messageService.getMessage("error.title.create-resource"), messageService.getMessage("group.error.already-exists"));
         }
 
         var entity = groupRepository.save(groupFactory.createEntity(group, loggedUser));
@@ -68,13 +66,8 @@ public class GroupService {
 
     @Transactional
     public GroupDto updateGroup(GroupFormDto request, Long groupId) {
-        groupValidator.validateGroupUpdate(request);
-
-        var group = groupRepository.findById(groupId).orElseThrow(() -> new ResourceNotFoundException("Group not found"));
-
-        if (!group.getUserId().equals(userService.getLoggedUser().getUserId())) {
-            throw new UnauthorizedAccessException("An error occurred while updating group");
-        }
+        var group = groupRepository.findByGroupIdAndUserId(groupId, userService.getLoggedUser().getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("error.title.update-resource"), messageService.getMessage("group.error.not-found")));
 
         group.setName(request.getName());
         group.setDescription(request.getDescription());
@@ -91,36 +84,24 @@ public class GroupService {
             return this.createGroup(groupMapper.toCreationDto(group));
         }
 
-        return this.groupRepository.findById(group.getGroupId())
+        return this.groupRepository.findByGroupIdAndUserId(group.getGroupId(), userService.getLoggedUser().getUserId())
                 .map(groupMapper::toDto)
                 .orElseGet(() -> this.createGroup(groupMapper.toCreationDto(group)));
     }
 
-    public PageResponse<GroupListingDto> listGroups(String search, Pageable pageable) {
-        var loggedUser = userService.getLoggedUser();
-        var sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("name").ascending());
-        var searchParam = StringUtils.isBlank(search) ? null : search.trim();
-
-        var page = groupRepository.listGroups(loggedUser.getUserId(), searchParam, sortedPageable);
-        return PageResponse.from(page.map(groupMapper::toListingDto));
-    }
-
     public GroupDto findById(Long groupId) {
-        var groupProjections = groupRepository.findGroupWithPartners(groupId);
+        var groupProjections = groupRepository.findGroupWithPartners(groupId, userService.getLoggedUser().getUserId());
 
         if (CollectionUtils.isEmpty(groupProjections)) {
-            throw new ResourceNotFoundException("Group not found");
+            throw new ResourceNotFoundException(messageService.getMessage("error.title.fetch-resource"), messageService.getMessage("group.error.not-found"));
         }
 
         return groupMapper.toDto(groupProjections);
     }
 
-    public void syncPartnersWithGroup(Long groupId, List<Long> partnerIds) {
+    private void syncPartnersWithGroup(Long groupId, List<Long> partnerIds) {
         partnerServiceProvider.getObject().removePartnersFromGroup(groupId);
-
-        if (!partnerIds.isEmpty()) {
-            partnerServiceProvider.getObject().addPartnersToGroup(partnerIds, groupId);
-        }
+        partnerServiceProvider.getObject().addPartnersToGroup(partnerIds, groupId);
     }
 
 }

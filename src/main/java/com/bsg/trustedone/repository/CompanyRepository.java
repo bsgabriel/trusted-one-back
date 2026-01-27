@@ -12,13 +12,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, Long> {
 
     boolean existsByNameAndUserId(String name, Long userId);
-
-    List<Company> findAllByUserIdOrderByName(Long userId);
 
     @Query("""
             select
@@ -55,10 +54,11 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
                 and partner.active
             where
                 company.companyId = :companyId
+                and company.userId = :userId
             order by
                 partner.name
             """)
-    List<CompanyWithPartnersProjection> findCompanyWithPartners(Long companyId);
+    List<CompanyWithPartnersProjection> findCompanyWithPartners(Long companyId, Long userId);
 
     @Modifying
     @Query("""
@@ -70,4 +70,5 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
             """)
     void deleteByCompanyIdAndUserId(@Param("companyId") Long companyId, @Param("userId") Long userId);
 
+    Optional<Company> findByCompanyIdAndUserId(Long companyId, Long userId);
 }

@@ -6,10 +6,8 @@ import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
-import com.bsg.trustedone.exception.ResourceCreationException;
 import com.bsg.trustedone.mapper.UserMapper;
 import com.bsg.trustedone.repository.UserRepository;
-import com.bsg.trustedone.validator.UserValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -29,16 +27,14 @@ import static java.util.Objects.nonNull;
 public class UserService {
 
     private final UserMapper userMapper;
-    private final UserValidator userValidator;
+    private final MessageService messageService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
     public UserDto createUser(AccountCreationDto registerData) {
-        userValidator.validateRegistrationData(registerData);
-
         if (userRepository.existsByEmail(registerData.getEmail())) {
-            throw new ResourceAlreadyExistsException("Email already registered");
+            throw new ResourceAlreadyExistsException(messageService.getMessage("error.title.create-resource"), messageService.getMessage("user.error.email.already-exists"));
         }
 
         var user = userRepository.save(User.builder()
@@ -70,7 +66,6 @@ public class UserService {
     }
 
     public void login(UserLoginDto request, HttpServletRequest httpRequest) {
-        userValidator.validateLoginData(request);
         var authToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authenticationManager.authenticate(authToken));
 

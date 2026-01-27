@@ -21,7 +21,7 @@ public class PartnerFactory {
     private final ContactMethodFactory contactMethodFactory;
     private final BusinessProfileFactory businessProfileFactory;
 
-    public Partner createEntity(PartnerCreationDto partner, GroupDto group, CompanyDto company, UserDto loggedUser, List<ContactMethodCreationDto> contactMethods, List<AssignedExpertiseDto> expertises, List<GainsProfileDto> gainsProfile, List<BusinessProfileDto> businessProfile) {
+    public Partner createEntity(PartnerFormDto partner, GroupDto group, CompanyDto company, UserDto loggedUser, List<ContactMethodFormDto> contactMethods, List<AssignedExpertiseDto> expertises, List<GainsProfileDto> gainsProfile, List<BusinessProfileDto> businessProfile) {
         var entity = Partner.builder()
                 .name(partner.getName())
                 .userId(loggedUser.getUserId())

@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface GroupRepository extends JpaRepository<Group, Long> {
@@ -57,11 +58,12 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
                 partner.group.id = group.groupId
                 and partner.active
             where
-                group.groupId = :id
+                group.groupId = :groupId
+                and group.userId = :userId
             order by
                 partner.name
             """)
-    List<GroupWithPartnersProjection> findGroupWithPartners(Long id);
+    List<GroupWithPartnersProjection> findGroupWithPartners(Long groupId, Long userId);
 
     @Modifying
     @Query("""
@@ -72,5 +74,7 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
                 and g.userId = :userId
             """)
     void deleteByGroupIdAndUserId(@Param("groupId") Long groupId, @Param("userId") Long userId);
+
+    Optional<Group> findByGroupIdAndUserId(Long groupId, Long userId);
 
 }

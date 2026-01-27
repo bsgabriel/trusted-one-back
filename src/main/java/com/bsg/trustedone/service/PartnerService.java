@@ -3,13 +3,11 @@ package com.bsg.trustedone.service;
 import com.bsg.trustedone.dto.*;
 import com.bsg.trustedone.entity.Partner;
 import com.bsg.trustedone.exception.ResourceNotFoundException;
-import com.bsg.trustedone.exception.UnauthorizedAccessException;
 import com.bsg.trustedone.factory.PartnerFactory;
 import com.bsg.trustedone.mapper.ExpertiseMapper;
 import com.bsg.trustedone.mapper.PartnerMapper;
 import com.bsg.trustedone.repository.PartnerExpertiseRepository;
 import com.bsg.trustedone.repository.PartnerRepository;
-import com.bsg.trustedone.validator.PartnerValidator;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,31 +33,21 @@ public class PartnerService {
     private final UserService userService;
     private final GroupService groupService;
     private final CompanyService companyService;
+    private final MessageService messageService;
     private final ExpertiseService expertiseService;
     private final PartnerMapper partnerMapper;
     private final PartnerFactory partnerFactory;
-    private final PartnerValidator partnerValidator;
     private final PartnerRepository partnerRepository;
     private final ExpertiseMapper expertiseMapper;
     private final PartnerExpertiseRepository partnerExpertiseRepository;
 
-    public List<PartnerDto> findAllPartners() {
-        var loggedUser = userService.getLoggedUser();
-        return partnerRepository.findAllByUserId(loggedUser.getUserId())
-                .stream()
-                .map(partnerMapper::toDto)
-                .toList();
-    }
-
     @Transactional
-    public PartnerDto createPartner(Long partnerId, PartnerCreationDto partnerCreationDto) {
-        partnerValidator.validatePartnerCreation(partnerCreationDto);
-
+    public PartnerDto createPartner(Long partnerId, PartnerFormDto partnerFormDto) {
         var loggedUser = userService.getLoggedUser();
 
-        var group = groupService.findOrCreateGroup(partnerCreationDto.getGroup());
-        var company = companyService.findOrCreateCompany(partnerCreationDto.getCompany());
-        var expertises = partnerCreationDto.getExpertises()
+        var group = groupService.findOrCreateGroup(partnerFormDto.getGroup());
+        var company = companyService.findOrCreateCompany(partnerFormDto.getCompany());
+        var expertises = partnerFormDto.getExpertises()
                 .stream()
                 .map(originalExpertise -> {
                     var expertise = expertiseService.findOrCreateExpertise(originalExpertise);
@@ -67,7 +56,7 @@ public class PartnerService {
                 })
                 .collect(Collectors.toList());
 
-        var entity = partnerFactory.createEntity(partnerCreationDto, group, company, loggedUser, partnerCreationDto.getContactMethods(), expertises, partnerCreationDto.getGainsProfile(), partnerCreationDto.getBusinessProfile());
+        var entity = partnerFactory.createEntity(partnerFormDto, group, company, loggedUser, partnerFormDto.getContactMethods(), expertises, partnerFormDto.getGainsProfile(), partnerFormDto.getBusinessProfile());
         entity.setPartnerId(partnerId);
 
         return partnerMapper.toDto(partnerRepository.save(entity));
@@ -76,6 +65,15 @@ public class PartnerService {
     public PageResponse<PartnerListingDto> listPartners(String search, Pageable pageable, boolean fullSearch) {
         var loggedUser = userService.getLoggedUser();
         Specification<Partner> spec = (root, query, cb) -> {
+            if (query != null && query.getResultType() != Long.class) {
+                root.fetch("group", JoinType.LEFT);
+                root.fetch("company", JoinType.LEFT);
+
+                root.fetch("referrals", JoinType.LEFT)
+                        .fetch("expertise", JoinType.LEFT)
+                        .fetch("parentExpertise", JoinType.LEFT);
+            }
+
             var predicate = cb.and(
                     cb.equal(root.get("userId"), loggedUser.getUserId()),
                     cb.isTrue(root.get("active"))
@@ -114,17 +112,12 @@ public class PartnerService {
     }
 
     public PartnerDto findPartner(Long partnerId) {
-        var partner = partnerRepository.findById(partnerId).orElseThrow(() -> new ResourceNotFoundException("Partner not found"));
+        var partner = partnerRepository.findByPartnerIdAndUserId(partnerId, userService.getLoggedUser().getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException(messageService.getMessage("error.title.fetch-resource"), messageService.getMessage("partner.error.not-found")));
 
         if (!partner.isActive()) {
-            throw new ResourceNotFoundException("Partner not found");
+            throw new ResourceNotFoundException(messageService.getMessage("error.title.fetch-resource"), messageService.getMessage("partner.error.not-found"));
         }
-
-        var loggedUser = userService.getLoggedUser();
-        if (!partner.getUserId().equals(loggedUser.getUserId())) {
-            throw new UnauthorizedAccessException("An error occurred while searching partner");
-        }
-
 
         partner.getPartnerExpertises().removeIf(partnerExpertise -> {
             var expertise = partnerExpertise.getExpertise();
@@ -152,6 +145,9 @@ public class PartnerService {
     }
 
     public void addPartnersToGroup(List<Long> partnerIds, Long groupId) {
+        if (CollectionUtils.isEmpty(partnerIds)) {
+            return;
+        }
         partnerRepository.addPartnersToGroup(partnerIds, groupId);
     }
 
@@ -161,6 +157,9 @@ public class PartnerService {
     }
 
     public void addPartnersToCompany(List<Long> partnerIds, Long companyId) {
+        if (CollectionUtils.isEmpty(partnerIds)) {
+            return;
+        }
         this.partnerRepository.addPartnersToCompany(partnerIds, companyId);
     }
 

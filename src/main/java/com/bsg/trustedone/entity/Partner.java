@@ -1,16 +1,14 @@
 package com.bsg.trustedone.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -51,4 +49,8 @@ public class Partner {
     @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<BusinessProfile> businessProfile = new ArrayList<>();
+
+    @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Referral> referrals = new ArrayList<>();
 }

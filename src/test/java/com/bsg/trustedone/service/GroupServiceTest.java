@@ -2,32 +2,36 @@ package com.bsg.trustedone.service;
 
 import com.bsg.trustedone.dto.GroupDto;
 import com.bsg.trustedone.dto.GroupFormDto;
+import com.bsg.trustedone.dto.GroupListingDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.entity.Group;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
-import com.bsg.trustedone.exception.ResourceUpdateException;
-import com.bsg.trustedone.exception.UnauthorizedAccessException;
+import com.bsg.trustedone.exception.ResourceNotFoundException;
 import com.bsg.trustedone.factory.GroupFactory;
 import com.bsg.trustedone.helper.DummyObjects;
 import com.bsg.trustedone.helper.RandomUtils;
 import com.bsg.trustedone.mapper.GroupMapper;
+import com.bsg.trustedone.projection.GroupListingProjection;
+import com.bsg.trustedone.projection.GroupWithPartnersProjection;
 import com.bsg.trustedone.repository.GroupRepository;
-import com.bsg.trustedone.validator.GroupValidator;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,260 +41,251 @@ class GroupServiceTest {
     private GroupService groupService;
 
     @Mock
-    private UserService userService;
-
-    @Mock
-    private GroupRepository groupRepository;
-
-    @Mock
-    private GroupValidator groupValidator;
-
-    @Mock
     private GroupMapper groupMapper;
+
+    @Mock
+    private UserService userService;
 
     @Mock
     private GroupFactory groupFactory;
 
     @Mock
+    private MessageService messageService;
+
+    @Mock
+    private GroupRepository groupRepository;
+
+    @Mock
     private ObjectProvider<PartnerService> partnerServiceProvider;
 
-    private UserDto loggedUser;
+    @Mock
+    private PartnerService partnerService;
 
-    @BeforeEach
-    public void beforeAll() {
-        lenient().when(groupMapper.toDto(any(Group.class))).thenCallRealMethod();
-        lenient().when(groupMapper.toCreationDto(any(GroupDto.class))).thenCallRealMethod();
-        lenient().when(groupFactory.createEntity(any(GroupFormDto.class), any(UserDto.class))).thenCallRealMethod();
-        lenient().when(groupRepository.save(any(Group.class))).then(invocation -> {
-            var created = (Group) invocation.getArguments()[0];
-            created.setGroupId(RandomUtils.nextLong(1, 999));
-            return created;
-        });
+    @Test
+    @DisplayName("Should create group successfully")
+    void createGroup_withValidData_shouldCreateAndReturnGroupDto() {
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+        var partners = List.of(1L, 2L, 3L);
+        var formDto = DummyObjects.newInstance(GroupFormDto.class);
+        formDto.setPartners(partners);
 
-        this.loggedUser = DummyObjects.newInstance(UserDto.class);
-        lenient().when(userService.getLoggedUser()).thenReturn(loggedUser);
+        var entity = DummyObjects.newInstance(Group.class);
+        var dto = DummyObjects.newInstance(GroupDto.class);
 
-        lenient().when(partnerServiceProvider.getObject()).thenReturn(Mockito.mock(PartnerService.class));
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+        when(groupRepository.existsByNameAndUserId(formDto.getName(), loggedUser.getUserId())).thenReturn(false);
+        when(groupFactory.createEntity(formDto, loggedUser)).thenReturn(entity);
+        when(groupRepository.save(entity)).thenReturn(entity);
+        when(groupMapper.toDto(entity)).thenReturn(dto);
+        when(partnerServiceProvider.getObject()).thenReturn(partnerService);
 
+        var result = groupService.createGroup(formDto);
+
+        assertThat(result).isEqualTo(dto);
+        verify(partnerService, times(1)).addPartnersToGroup(partners, entity.getGroupId());
     }
 
     @Test
-    @DisplayName("Should propagate exception when group creation validate fails")
-    void groupCreation_withInvalidGroupData_shouldPropagateValidationException() {
-        // Given
-        var groupCreationDto = DummyObjects.newInstance(GroupFormDto.class);
+    @DisplayName("Should throw exception when group already exists")
+    void createGroup_withExistingGroup_shouldThrowResourceAlreadyExistsException() {
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+        var formDto = DummyObjects.newInstance(GroupFormDto.class);
 
-        doThrow(new ResourceAlreadyExistsException("Error", List.of()))
-                .when(groupValidator).validateGroupCreate(groupCreationDto);
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+        when(groupRepository.existsByNameAndUserId(formDto.getName(), loggedUser.getUserId())).thenReturn(true);
+        when(messageService.getMessage(anyString())).thenReturn("error");
 
-        // When & Then
-        assertThatThrownBy(() -> groupService.createGroup(groupCreationDto))
-                .isInstanceOf(ResourceAlreadyExistsException.class)
-                .hasMessage("Error");
-
-        verify(groupValidator).validateGroupCreate(groupCreationDto);
+        assertThatThrownBy(() -> groupService.createGroup(formDto)).isInstanceOf(ResourceAlreadyExistsException.class);
     }
 
     @Test
-    @DisplayName("Should throw error if group already exist")
-    void groupCreation_withAlreadyRegisteredName_shouldThrowException() {
-        // Given
-        var groupCreationDto = DummyObjects.newInstance(GroupFormDto.class);
+    @DisplayName("Should remove partners and delete group")
+    void deleteGroup_withValidGroupId_shouldRemovePartnersAndDeleteGroup() {
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+        when(partnerServiceProvider.getObject()).thenReturn(partnerService);
 
-        when(groupRepository.existsByNameAndUserId(groupCreationDto.getName(), loggedUser.getUserId())).thenReturn(true);
+        groupService.deleteGroup(1L);
 
-        // When & Then
-        assertThatThrownBy(() -> groupService.createGroup(groupCreationDto))
-                .isInstanceOf(ResourceAlreadyExistsException.class);
+        verify(partnerService).removePartnersFromGroup(1L);
+        verify(groupRepository).deleteByGroupIdAndUserId(1L, loggedUser.getUserId());
     }
 
     @Test
-    @DisplayName("Should create group successfully when data is valid")
-    void createGroup_withValidData_shouldCreateGroupSuccessfully() {
-        // Given
-        var groupCreationDto = DummyObjects.newInstance(GroupFormDto.class);
+    @DisplayName("Should throw exception when group is not found")
+    void updateGroup_withInvalidGroupId_shouldThrowResourceNotFoundException() {
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+        var formDto = DummyObjects.newInstance(GroupFormDto.class);
 
-        when(groupRepository.existsByNameAndUserId(groupCreationDto.getName(), loggedUser.getUserId())).thenReturn(false);
-        when(groupRepository.save(any(Group.class))).then(invocation -> invocation.getArguments()[0]);
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+        when(groupRepository.findByGroupIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.empty());
+        when(messageService.getMessage(anyString())).thenReturn("error");
 
-        // When
-        var result = groupService.createGroup(groupCreationDto);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getName()).isEqualTo(groupCreationDto.getName());
-        assertThat(result.getDescription()).isEqualTo(groupCreationDto.getDescription());
+        assertThatThrownBy(() -> groupService.updateGroup(formDto, 1L)).isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    @DisplayName("Should remove partner from grouop")
-    void deleteGroup_shouldRemovePartnerFromGrouop() {
-        // Given
-        var groupOwner = DummyObjects.newInstance(UserDto.class);
-
+    @DisplayName("Should update group and sync partners successfully")
+    void updateGroup_withValidData_shouldUpdateGroupAndReturnDto() {
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+        var formDto = DummyObjects.newInstance(GroupFormDto.class);
         var group = DummyObjects.newInstance(Group.class);
-        group.setUserId(groupOwner.getUserId());
+        var dto = DummyObjects.newInstance(GroupDto.class);
 
-        // When
-        groupService.deleteGroup(group.getGroupId());
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+        when(groupRepository.findByGroupIdAndUserId(group.getGroupId(), loggedUser.getUserId())).thenReturn(Optional.of(group));
+        when(groupRepository.save(group)).thenReturn(group);
+        when(groupMapper.toDto(group)).thenReturn(dto);
+        when(partnerServiceProvider.getObject()).thenReturn(partnerService);
 
-        // Then
-        verify(partnerServiceProvider.getObject(), times(1)).removePartnersFromGroup(group.getGroupId());
+        var result = groupService.updateGroup(formDto, group.getGroupId());
+
+        assertThat(group.getName()).isEqualTo(formDto.getName());
+        assertThat(result).isEqualTo(dto);
+
+        verify(partnerService).removePartnersFromGroup(group.getGroupId());
+        if (!formDto.getPartners().isEmpty()) {
+            verify(partnerService).addPartnersToGroup(formDto.getPartners(), group.getGroupId());
+        }
     }
 
     @Test
-    @DisplayName("Should propagate exception when group update validate fails")
-    void groupUpdate_withInvalidGroupData_shouldPropagateValidationException() {
-        // Given
-        var updateData = DummyObjects.newInstance(GroupFormDto.class);
-
-        doThrow(new ResourceUpdateException("Error", List.of()))
-                .when(groupValidator).validateGroupUpdate(updateData);
-
-        // When & Then
-        assertThatThrownBy(() -> groupService.updateGroup(updateData, anyLong()))
-                .isInstanceOf(ResourceUpdateException.class)
-                .hasMessage("Error");
-
-        verify(groupValidator).validateGroupUpdate(updateData);
-    }
-
-    @Test
-    @DisplayName("Should throw exception when updating group from another user")
-    void updateGroup_withUserIdDifferentThanLogged_shouldThrowException() {
-        // Given
-        var groupOwner = DummyObjects.newInstance(UserDto.class);
-
-        var groupId = 999L;
-        var updateData = DummyObjects.newInstance(GroupFormDto.class);
-        var group = DummyObjects.newInstance(Group.class);
-
-        group.setGroupId(groupId);
-        group.setUserId(groupOwner.getUserId());
-
-        when(groupRepository.findById(group.getGroupId())).thenReturn(Optional.of(group));
-
-        // When & Then
-        assertThatThrownBy(() -> groupService.updateGroup(updateData, groupId))
-                .isInstanceOf(UnauthorizedAccessException.class);
-    }
-
-    @Test
-    @DisplayName("Should successfully update group data")
-    void updateGroup_shouldSuccessfullyUpdate() {
-        // Given
-        var groupId = 999L;
-        var updateData = DummyObjects.newInstance(GroupFormDto.class);
-        var existingGroup = DummyObjects.newInstance(Group.class);
-
-        existingGroup.setGroupId(groupId);
-        existingGroup.setUserId(loggedUser.getUserId());
-
-        when(groupRepository.findById(existingGroup.getGroupId())).thenReturn(Optional.of(existingGroup));
-
-        // When
-        var result = groupService.updateGroup(updateData, groupId);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getName()).isEqualTo(updateData.getName());
-        assertThat(result.getDescription()).isEqualTo(updateData.getDescription());
-    }
-
-    @Test
-    @DisplayName("Should return null GroupDto when group is null")
-    void findOrCreateGroup_shouldReturnNullGroupDto_whenGroupIsNull() {
-        // When
+    @DisplayName("Should return null when group is null")
+    void findOrCreateGroup_withNullGroup_shouldReturnNull() {
         var result = groupService.findOrCreateGroup(null);
-
-        // Then
         assertThat(result).isNull();
-        verifyNoInteractions(groupRepository, groupMapper);
     }
 
     @Test
-    @DisplayName("Should create new group when groupId is null")
-    void findOrCreateGroup_shouldCreateNewGroup_whenGroupIdIsNull() {
-        // Given
-        var inputGroup = DummyObjects.newInstance(GroupDto.class);
-        inputGroup.setGroupId(null);
+    @DisplayName("Should create group when group id is null")
+    void findOrCreateGroup_withNullGroupId_shouldCreateGroup() {
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+        var groupDto = DummyObjects.newInstance(GroupDto.class);
+        groupDto.setGroupId(null);
 
-        // When
-        var result = groupService.findOrCreateGroup(inputGroup);
+        var formDto = DummyObjects.newInstance(GroupFormDto.class);
+        var createdDto = DummyObjects.newInstance(GroupDto.class);
 
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getGroupId()).isNotNull();
-        assertThat(result.getName()).isEqualTo(inputGroup.getName());
-        assertThat(result.getDescription()).isEqualTo(inputGroup.getDescription());
+        when(groupMapper.toCreationDto(groupDto)).thenReturn(formDto);
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+        when(groupRepository.existsByNameAndUserId(any(), any())).thenReturn(false);
+        when(groupFactory.createEntity(any(GroupFormDto.class), any())).thenReturn(DummyObjects.newInstance(Group.class));
+        when(groupRepository.save(any())).thenReturn(DummyObjects.newInstance(Group.class));
+        when(groupMapper.toDto(any(Group.class))).thenReturn(createdDto);
+        when(partnerServiceProvider.getObject()).thenReturn(partnerService);
 
-        verify(groupMapper).toCreationDto(inputGroup);
+        var result = groupService.findOrCreateGroup(groupDto);
+
+        assertThat(result).isEqualTo(createdDto);
     }
 
     @Test
-    @DisplayName("Should return existing group when found by ID")
-    void findOrCreateGroup_shouldReturnExistingGroup_whenFoundById() {
-        // Given
-        var inputGroup = DummyObjects.newInstance(GroupDto.class);
-        var existingGroupEntity = DummyObjects.newInstance(Group.class);
-        existingGroupEntity.setGroupId(inputGroup.getGroupId());
+    @DisplayName("Should return existing group when found")
+    void findOrCreateGroup_withExistingGroupId_shouldReturnGroup() {
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+        var groupDto = DummyObjects.newInstance(GroupDto.class);
+        var entity = DummyObjects.newInstance(Group.class);
+        var mappedDto = DummyObjects.newInstance(GroupDto.class);
 
-        when(groupRepository.findById(inputGroup.getGroupId())).thenReturn(Optional.of(existingGroupEntity));
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+        when(groupRepository.findByGroupIdAndUserId(groupDto.getGroupId(), loggedUser.getUserId())).thenReturn(Optional.of(entity));
+        when(groupMapper.toDto(entity)).thenReturn(mappedDto);
 
-        // When
-        var result = groupService.findOrCreateGroup(inputGroup);
+        var result = groupService.findOrCreateGroup(groupDto);
 
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getGroupId()).isEqualTo(inputGroup.getGroupId());
-        assertThat(result.getName()).isEqualTo(existingGroupEntity.getName());
-        assertThat(result.getDescription()).isEqualTo(existingGroupEntity.getDescription());
-
-        verify(groupRepository).findById(inputGroup.getGroupId());
-        verify(groupMapper).toDto(existingGroupEntity);
-        verify(groupMapper, never()).toCreationDto(any());
+        assertThat(result).isEqualTo(mappedDto);
     }
 
     @Test
-    @DisplayName("Should create new group when not found by ID")
-    void findOrCreateGroup_shouldCreateNewGroup_whenNotFoundById() {
-        // Given
-        var inputGroup = DummyObjects.newInstance(GroupDto.class);
+    @DisplayName("Should list groups with pagination")
+    void listGroups_withValidRequest_shouldReturnPagedResult() {
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+        var group = new GroupListingProjection() {
+            @Override
+            public Long getGroupId() {
+                return 999L;
+            }
 
-        // When
-        var result = groupService.findOrCreateGroup(inputGroup);
+            @Override
+            public String getName() {
+                return "Group";
+            }
 
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getGroupId()).isNotNull();
-        assertThat(result.getName()).isEqualTo(inputGroup.getName());
-        assertThat(result.getDescription()).isEqualTo(inputGroup.getDescription());
+            @Override
+            public String getDescription() {
+                return "Description";
+            }
 
-        verify(groupRepository).findById(inputGroup.getGroupId());
-        verify(groupMapper).toCreationDto(inputGroup);
+            @Override
+            public Integer getPartnerCount() {
+                return RandomUtils.nextInt(0, 10);
+            }
+        };
+
+        var listingDto = DummyObjects.newInstance(GroupListingDto.class);
+
+        Page<GroupListingProjection> page = new PageImpl<>(List.of(group));
+
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+        when(groupRepository.listGroups(anyLong(), any(), any())).thenReturn(page);
+        when(groupMapper.toListingDto(group)).thenReturn(listingDto);
+
+        var result = groupService.listGroups(null, PageRequest.of(0, 10));
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().getFirst()).isEqualTo(listingDto);
     }
 
     @Test
-    @DisplayName("Should return GroupDto with only non-null fields when group has only groupId")
-    void findOrCreateGroup_shouldHandleGroup_withOnlyGroupId() {
-        // Given
-        var inputGroup = GroupDto.builder().groupId(999L).build();
-        var existingGroupEntity = DummyObjects.newInstance(Group.class);
-        existingGroupEntity.setGroupId(inputGroup.getGroupId());
+    @DisplayName("Should throw exception when group is not found")
+    void findById_withInvalidGroupId_shouldThrowResourceNotFoundException() {
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
 
-        when(groupRepository.findById(inputGroup.getGroupId())).thenReturn(Optional.of(existingGroupEntity));
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+        when(groupRepository.findGroupWithPartners(anyLong(), anyLong())).thenReturn(Collections.emptyList());
+        when(messageService.getMessage(anyString())).thenReturn("error");
 
-        // When
-        var result = groupService.findOrCreateGroup(inputGroup);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getGroupId()).isEqualTo(inputGroup.getGroupId());
-        assertThat(result.getName()).isEqualTo(existingGroupEntity.getName());
-        assertThat(result.getDescription()).isEqualTo(existingGroupEntity.getDescription());
-
-        verify(groupRepository).findById(inputGroup.getGroupId());
-        verify(groupMapper).toDto(existingGroupEntity);
+        assertThatThrownBy(() -> groupService.findById(1L)).isInstanceOf(ResourceNotFoundException.class);
     }
 
+    @Test
+    @DisplayName("Should return group when found")
+    void findById_withValidGroupId_shouldReturnGroupDto() {
+        var loggedUser = DummyObjects.newInstance(UserDto.class);
+        var projection = new GroupWithPartnersProjection() {
+            @Override
+            public Long getGroupId() {
+                return 999L;
+            }
+
+            @Override
+            public String getGroupName() {
+                return "Group";
+            }
+
+            @Override
+            public String getGroupDescription() {
+                return "Description";
+            }
+
+            @Override
+            public Long getPartnerId() {
+                return 999L;
+            }
+
+            @Override
+            public String getPartnerName() {
+                return "Partner";
+            }
+        };
+        var dto = DummyObjects.newInstance(GroupDto.class);
+
+        when(userService.getLoggedUser()).thenReturn(loggedUser);
+        when(groupRepository.findGroupWithPartners(anyLong(), anyLong())).thenReturn(List.of(projection));
+        when(groupMapper.toDto(any(List.class))).thenReturn(dto);
+
+        var result = groupService.findById(1L);
+
+        assertThat(result).isEqualTo(dto);
+    }
 }

@@ -14,10 +14,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserMapper userMapper;
     private final UserRepository userRepository;
+    private final MessageService messageService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var user = this.userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("Invalid email or password"));
+        var user = this.userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException(messageService.getMessage("user.error.not-found")));
         return userMapper.toUserDetailDto(user);
     }
 }

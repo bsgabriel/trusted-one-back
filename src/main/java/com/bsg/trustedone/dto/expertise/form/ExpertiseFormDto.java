@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class ExpertiseFormDto {
 
-    @NotBlank
+    @NotBlank(message = "{expertise.validation.name.required}")
     private String name;
 
     @Builder.Default

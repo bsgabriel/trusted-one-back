@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class GroupFormDto {
 
-    @NotBlank(message = "Group name is required")
+    @NotBlank(message = "{group.validation.name.required}")
     private String name;
 
     private String description;

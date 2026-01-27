@@ -9,11 +9,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PartnerRepository extends JpaRepository<Partner, Long>, JpaSpecificationExecutor<Partner> {
-
-    List<Partner> findAllByUserId(Long userId);
 
     @Modifying
     @Query("""
@@ -72,4 +71,6 @@ public interface PartnerRepository extends JpaRepository<Partner, Long>, JpaSpec
                 and userId = :userId
             """)
     void deactivate(Long partnerId, Long userId);
+
+    Optional<Partner> findByPartnerIdAndUserId(Long partnerId, Long userId);
 }
