@@ -101,10 +101,7 @@ public class GroupService {
 
     private void syncPartnersWithGroup(Long groupId, List<Long> partnerIds) {
         partnerServiceProvider.getObject().removePartnersFromGroup(groupId);
-
-        if (!partnerIds.isEmpty()) {
-            partnerServiceProvider.getObject().addPartnersToGroup(partnerIds, groupId);
-        }
+        partnerServiceProvider.getObject().addPartnersToGroup(partnerIds, groupId);
     }
 
 }

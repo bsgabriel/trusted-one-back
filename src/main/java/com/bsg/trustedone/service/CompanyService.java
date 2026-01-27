@@ -34,6 +34,7 @@ public class CompanyService {
     private final CompanyRepository companyRepository;
     private final ObjectProvider<PartnerService> partnerServiceProvider;
 
+    @Transactional
     public CompanyDto createCompany(CompanyFormDto company) {
         var loggedUser = userService.getLoggedUser();
 
@@ -41,9 +42,9 @@ public class CompanyService {
             throw new ResourceAlreadyExistsException(messageService.getMessage("error.title.create"), messageService.getMessage("company.error.already-exists"));
         }
 
-        var entity = companyFactory.createEntity(company, loggedUser.getUserId());
+        var entity = companyRepository.save(companyFactory.createEntity(company, loggedUser.getUserId()));
         partnerServiceProvider.getObject().addPartnersToCompany(company.getPartners(), entity.getCompanyId());
-        return companyMapper.toDto(companyRepository.save(entity));
+        return companyMapper.toDto(entity);
     }
 
     @Transactional
@@ -99,10 +100,7 @@ public class CompanyService {
 
     private void syncPartnersWithCompany(Long groupId, List<Long> partnerIds) {
         partnerServiceProvider.getObject().removePartnersFromCompany(groupId);
-
-        if (!partnerIds.isEmpty()) {
-            partnerServiceProvider.getObject().addPartnersToCompany(partnerIds, groupId);
-        }
+        partnerServiceProvider.getObject().addPartnersToCompany(partnerIds, groupId);
     }
 
 }

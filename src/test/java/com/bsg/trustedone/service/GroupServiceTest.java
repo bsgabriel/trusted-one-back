@@ -65,7 +65,10 @@ class GroupServiceTest {
     @DisplayName("Should create group successfully")
     void createGroup_withValidData_shouldCreateAndReturnGroupDto() {
         var loggedUser = DummyObjects.newInstance(UserDto.class);
+        var partners = List.of(1L, 2L, 3L);
         var formDto = DummyObjects.newInstance(GroupFormDto.class);
+        formDto.setPartners(partners);
+
         var entity = DummyObjects.newInstance(Group.class);
         var dto = DummyObjects.newInstance(GroupDto.class);
 
@@ -79,6 +82,7 @@ class GroupServiceTest {
         var result = groupService.createGroup(formDto);
 
         assertThat(result).isEqualTo(dto);
+        verify(partnerService, times(1)).addPartnersToGroup(partners, entity.getGroupId());
     }
 
     @Test

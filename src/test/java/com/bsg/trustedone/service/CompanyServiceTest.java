@@ -66,7 +66,10 @@ class CompanyServiceTest {
     @DisplayName("Should create company successfully")
     void createCompany_withValidData_shouldCreateAndReturnCompanyDto() {
         var loggedUser = DummyObjects.newInstance(UserDto.class);
+        var partners = List.of(1L, 2L, 3L);
         var formDto = DummyObjects.newInstance(CompanyFormDto.class);
+        formDto.setPartners(partners);
+
         var entity = DummyObjects.newInstance(Company.class);
         var dto = DummyObjects.newInstance(CompanyDto.class);
 
@@ -75,10 +78,12 @@ class CompanyServiceTest {
         when(companyFactory.createEntity(formDto, loggedUser.getUserId())).thenReturn(entity);
         when(companyRepository.save(entity)).thenReturn(entity);
         when(companyMapper.toDto(entity)).thenReturn(dto);
+        when(partnerServiceProvider.getObject()).thenReturn(partnerService);
 
         var result = companyService.createCompany(formDto);
 
         assertThat(result).isEqualTo(dto);
+        verify(partnerService, times(1)).addPartnersToCompany(partners, entity.getCompanyId());
     }
 
     @Test
@@ -169,6 +174,8 @@ class CompanyServiceTest {
         when(companyFactory.createEntity(any(CompanyFormDto.class), any())).thenReturn(DummyObjects.newInstance(Company.class));
         when(companyRepository.save(any())).thenReturn(DummyObjects.newInstance(Company.class));
         when(companyMapper.toDto(any(Company.class))).thenReturn(createdDto);
+        when(partnerServiceProvider.getObject()).thenReturn(partnerService);
+        when(partnerServiceProvider.getObject()).thenReturn(partnerService);
 
         var result = companyService.findOrCreateCompany(companyDto);
 
