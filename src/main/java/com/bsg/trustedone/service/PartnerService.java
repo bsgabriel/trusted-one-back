@@ -145,7 +145,7 @@ public class PartnerService {
     }
 
     public void addPartnersToGroup(List<Long> partnerIds, Long groupId) {
-        if (!CollectionUtils.isEmpty(partnerIds)) {
+        if (CollectionUtils.isEmpty(partnerIds)) {
             return;
         }
         partnerRepository.addPartnersToGroup(partnerIds, groupId);
@@ -157,7 +157,7 @@ public class PartnerService {
     }
 
     public void addPartnersToCompany(List<Long> partnerIds, Long companyId) {
-        if (!CollectionUtils.isEmpty(partnerIds)) {
+        if (CollectionUtils.isEmpty(partnerIds)) {
             return;
         }
         this.partnerRepository.addPartnersToCompany(partnerIds, companyId);
