@@ -1,14 +1,18 @@
 package com.bsg.trustedone.controller;
 
-import com.bsg.trustedone.dto.GroupCreationDto;
 import com.bsg.trustedone.dto.GroupDto;
+import com.bsg.trustedone.dto.GroupFormDto;
+import com.bsg.trustedone.dto.GroupListingDto;
+import com.bsg.trustedone.dto.PageResponse;
 import com.bsg.trustedone.service.GroupService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/group")
@@ -18,15 +22,25 @@ public class GroupController {
     private final GroupService groupService;
 
     @GetMapping
-    public ResponseEntity<List<GroupDto>> findAllGroups() {
-        return ResponseEntity.ok(groupService.getAllGroups());
+    public ResponseEntity<PageResponse<GroupListingDto>> listGroups(@RequestParam(required = false) String search, @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(groupService.listGroups(search, pageable));
+    }
+
+    @GetMapping("/{groupId}")
+    public ResponseEntity<GroupDto> fetchGroup(@PathVariable("groupId") Long groupId) {
+        return ResponseEntity.ok(groupService.findById(groupId));
     }
 
     @PostMapping
-    public ResponseEntity<GroupDto> createGroup(@RequestBody GroupCreationDto request) {
+    public ResponseEntity<GroupDto> createGroup(@RequestBody @Valid GroupFormDto request) {
         var createdGroup = groupService.createGroup(request);
         var uri = URI.create(String.format("/group/%d", createdGroup.getGroupId()));
         return ResponseEntity.created(uri).body(createdGroup);
+    }
+
+    @PutMapping("/{groupId}")
+    public ResponseEntity<GroupDto> updateGroup(@PathVariable("groupId") Long groupId, @RequestBody @Valid GroupFormDto groupCreationDto) {
+        return ResponseEntity.ok(groupService.updateGroup(groupCreationDto, groupId));
     }
 
     @DeleteMapping("/{groupId}")
@@ -34,11 +48,5 @@ public class GroupController {
         groupService.deleteGroup(groupdId);
         return ResponseEntity.noContent().build();
     }
-
-    @PutMapping("/{groupId}")
-    public ResponseEntity<GroupDto> update(@PathVariable("groupId") Long groupId, @RequestBody GroupCreationDto groupCreationDto) {
-        return ResponseEntity.ok(groupService.updateGroup(groupCreationDto, groupId));
-    }
-
 
 }

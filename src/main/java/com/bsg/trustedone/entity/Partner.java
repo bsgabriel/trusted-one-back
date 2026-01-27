@@ -1,15 +1,14 @@
 package com.bsg.trustedone.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,15 +31,26 @@ public class Partner {
 
     private Long userId;
 
-    @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ContactMethod> contactMethods;
+    @Builder.Default
+    private boolean active = true;
 
     @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PartnerExpertise> partnerExpertises;
+    @Builder.Default
+    private List<ContactMethod> contactMethods = new ArrayList<>();
 
     @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<GainsProfile> gainsProfile;
+    @Builder.Default
+    private List<PartnerExpertise> partnerExpertises = new ArrayList<>();
 
     @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BusinessProfile> businessProfile;
+    @Builder.Default
+    private List<GainsProfile> gainsProfile = new ArrayList<>();
+
+    @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<BusinessProfile> businessProfile = new ArrayList<>();
+
+    @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Referral> referrals = new ArrayList<>();
 }

@@ -1,4 +1,4 @@
-package com.bsg.trustedone.dto;
+package com.bsg.trustedone.dto.expertise;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,12 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExpertiseDto {
-
-    private Long parentExpertiseId;
-    private Long expertiseId;
-    private String name;
-    private String parentExpertiseName;
+public class PartnerExpertiseDto {
+    private Long partnerExpertiseId;
+    private Long partnerId;
+    private String partnerName;
     private boolean availableForReferral;
-
 }

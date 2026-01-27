@@ -1,6 +1,5 @@
 package com.bsg.trustedone.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,10 +9,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CompanyCreationDto {
+public class AssignedExpertiseDto {
 
-    @NotBlank(message = "Group name is required")
+    private Long parentExpertiseId;
+    private Long expertiseId;
     private String name;
+    private String parentExpertiseName;
+    private boolean availableForReferral;
 
-    private String image;
 }

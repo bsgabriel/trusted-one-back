@@ -6,14 +6,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GroupCreationDto {
+public class CompanyFormDto {
 
-    @NotBlank(message = "Group name is required")
+    @NotBlank(message = "{company.validation.name.required}")
     private String name;
 
-    private String description;
+    private String image;
+
+    @Builder.Default
+    private List<Long> partners = new ArrayList<>();
 }

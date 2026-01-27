@@ -21,7 +21,7 @@ public class PartnerFactory {
     private final ContactMethodFactory contactMethodFactory;
     private final BusinessProfileFactory businessProfileFactory;
 
-    public Partner createEntity(PartnerCreationDto partner, GroupDto group, CompanyDto company, UserDto loggedUser, List<ContactMethodCreationDto> contactMethods, List<ExpertiseDto> expertises, List<GainsProfileDto> gainsProfile, List<BusinessProfileDto> businessProfile) {
+    public Partner createEntity(PartnerFormDto partner, GroupDto group, CompanyDto company, UserDto loggedUser, List<ContactMethodFormDto> contactMethods, List<AssignedExpertiseDto> expertises, List<GainsProfileDto> gainsProfile, List<BusinessProfileDto> businessProfile) {
         var entity = Partner.builder()
                 .name(partner.getName())
                 .userId(loggedUser.getUserId())
@@ -55,11 +55,11 @@ public class PartnerFactory {
         return entity;
     }
 
-    private PartnerExpertise createPartnerExpertise(ExpertiseDto expertiseDto, Partner partner, UserDto loggedUser) {
+    private PartnerExpertise createPartnerExpertise(AssignedExpertiseDto assignedExpertiseDto, Partner partner, UserDto loggedUser) {
         return PartnerExpertise.builder()
-                .expertise(expertiseFactory.createEntity(expertiseDto, loggedUser))
+                .expertise(expertiseFactory.createEntity(assignedExpertiseDto, loggedUser))
                 .partner(partner)
-                .availableForReferral(expertiseDto.isAvailableForReferral())
+                .availableForReferral(assignedExpertiseDto.isAvailableForReferral())
                 .build();
     }
 

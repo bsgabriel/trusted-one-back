@@ -3,10 +3,14 @@ package com.bsg.trustedone.mapper;
 import com.bsg.trustedone.dto.PartnerDto;
 import com.bsg.trustedone.dto.PartnerListingDto;
 import com.bsg.trustedone.entity.Partner;
+import com.bsg.trustedone.entity.Referral;
+import com.bsg.trustedone.enums.ReferralStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -49,6 +53,11 @@ public class PartnerMapper {
     }
 
     public PartnerListingDto toListingDto(Partner partner) {
+        var counts = partner.getReferrals()
+                .stream()
+                .map(Referral::getStatus)
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
         return PartnerListingDto.builder()
                 .partnerId(partner.getPartnerId())
                 .name(partner.getName())
@@ -58,7 +67,11 @@ public class PartnerMapper {
                 .company(Optional.ofNullable(partner.getCompany())
                         .map(companyMapper::toDto)
                         .orElse(null))
-                .metrics(PartnerListingDto.PartnerMetricsDto.builder().build())
+                .metrics(PartnerListingDto.PartnerMetricsDto.builder()
+                        .acceptedReferrals(counts.getOrDefault(ReferralStatus.ACCEPTED, 0L).intValue())
+                        .rejectedReferrals(counts.getOrDefault(ReferralStatus.DECLINED, 0L).intValue())
+                        .pendingReferrals(counts.getOrDefault(ReferralStatus.PENDING, 0L).intValue())
+                        .build())
                 .build();
     }
 }

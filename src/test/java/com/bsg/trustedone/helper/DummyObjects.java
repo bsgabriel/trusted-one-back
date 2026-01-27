@@ -1,6 +1,5 @@
 package com.bsg.trustedone.helper;
 
-import jakarta.persistence.GeneratedValue;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
@@ -68,10 +67,8 @@ public class DummyObjects {
             }
 
             if (Long.TYPE.isAssignableFrom(field.getType()) || Long.class.isAssignableFrom(field.getType())) {
-                if (!field.isAnnotationPresent(GeneratedValue.class)) {
-                    field.set(instance, RandomUtils.nextLong(1, 32767));
-                    continue;
-                }
+                field.set(instance, RandomUtils.nextLong(1, 32767));
+                continue;
             }
 
             if (Integer.TYPE.isAssignableFrom(field.getType()) || Integer.class.isAssignableFrom(field.getType())) {

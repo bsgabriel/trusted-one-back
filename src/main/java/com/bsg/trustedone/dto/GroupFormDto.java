@@ -6,14 +6,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExpertiseCreationDto {
+public class GroupFormDto {
 
-    @NotBlank(message = "Expertise name is required")
+    @NotBlank(message = "{group.validation.name.required}")
     private String name;
 
-    private Long parentExpertiseId;
+    private String description;
+
+    @Builder.Default
+    private List<Long> partners = new ArrayList<>();
 }

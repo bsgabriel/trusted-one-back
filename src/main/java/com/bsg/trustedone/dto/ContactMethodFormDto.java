@@ -1,5 +1,6 @@
 package com.bsg.trustedone.dto;
 
+import com.bsg.trustedone.annotation.ValidContactMethod;
 import com.bsg.trustedone.enums.ContactType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,14 +13,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ContactMethodCreationDto {
+@ValidContactMethod
+public class ContactMethodFormDto {
 
     private Long contactMethodId;
 
-    @NotNull(message = "Contact type not provided")
+    @NotNull(message = "{contactMethod.validation.type.required}")
     private ContactType type;
 
-    @NotBlank(message = "Contact information not provided")
+    @NotBlank(message = "{contactMethod.validation.info.required}")
     private String info;
 
     private Long partnerId;
