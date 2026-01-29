@@ -35,3 +35,5 @@ app:
   mail:
     resend:
       api-key: ${RESEND_API_KEY}
+  password-reset:
+    token-expiration-minutes: 60
