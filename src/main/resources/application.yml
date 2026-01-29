@@ -30,3 +30,8 @@ security:
     secret: ${JWT_SECRET:abcdefghijlkmnopqrstuvwxyz123456}
     access-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:3600000}
     refresh-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:604800000}
+
+app:
+  mail:
+    resend:
+      api-key: ${RESEND_API_KEY}
