@@ -1,36 +1,32 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.AccountCreationDto;
-import com.bsg.trustedone.dto.UserDetailDto;
-import com.bsg.trustedone.dto.UserDto;
-import com.bsg.trustedone.dto.UserLoginDto;
+import com.bsg.trustedone.configuration.JwtConfig;
+import com.bsg.trustedone.dto.*;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.mapper.UserMapper;
 import com.bsg.trustedone.repository.UserRepository;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
+    private final JwtConfig jwtConfig;
+    private final JwtService jwtService;
     private final UserMapper userMapper;
     private final MessageService messageService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final CustomUserDetailsService userDetailsService;
 
     public UserDto createUser(AccountCreationDto registerData) {
         if (userRepository.existsByEmail(registerData.getEmail())) {
@@ -65,20 +61,18 @@ public class UserService {
         return userMapper.toUserDto((UserDetailDto) principal);
     }
 
-    public void login(UserLoginDto request, HttpServletRequest httpRequest) {
+    public LoginResponseDto login(UserLoginDto request) {
         var authToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
-        SecurityContextHolder.getContext().setAuthentication(authenticationManager.authenticate(authToken));
+        authenticationManager.authenticate(authToken);
 
-        HttpSession session = httpRequest.getSession(true);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
+        var userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+        String token = jwtService.generateToken(userDetails);
+
+        return LoginResponseDto.builder()
+                .token(token)
+                .type("Bearer")
+                .expiresIn(jwtConfig.getExpiration())
+                .build();
     }
 
-    public void logout(HttpServletRequest request) {
-        var session = request.getSession(false);
-        if (nonNull(session)) {
-            session.invalidate();
-        }
-        SecurityContextHolder.clearContext();
-    }
 }

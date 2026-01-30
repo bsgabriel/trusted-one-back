@@ -3,14 +3,11 @@ package com.bsg.trustedone.service;
 import com.bsg.trustedone.dto.AccountCreationDto;
 import com.bsg.trustedone.dto.UserDetailDto;
 import com.bsg.trustedone.dto.UserDto;
-import com.bsg.trustedone.dto.UserLoginDto;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.helper.DummyObjects;
 import com.bsg.trustedone.mapper.UserMapper;
 import com.bsg.trustedone.repository.UserRepository;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,12 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,8 +43,6 @@ class UserServiceTest {
 
     @Mock
     private AuthenticationManager authenticationManager;
-
-
 
     @Test
     @DisplayName("Should create user successfully")
@@ -155,46 +147,4 @@ class UserServiceTest {
         assertEquals(userDto, result);
     }
 
-    @Test
-    @DisplayName("Should authenticate user and store security context in session")
-    void login_withValidCredentials_shouldAuthenticateUser() {
-        var login = DummyObjects.newInstance(UserLoginDto.class);
-        var request = mock(HttpServletRequest.class);
-        var session = mock(HttpSession.class);
-        var authentication = mock(Authentication.class);
-
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(authentication);
-        when(request.getSession(true)).thenReturn(session);
-
-        userService.login(login, request);
-
-        verify(session).setAttribute(eq(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY), any(SecurityContext.class));
-    }
-
-    @Test
-    @DisplayName("Should invalidate session and clear security context")
-    void logout_withActiveSession_shouldInvalidateSession() {
-        var request = mock(HttpServletRequest.class);
-        var session = mock(HttpSession.class);
-
-        when(request.getSession(false)).thenReturn(session);
-
-        userService.logout(request);
-
-        verify(session).invalidate();
-        assertNull(SecurityContextHolder.getContext().getAuthentication());
-    }
-
-    @Test
-    @DisplayName("Should clear security context when session does not exist")
-    void logout_withNoSession_shouldOnlyClearContext() {
-        var request = mock(HttpServletRequest.class);
-
-        when(request.getSession(false)).thenReturn(null);
-
-        userService.logout(request);
-
-        assertNull(SecurityContextHolder.getContext().getAuthentication());
-    }
 }
