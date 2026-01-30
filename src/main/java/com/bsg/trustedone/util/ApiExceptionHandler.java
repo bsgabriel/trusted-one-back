@@ -52,8 +52,8 @@ public class ApiExceptionHandler {
     public ResponseEntity<ProblemDetail> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         var detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
 
-        detail.setTitle("Validation failed");
-        detail.setDetail("Please verify that all required fields are correctly filled");
+        detail.setTitle("Dados inválidos");
+        detail.setDetail("Verifique os campos e tente novamente");
 
         var errors = ex.getBindingResult()
                 .getAllErrors()
