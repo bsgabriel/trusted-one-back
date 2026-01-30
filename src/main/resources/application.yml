@@ -32,7 +32,9 @@ security:
     refresh-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:604800000}
 
 app:
+  frontend-url: ${FRONTEND_URL:http://localhost:9000}
   mail:
+    sender: ${MAIL_SENDER:test@resend.dev}
     resend:
       api-key: ${RESEND_API_KEY}
   password-reset:
