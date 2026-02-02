@@ -1,8 +1,8 @@
 package com.bsg.trustedone.service;
 
-import com.bsg.trustedone.dto.AccountCreationDto;
-import com.bsg.trustedone.dto.UserDetailDto;
-import com.bsg.trustedone.dto.UserDto;
+import com.bsg.trustedone.configuration.JwtConfig;
+import com.bsg.trustedone.dto.*;
+import com.bsg.trustedone.dto.auth.RefreshTokenRequestDto;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.helper.DummyObjects;
@@ -19,6 +19,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -28,6 +30,12 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
+    @Mock
+    private JwtConfig jwtConfig;
+
+    @Mock
+    private JwtService jwtService;
 
     @Mock
     private UserMapper userMapper;
@@ -42,7 +50,13 @@ class UserServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @Mock
+    private RefreshTokenService refreshTokenService;
+
+    @Mock
     private AuthenticationManager authenticationManager;
+
+    @Mock
+    private CustomUserDetailsService userDetailsService;
 
     @Test
     @DisplayName("Should create user successfully")
@@ -147,4 +161,61 @@ class UserServiceTest {
         assertEquals(userDto, result);
     }
 
+    @Test
+    @DisplayName("Should login successfully")
+    void login_withValidCredentials_shouldReturnTokens() {
+        var request = DummyObjects.newInstance(UserLoginDto.class);
+        var userDetails = DummyObjects.newInstance(UserDetailDto.class);
+        var refreshToken = DummyObjects.newInstance(RefreshTokenDto.class);
+
+        when(userDetailsService.loadUserByUsername(request.getEmail())).thenReturn(userDetails);
+        when(jwtService.generateToken(userDetails)).thenReturn("token");
+        when(refreshTokenService.createRefreshToken(userDetails.getId())).thenReturn(refreshToken);
+        when(jwtConfig.getExpiration()).thenReturn(3600L);
+
+        var response = userService.login(request);
+
+        assertNotNull(response);
+        assertEquals("token", response.getAccessToken());
+        assertEquals(refreshToken.getToken(), response.getRefreshToken());
+
+        verify(authenticationManager).authenticate(any());
+    }
+
+    @Test
+    @DisplayName("Should refresh token successfully")
+    void refreshToken_withValidToken_shouldReturnNewAccessToken() {
+        var request = DummyObjects.newInstance(RefreshTokenRequestDto.class);
+        var refreshToken = DummyObjects.newInstance(RefreshTokenDto.class);
+        var user = DummyObjects.newInstance(User.class);
+        var userDetails = DummyObjects.newInstance(UserDetailDto.class);
+
+        when(refreshTokenService.findByToken(request.getRefreshToken())).thenReturn(refreshToken);
+        doNothing().when(refreshTokenService).verifyExpiration(refreshToken);
+        when(userRepository.findById(refreshToken.getUserId())).thenReturn(Optional.of(user));
+        when(userDetailsService.loadUserByUsername(user.getEmail())).thenReturn(userDetails);
+        when(jwtService.generateToken(userDetails)).thenReturn("new-token");
+        when(jwtConfig.getExpiration()).thenReturn(3600L);
+
+        var response = userService.refreshToken(request);
+
+        assertEquals("new-token", response.getAccessToken());
+        assertEquals(request.getRefreshToken(), response.getRefreshToken());
+    }
+
+    @Test
+    @DisplayName("Should delete refresh token on logout")
+    void logout_withValidToken_shouldDeleteToken() {
+        userService.logout("refresh-token");
+
+        verify(refreshTokenService).deleteByToken("refresh-token");
+    }
+
+    @Test
+    @DisplayName("Should do nothing when refresh token is blank")
+    void logout_withBlankToken_shouldDoNothing() {
+        userService.logout(" ");
+
+        verify(refreshTokenService, never()).deleteByToken(any());
+    }
 }
