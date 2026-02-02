@@ -3,8 +3,8 @@ package com.bsg.trustedone.controller;
 import com.bsg.trustedone.dto.AccountCreationDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.dto.UserLoginDto;
+import com.bsg.trustedone.dto.LoginResponseDto;
 import com.bsg.trustedone.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,15 +23,8 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody @Valid UserLoginDto request, HttpServletRequest httpRequest) {
-        userService.login(request, httpRequest);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request) {
-        userService.logout(request);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<LoginResponseDto> login(@RequestBody @Valid UserLoginDto request) {
+        return ResponseEntity.ok(userService.login(request));
     }
 
     @GetMapping("/me")
