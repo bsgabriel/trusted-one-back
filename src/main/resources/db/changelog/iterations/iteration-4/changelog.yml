@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: iteration_4-create_table-refresh_tokens
+      author: bsgabriel
+      comment: "Create table refresh_tokens"
+      changes:
+        - sqlFile:
+            path: sql/001-create_table-refresh_tokens.sql
+            relativeToChangelogFile: true

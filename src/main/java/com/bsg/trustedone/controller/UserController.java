@@ -1,9 +1,10 @@
 package com.bsg.trustedone.controller;
 
 import com.bsg.trustedone.dto.AccountCreationDto;
+import com.bsg.trustedone.dto.LoginResponseDto;
 import com.bsg.trustedone.dto.UserDto;
 import com.bsg.trustedone.dto.UserLoginDto;
-import com.bsg.trustedone.dto.LoginResponseDto;
+import com.bsg.trustedone.dto.auth.RefreshTokenRequestDto;
 import com.bsg.trustedone.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,5 +36,18 @@ public class UserController {
             return ResponseEntity.ok(user);
         }
         return ResponseEntity.status(401).body("Usuário não autenticado");
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponseDto> refreshToken(@RequestBody @Valid RefreshTokenRequestDto request) {
+        LoginResponseDto response = userService.refreshToken(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestBody(required = false) RefreshTokenRequestDto request) {
+        String refreshToken = request != null ? request.getRefreshToken() : null;
+        userService.logout(refreshToken);
+        return ResponseEntity.noContent().build();
     }
 }
