@@ -2,6 +2,7 @@ package com.bsg.trustedone.service;
 
 import com.bsg.trustedone.dto.RefreshTokenDto;
 import com.bsg.trustedone.entity.RefreshToken;
+import com.bsg.trustedone.exception.SessionException;
 import com.bsg.trustedone.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RefreshTokenService {
 
+    private final MessageService messageService;
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${security.jwt.refresh-expiration}")
@@ -46,14 +48,14 @@ public class RefreshTokenService {
                         .token(entity.getToken())
                         .expiryDate(entity.getExpiryDate())
                         .build())
-                .orElse(null);
+                .orElseThrow(() -> new SessionException(messageService.getMessage("session.error.invalid.title"), messageService.getMessage("session.error.invalid.message")));
     }
 
     @Transactional
     public void verifyExpiration(RefreshTokenDto token) {
         if (Instant.now().isAfter(token.getExpiryDate())) {
             refreshTokenRepository.deleteById(token.getRefreshTokenId());
-            throw new RuntimeException("Refresh token expirado. Por favor, faça login novamente.");
+            throw new SessionException(messageService.getMessage("session.error.expired.title"), messageService.getMessage("session.error.expired.message"));
         }
     }
 

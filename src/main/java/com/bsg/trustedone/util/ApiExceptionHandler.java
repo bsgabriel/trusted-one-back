@@ -69,6 +69,15 @@ public class ApiExceptionHandler {
         return createResponseEntity(detail);
     }
 
+    @ExceptionHandler(SessionException.class)
+    public ResponseEntity<ProblemDetail> handleSessionExpiredException(SessionException ex) {
+        var detail = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+        detail.setTitle(ex.getTitle());
+        detail.setDetail(ex.getMessage());
+        detail.setProperty("errorCode", "SESSION_EXPIRED");
+        return createResponseEntity(detail);
+    }
+
     private ProblemDetail createProblemDetail(HttpStatus status, BaseException ex) {
         var detail = ProblemDetail.forStatusAndDetail(status, ex.getMessage());
         detail.setTitle(ex.getTitle());

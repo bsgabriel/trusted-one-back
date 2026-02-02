@@ -5,6 +5,7 @@ import com.bsg.trustedone.dto.*;
 import com.bsg.trustedone.dto.auth.RefreshTokenRequestDto;
 import com.bsg.trustedone.entity.User;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
+import com.bsg.trustedone.exception.SessionException;
 import com.bsg.trustedone.mapper.UserMapper;
 import com.bsg.trustedone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -82,15 +83,12 @@ public class UserService {
 
     public LoginResponseDto refreshToken(RefreshTokenRequestDto request) {
         var token = refreshTokenService.findByToken(request.getRefreshToken());
-        if (token == null) {
-            throw new RuntimeException("Refresh token inválido");
-        }
 
         refreshTokenService.verifyExpiration(token);
 
         var userDetails = userRepository.findById(token.getUserId())
                 .map(user -> userDetailsService.loadUserByUsername(user.getEmail()))
-                .orElseThrow(() -> new RuntimeException("Não foi possível carregar dados do usuário"));
+                .orElseThrow(() -> new SessionException(messageService.getMessage("session.error.invalid.title"), messageService.getMessage("session.error.invalid.message")));
 
         return LoginResponseDto.builder()
                 .accessToken(jwtService.generateToken(userDetails))
