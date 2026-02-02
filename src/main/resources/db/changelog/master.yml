@@ -8,3 +8,6 @@ databaseChangeLog:
   - include:
       file: iterations/iteration-3/changelog.yml
       relativeToChangelogFile: true
+  - include:
+      file: iterations/iteration-4/changelog.yml
+      relativeToChangelogFile: true
