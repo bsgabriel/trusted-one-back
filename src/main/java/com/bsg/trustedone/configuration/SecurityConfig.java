@@ -67,7 +67,8 @@ public class SecurityConfig {
                                 "/user/register",
                                 "/user/refresh",
                                 "/user/forgot-password",
-                                "/user/reset-password"
+                                "/user/reset-password",
+                                "/user/reset-password/validate"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
