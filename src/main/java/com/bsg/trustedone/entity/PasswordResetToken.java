@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Data
@@ -22,7 +22,7 @@ public class PasswordResetToken {
 
     private Long userId;
     private String token;
-    private LocalDateTime expiresAt;
-    private LocalDateTime createdAt;
-    private LocalDateTime usedAt;
+    private Instant expiresAt;
+    private Instant createdAt;
+    private Instant usedAt;
 }

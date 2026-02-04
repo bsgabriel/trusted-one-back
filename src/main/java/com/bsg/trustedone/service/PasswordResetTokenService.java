@@ -6,7 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Service
@@ -20,12 +21,12 @@ public class PasswordResetTokenService {
 
     @Transactional
     public String generateToken(Long userId) {
-        var now = LocalDateTime.now();
+        var now = Instant.now();
         return this.passwordResetTokenRepository.save(PasswordResetToken.builder()
                         .userId(userId)
                         .token(UUID.randomUUID().toString())
                         .createdAt(now)
-                        .expiresAt(now.plusMinutes(tokenExpiration))
+                        .expiresAt(now.plus(tokenExpiration, ChronoUnit.MINUTES))
                         .build())
                 .getToken();
     }
