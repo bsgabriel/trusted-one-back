@@ -21,6 +21,7 @@ public class PasswordResetTokenService {
 
     @Transactional
     public String generateToken(Long userId) {
+        passwordResetTokenRepository.deleteOldTokensForUser(userId);
         var now = Instant.now();
         return this.passwordResetTokenRepository.save(PasswordResetToken.builder()
                         .userId(userId)
