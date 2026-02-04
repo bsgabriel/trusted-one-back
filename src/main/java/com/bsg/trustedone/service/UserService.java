@@ -16,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import static java.util.Objects.isNull;
 
@@ -123,4 +124,16 @@ public class UserService {
         }
     }
 
+    public void validatePasswordResetToken(String token) {
+        this.passwordResetTokenService.findToken(token);
+    }
+
+    @Transactional
+    public void resetPassword(PasswordResetFormDto request) {
+        var token = this.passwordResetTokenService.findToken(request.getToken());
+        var password = this.passwordEncoder.encode(request.getPassword());
+
+        this.userRepository.updatePassword(password, token.getUserId());
+        this.passwordResetTokenService.consumeToken(request.getToken());
+    }
 }

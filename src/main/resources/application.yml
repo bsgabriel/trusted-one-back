@@ -36,6 +36,6 @@ app:
   mail:
     sender: ${MAIL_SENDER:test@resend.dev}
     resend:
-      api-key: ${RESEND_API_KEY}
+      api-key: ${RESEND_API_KEY:re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx}
   password-reset:
     token-expiration-minutes: 60

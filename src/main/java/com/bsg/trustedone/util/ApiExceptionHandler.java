@@ -78,6 +78,14 @@ public class ApiExceptionHandler {
         return createResponseEntity(detail);
     }
 
+    @ExceptionHandler(PasswordResetException.class)
+    public ResponseEntity<ProblemDetail> handlePasswordResetException(PasswordResetException ex) {
+        var detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        detail.setTitle(ex.getTitle());
+        detail.setDetail(ex.getMessage());
+        return createResponseEntity(detail);
+    }
+
     private ProblemDetail createProblemDetail(HttpStatus status, BaseException ex) {
         var detail = ProblemDetail.forStatusAndDetail(status, ex.getMessage());
         detail.setTitle(ex.getTitle());
