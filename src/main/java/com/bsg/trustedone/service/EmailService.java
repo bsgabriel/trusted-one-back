@@ -33,7 +33,7 @@ public class EmailService {
         var parameters = new HashMap<String, Object>();
         parameters.put("{greeting}", messageService.getMessage("user.password-reset.email.greeting"));
         parameters.put("{message}", messageService.getMessage("user.password-reset.email.message"));
-        parameters.put("{resetLink}", String.format("%s/reset-password?token=%s", frontendUrl, token));
+        parameters.put("{resetLink}", String.format("%s/#/nova-senha?token=%s", frontendUrl, token));
         parameters.put("{buttonText}", messageService.getMessage("user.password-reset.email.button-text"));
         parameters.put("{expirationNote}", messageService.getMessage("user.password-reset.email.expiration-note"));
         parameters.put("{ignoreNote}", messageService.getMessage("user.password-reset.email.ignore-note"));
