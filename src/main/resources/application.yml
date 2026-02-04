@@ -30,3 +30,12 @@ security:
     secret: ${JWT_SECRET:abcdefghijlkmnopqrstuvwxyz123456}
     access-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:3600000}
     refresh-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:604800000}
+
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:9000}
+  mail:
+    sender: ${MAIL_SENDER:test@resend.dev}
+    resend:
+      api-key: ${RESEND_API_KEY:re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx}
+  password-reset:
+    token-expiration-minutes: 60

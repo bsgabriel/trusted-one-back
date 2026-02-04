@@ -1,9 +1,6 @@
 package com.bsg.trustedone.controller;
 
-import com.bsg.trustedone.dto.AccountCreationDto;
-import com.bsg.trustedone.dto.LoginResponseDto;
-import com.bsg.trustedone.dto.UserDto;
-import com.bsg.trustedone.dto.UserLoginDto;
+import com.bsg.trustedone.dto.*;
 import com.bsg.trustedone.dto.auth.RefreshTokenRequestDto;
 import com.bsg.trustedone.service.UserService;
 import jakarta.validation.Valid;
@@ -49,5 +46,23 @@ public class UserController {
         String refreshToken = request != null ? request.getRefreshToken() : null;
         userService.logout(refreshToken);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> requestPasswordChange(@RequestBody @Valid UserEmailFormDto request) {
+        userService.requestPasswordChange(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/reset-password/validate")
+    public ResponseEntity<Void> validateResetToken(@RequestParam String token) {
+        userService.validatePasswordResetToken(token);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody @Valid PasswordResetFormDto request) {
+        userService.resetPassword(request);
+        return ResponseEntity.ok().build();
     }
 }

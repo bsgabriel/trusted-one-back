@@ -4,6 +4,7 @@ import com.bsg.trustedone.configuration.JwtConfig;
 import com.bsg.trustedone.dto.*;
 import com.bsg.trustedone.dto.auth.RefreshTokenRequestDto;
 import com.bsg.trustedone.entity.User;
+import com.bsg.trustedone.exception.EmailException;
 import com.bsg.trustedone.exception.ResourceAlreadyExistsException;
 import com.bsg.trustedone.helper.DummyObjects;
 import com.bsg.trustedone.mapper.UserMapper;
@@ -57,6 +58,12 @@ class UserServiceTest {
 
     @Mock
     private CustomUserDetailsService userDetailsService;
+
+    @Mock
+    private PasswordResetTokenService passwordResetTokenService;
+
+    @Mock
+    private EmailService emailService;
 
     @Test
     @DisplayName("Should create user successfully")
@@ -218,4 +225,55 @@ class UserServiceTest {
 
         verify(refreshTokenService, never()).deleteByToken(any());
     }
+
+    @Test
+    @DisplayName("Should do nothing when user email does not exist")
+    void requestPasswordChange_withNonExistingEmail_shouldDoNothing() throws EmailException {
+        var request = DummyObjects.newInstance(UserEmailFormDto.class);
+
+        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.empty());
+
+        userService.requestPasswordChange(request);
+
+        verify(passwordResetTokenService, never()).generateToken(anyLong());
+        verify(emailService, never()).sendPasswordResetTemplate(anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("Should generate token and send password reset email when user exists")
+    void requestPasswordChange_withExistingUser_shouldGenerateTokenAndSendEmail() throws Exception {
+        var request = DummyObjects.newInstance(UserEmailFormDto.class);
+        var user = DummyObjects.newInstance(User.class);
+        var token = "token";
+
+        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
+        when(passwordResetTokenService.generateToken(user.getUserId())).thenReturn(token);
+
+        userService.requestPasswordChange(request);
+
+        verify(passwordResetTokenService, times(1)).generateToken(user.getUserId());
+        verify(emailService, times(1)).sendPasswordResetTemplate(user.getEmail(), token);
+    }
+
+    @Test
+    @DisplayName("Should not throw exception when email sending fails")
+    void requestPasswordChange_whenEmailServiceFails_shouldNotThrowException() throws Exception {
+        var request = DummyObjects.newInstance(UserEmailFormDto.class);
+        var user = DummyObjects.newInstance(User.class);
+        var token = "token";
+
+        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
+        when(passwordResetTokenService.generateToken(user.getUserId())).thenReturn(token);
+
+        doThrow(new RuntimeException("error"))
+                .when(emailService)
+                .sendPasswordResetTemplate(user.getEmail(), token);
+
+        assertDoesNotThrow(() -> userService.requestPasswordChange(request));
+
+        verify(passwordResetTokenService).generateToken(user.getUserId());
+        verify(emailService).sendPasswordResetTemplate(user.getEmail(), token);
+    }
+
+
 }

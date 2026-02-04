@@ -7,3 +7,11 @@ databaseChangeLog:
         - sqlFile:
             path: sql/001-create_table-refresh_tokens.sql
             relativeToChangelogFile: true
+  - changeSet:
+      id: iteration_4-create_table-password_reset_tokens
+      author: bsgabriel
+      comment: "Create password_reset_tokens table to store temporary tokens for password reset functionality."
+      changes:
+        - sqlFile:
+            path: sql/002-create_table-password_reset_tokens.sql
+            relativeToChangelogFile: true

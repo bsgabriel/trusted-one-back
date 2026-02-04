@@ -9,15 +9,18 @@ import com.bsg.trustedone.exception.SessionException;
 import com.bsg.trustedone.mapper.UserMapper;
 import com.bsg.trustedone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import static java.util.Objects.isNull;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -25,12 +28,14 @@ public class UserService {
     private final JwtConfig jwtConfig;
     private final JwtService jwtService;
     private final UserMapper userMapper;
+    private final EmailService emailService;
     private final MessageService messageService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
+    private final PasswordResetTokenService passwordResetTokenService;
 
     public UserDto createUser(AccountCreationDto registerData) {
         if (userRepository.existsByEmail(registerData.getEmail())) {
@@ -104,4 +109,31 @@ public class UserService {
         }
     }
 
+    public void requestPasswordChange(UserEmailFormDto request) {
+        var optUser = this.userRepository.findByEmail(request.getEmail());
+        if (optUser.isEmpty()) {
+            return;
+        }
+
+        var user = optUser.get();
+        try {
+            var token = passwordResetTokenService.generateToken(user.getUserId());
+            emailService.sendPasswordResetTemplate(user.getEmail(), token);
+        } catch (Exception e) {
+            log.error("Failed to send password reset email to: {}", request.getEmail(), e);
+        }
+    }
+
+    public void validatePasswordResetToken(String token) {
+        this.passwordResetTokenService.findToken(token);
+    }
+
+    @Transactional
+    public void resetPassword(PasswordResetFormDto request) {
+        var token = this.passwordResetTokenService.findToken(request.getToken());
+        var password = this.passwordEncoder.encode(request.getPassword());
+
+        this.userRepository.updatePassword(password, token.getUserId());
+        this.passwordResetTokenService.consumeToken(request.getToken());
+    }
 }
